@@ -13,6 +13,9 @@
     <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
     </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#c084fc" />
+    </marker>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
       <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="1" stroke-opacity="0.6"/>
     </pattern>
@@ -34,10 +37,20 @@
   <text x="136" y="375" fill="#cbd5e1" font-size="14" font-weight="bold">西侧苏醒室</text>
   <text x="136" y="395" fill="#64748b" font-size="11">Wake-up Room (安全观察区)</text>
 
-  <!-- North Lounge (X -3800 to 1150, Y 900 to 2100) -->
-  <rect x="116" y="102" width="940" height="216" fill="#0f2e2e" fill-opacity="0.2" stroke="#0d9488" stroke-opacity="0.3" stroke-width="1"/>
-  <text x="136" y="132" fill="#2dd4bf" font-size="14" font-weight="bold">北侧接待与休憩区</text>
-  <text x="136" y="152" fill="#0d9488" font-size="11">North Lounge (可选支线 A)</text>
+  <!-- North Reception Lounge (X -3800 to -1750, Y 900 to 2100) -->
+  <rect x="116" y="102" width="370" height="216" fill="#0f2e2e" fill-opacity="0.25" stroke="#0d9488" stroke-opacity="0.4" stroke-width="1"/>
+  <text x="136" y="128" fill="#2dd4bf" font-size="13" font-weight="bold">北侧接待前台与候客厅</text>
+  <text x="136" y="146" fill="#0d9488" font-size="10">Reception &amp; Waiting Lounge</text>
+
+  <!-- Executive Suite & Data Vault (X -1750 to -800, Y 1150 to 2100) -->
+  <rect x="486" y="102" width="180" height="216" fill="#2e1065" fill-opacity="0.35" stroke="#a855f7" stroke-opacity="0.5" stroke-width="1.5"/>
+  <text x="496" y="128" fill="#d8b4fe" font-size="13" font-weight="bold">主管办公室与隐藏金库</text>
+  <text x="496" y="146" fill="#c084fc" font-size="10">Manager Office &amp; Data Vault</text>
+
+  <!-- Pantry Alcove (X -800 to 1150, Y 900 to 2100) -->
+  <rect x="666" y="102" width="390" height="216" fill="#0f2e2e" fill-opacity="0.15" stroke="#0d9488" stroke-opacity="0.3" stroke-width="1"/>
+  <text x="686" y="128" fill="#2dd4bf" font-size="13" font-weight="bold">茶水茶歇区 (Pantry)</text>
+  <text x="686" y="146" fill="#0d9488" font-size="10">Breakroom Alcove (可选支线 A)</text>
 
   <!-- South Server Room (X 1150 to 3500, Y -900 to -2100) -->
   <rect x="1007" y="642" width="423" height="216" fill="#1e1b4b" fill-opacity="0.4" stroke="#6366f1" stroke-opacity="0.4" stroke-width="1.5"/>
@@ -90,13 +103,46 @@
     <rect x="809" y="525" width="28" height="18" rx="2"/>
   </g>
 
-  <!-- Server Racks in South Room -->
-  <g fill="#1e1b4b" stroke="#818cf8" stroke-width="1.5">
-    <rect x="1060" y="775" width="36" height="20" rx="2"/>
-    <rect x="1120" y="775" width="36" height="20" rx="2"/>
-    <rect x="1180" y="775" width="36" height="20" rx="2"/>
-    <rect x="1240" y="775" width="36" height="20" rx="2"/>
-    <text x="1080" y="815" fill="#a5b4fc" font-size="10">服务器机柜组 (100×80×220cm)</text>
+  <!-- Reception Counter (L-Shape) & Lounge Armchairs -->
+  <path d="M 395 210 L 440 210 L 440 250 L 426 250 L 426 224 L 395 224 Z" fill="#334155" stroke="#2dd4bf" stroke-width="1.2"/>
+  <text x="390" y="266" fill="#5eead4" font-size="9" font-weight="bold">前台接待台</text>
+  <rect x="455" y="175" width="16" height="16" rx="3" fill="#1e293b" stroke="#0d9488" stroke-width="1"/>
+  <rect x="455" y="200" width="16" height="16" rx="3" fill="#1e293b" stroke="#0d9488" stroke-width="1"/>
+
+  <!-- Manager's Office & Executive Vault -->
+  <rect x="525" y="165" width="36" height="22" rx="2" fill="#3b0764" stroke="#a855f7" stroke-width="1.2"/>
+  <text x="520" y="200" fill="#e9d5ff" font-size="9" font-weight="bold">主管办公桌</text>
+  <!-- Vault Barrier Gate (X=-900, Y=1750 -> SVG X=638, Y=165) -->
+  <rect x="634" y="148" width="8" height="34" fill="#f59e0b" stroke="#fbbf24" stroke-width="1.5" filter="url(#glow)"/>
+  <text x="585" y="142" fill="#fbbf24" font-size="9" font-weight="bold">密闭金库门</text>
+  <!-- Vault Interior Area -->
+  <rect x="642" y="138" width="24" height="54" fill="#4c1d95" fill-opacity="0.6" stroke="#c084fc" stroke-dasharray="2,2"/>
+  <rect x="648" y="155" width="12" height="12" rx="2" fill="#10b981" stroke="#fff" stroke-width="1" filter="url(#glow)"/>
+  <text x="640" y="205" fill="#4ade80" font-size="8">金库战利品</text>
+
+  <!-- Breakroom Pantry Counter & Coffee Hub -->
+  <rect x="730" y="168" width="28" height="16" rx="2" fill="#334155" stroke="#0d9488" stroke-width="1"/>
+  <circle cx="770" cy="176" r="5" fill="#047857" stroke="#10b981"/>
+  <text x="725" y="196" fill="#5eead4" font-size="9" font-weight="bold">茶歇吧台</text>
+
+  <!-- Server Racks in South Room (Dual-Row Cold-Aisle Architecture) -->
+  <!-- North Facing Row -->
+  <g fill="#1e1b4b" stroke="#818cf8" stroke-width="1.2">
+    <rect x="1065" y="718" width="34" height="18" rx="2"/>
+    <rect x="1128" y="718" width="34" height="18" rx="2"/>
+    <rect x="1191" y="718" width="34" height="18" rx="2"/>
+    <rect x="1254" y="718" width="34" height="18" rx="2"/>
+  </g>
+  <!-- Cold Aisle Center Walking Corridor & Overhead Yellow Cable Tray -->
+  <line x1="1045" y1="755" x2="1310" y2="755" stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="6,4" opacity="0.9"/>
+  <text x="1100" y="751" fill="#fde047" font-size="10" font-weight="bold">冷通道 (Cold Aisle 3.6m / 悬空电缆桥架)</text>
+  <!-- South Facing Row -->
+  <g fill="#1e1b4b" stroke="#818cf8" stroke-width="1.2">
+    <rect x="1065" y="774" width="34" height="18" rx="2"/>
+    <rect x="1128" y="774" width="34" height="18" rx="2"/>
+    <rect x="1191" y="774" width="34" height="18" rx="2"/>
+    <rect x="1254" y="774" width="34" height="18" rx="2"/>
+    <text x="1075" y="810" fill="#a5b4fc" font-size="9">对置服务器机柜组 (100×80×220cm ×8台)</text>
   </g>
 
   <!-- Conference Table -->
@@ -163,6 +209,19 @@
   <circle cx="1457" cy="480" r="11" fill="#22c55e" stroke="#fff" stroke-width="2" filter="url(#glow)"/>
   <text x="1375" y="515" fill="#4ade80" font-size="12" font-weight="bold">最终撤离门 (Exit)</text>
 
+  <!-- Environmental Puzzle Terminals (SOP-17 Auxiliary Security Sequence) -->
+  <circle cx="564" cy="177" r="8" fill="#06b6d4" stroke="#fff" stroke-width="2" filter="url(#glow)"/>
+  <text x="548" y="160" fill="#22d3ee" font-size="10" font-weight="bold">PT-0 便签</text>
+
+  <circle cx="1277" cy="165" r="8" fill="#f59e0b" stroke="#fff" stroke-width="2" filter="url(#glow)"/>
+  <text x="1245" y="150" fill="#fbbf24" font-size="10" font-weight="bold">PT-1 动力节点</text>
+
+  <circle cx="1295" cy="735" r="8" fill="#38bdf8" stroke="#fff" stroke-width="2" filter="url(#glow)"/>
+  <text x="1260" y="722" fill="#38bdf8" font-size="10" font-weight="bold">PT-2 冷却循环</text>
+
+  <circle cx="742" cy="165" r="8" fill="#10b981" stroke="#fff" stroke-width="2" filter="url(#glow)"/>
+  <text x="715" y="150" fill="#34d399" font-size="10" font-weight="bold">PT-3 环境净化</text>
+
   <!-- PATHWAYS & FLOW ARROWS -->
   <!-- Flow 1: Primary Assault Route (Solid Cyan) -->
   <path d="M 206 480 L 242 392 L 346 450 L 520 480 L 700 480 L 920 450"
@@ -182,7 +241,12 @@
         fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="4,4" stroke-linecap="round" stroke-linejoin="round"
         marker-end="url(#arrow-green)"/>
 
-  <!-- DECISION POINTS (DP1, DP2, DP3) -->
+  <!-- Flow 4: Secret Branch & Environmental Puzzle Flow (Violet Dash-Dot) -->
+  <path d="M 564 177 Q 920 135 1277 165 Q 1340 450 1295 735 Q 1010 380 742 165 L 642 165"
+        fill="none" stroke="#c084fc" stroke-width="2.5" stroke-dasharray="8,4,2,4" stroke-linecap="round" stroke-linejoin="round"
+        marker-mid="url(#arrow-purple)" marker-end="url(#arrow-purple)"/>
+
+  <!-- DECISION POINTS (DP1, DP2, DP3, DP4) -->
   <g filter="url(#glow)">
     <circle cx="370" cy="460" r="14" fill="#8b5cf6" fill-opacity="0.8" stroke="#fff" stroke-width="2"/>
     <text x="364" y="465" fill="#fff" font-size="11" font-weight="bold">1</text>
@@ -207,30 +271,44 @@
   <text x="1174" y="751" fill="#c4b5fd" font-size="10" font-weight="bold">决策点 3 (风险与背包)</text>
   <text x="1174" y="764" fill="#a78bfa" font-size="9">拿保险丝即走 vs 贪大件备件</text>
 
+  <g filter="url(#glow)">
+    <circle cx="560" cy="245" r="14" fill="#a855f7" fill-opacity="0.9" stroke="#fff" stroke-width="2"/>
+    <text x="554" y="250" fill="#fff" font-size="11" font-weight="bold">4</text>
+  </g>
+  <rect x="580" y="228" width="168" height="34" rx="4" fill="#2e1065" stroke="#a855f7" stroke-width="1.2"/>
+  <text x="586" y="244" fill="#e9d5ff" font-size="10" font-weight="bold">决策点 4 (隐藏密室解谜)</text>
+  <text x="586" y="257" fill="#c084fc" font-size="9">SOP-17时序: 动力→冷却→净化</text>
+
   <!-- LEGEND & ANNOTATION CARD (Bottom Left) -->
-  <rect x="50" y="690" width="320" height="225" rx="6" fill="#0f172a" fill-opacity="0.9" stroke="#334155" stroke-width="1.5"/>
-  <text x="65" y="715" fill="#f8fafc" font-size="13" font-weight="bold">图例与交互标识 (Legend)</text>
+  <rect x="50" y="650" width="320" height="280" rx="6" fill="#0f172a" fill-opacity="0.92" stroke="#334155" stroke-width="1.5"/>
+  <text x="65" y="674" fill="#f8fafc" font-size="13" font-weight="bold">图例与交互标识 (Legend)</text>
 
-  <line x1="65" y1="735" x2="105" y2="735" stroke="#38bdf8" stroke-width="3" marker-end="url(#arrow-blue)"/>
-  <text x="115" y="739" fill="#94a3b8" font-size="11">主线交战推进流线 (Primary Combat)</text>
+  <line x1="65" y1="695" x2="105" y2="695" stroke="#38bdf8" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <text x="115" y="699" fill="#94a3b8" font-size="11">主线交战推进流线 (Primary Combat)</text>
 
-  <line x1="65" y1="760" x2="105" y2="760" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#arrow-amber)"/>
-  <text x="115" y="764" fill="#94a3b8" font-size="11">断电寻物与供电返程 (Blackout Mission)</text>
+  <line x1="65" y1="720" x2="105" y2="720" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#arrow-amber)"/>
+  <text x="115" y="724" fill="#94a3b8" font-size="11">断电寻物与供电返程 (Blackout Mission)</text>
 
-  <line x1="65" y1="785" x2="105" y2="785" stroke="#10b981" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow-green)"/>
-  <text x="115" y="789" fill="#94a3b8" font-size="11">可选高价值搜索支线 (Optional Detour)</text>
+  <line x1="65" y1="745" x2="105" y2="745" stroke="#10b981" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow-green)"/>
+  <text x="115" y="749" fill="#94a3b8" font-size="11">可选高价值搜索支线 (Optional Detour)</text>
 
-  <circle cx="75" cy="812" r="6" fill="#38bdf8" stroke="#fff" stroke-width="1.5"/>
-  <text x="95" y="816" fill="#94a3b8" font-size="11">玩家出生点 / 关键装备 (枪/电/斧)</text>
+  <line x1="65" y1="770" x2="105" y2="770" stroke="#c084fc" stroke-width="2.5" stroke-dasharray="6,3,2,3" marker-end="url(#arrow-purple)"/>
+  <text x="115" y="774" fill="#c084fc" font-size="11">隐藏金库解谜流线 (Vault Puzzle Flow)</text>
 
-  <polygon points="75,830 81,836 75,842 69,836" fill="#ef4444" stroke="#7f1d1d" stroke-width="1"/>
-  <text x="95" y="840" fill="#94a3b8" font-size="11">感染者威胁点 (第4杀触发断电)</text>
+  <circle cx="75" cy="797" r="6" fill="#38bdf8" stroke="#fff" stroke-width="1.5"/>
+  <text x="95" y="801" fill="#94a3b8" font-size="11">玩家出生点 / 关键装备 (枪/电/斧)</text>
 
-  <rect x="69" y="855" width="12" height="12" rx="1" fill="#fbbf24"/>
-  <text x="95" y="865" fill="#94a3b8" font-size="11">9毫米弹药箱 / 医疗包</text>
+  <polygon points="75,815 81,821 75,827 69,821" fill="#ef4444" stroke="#7f1d1d" stroke-width="1"/>
+  <text x="95" y="825" fill="#94a3b8" font-size="11">感染者威胁点 (第4杀触发断电)</text>
 
-  <rect x="69" y="878" width="12" height="12" rx="1" fill="#ec4899"/>
-  <text x="95" y="888" fill="#94a3b8" font-size="11">高价值战利品 (服务器备件 500/占2格)</text>
+  <circle cx="75" cy="843" r="6" fill="#06b6d4" stroke="#fff" stroke-width="1.5"/>
+  <text x="95" y="847" fill="#94a3b8" font-size="11">SOP-17 解谜终端 (PT-0 ~ PT-3)</text>
+
+  <rect x="69" y="865" width="12" height="12" rx="1" fill="#fbbf24"/>
+  <text x="95" y="875" fill="#94a3b8" font-size="11">9毫米弹药箱 / 医疗包</text>
+
+  <rect x="69" y="890" width="12" height="12" rx="1" fill="#ec4899"/>
+  <text x="95" y="900" fill="#94a3b8" font-size="11">高价值战利品 (服务器备件 500/占2格)</text>
 
   <!-- Compass Rose -->
   <g transform="translate(1520, 80)">

@@ -453,8 +453,8 @@
       <a href="#blackout-navigation">断电逆转：形体地标与复用</a>
 
       <div class="nav-group-title">设计证据与验证</div>
-      <a href="#design-iterations">三项设计迭代对比</a>
-      <a href="#verification-system">255项自动化回归与局限</a>
+      <a href="#design-iterations">四项设计迭代对比</a>
+      <a href="#verification-system">257项自动化回归与局限</a>
       <a href="#playtest-protocol">下一阶段真人盲测表</a>
 
       <div class="nav-group-title">求职交付物</div>
@@ -465,7 +465,7 @@
     <div class="sidebar-footer">
       <div>版本: 2026.09 Vertical Slice</div>
       <div>引擎: Unreal Engine 5.8</div>
-      <div>回归断言: 255/255 PASS (54.43s)</div>
+      <div>回归断言: 257/257 PASS (54.41s)</div>
     </div>
   </aside>
 
@@ -477,7 +477,7 @@
       <div class="hero-badge-group">
         <span class="badge badge-blue">UE 5.8 垂直切片</span>
         <span class="badge badge-amber">1:500 真实坐标空间</span>
-        <span class="badge badge-green">255/255 自动化回归全绿</span>
+        <span class="badge badge-green">257/257 自动化回归全绿</span>
         <span class="badge badge-purple">单人搜打撤 FPS</span>
       </div>
       <h1 class="hero-title">《封锁区：零号大厦》关卡策划与系统设计案</h1>
@@ -634,7 +634,7 @@
     <section id="inventory-tradeoffs">
       <div class="section-header">
         <div class="section-tag">Phase 4 · Economic Conflict</div>
-        <h2 class="section-title">搜索取舍：微背包与空间冲突博弈 (DP-1 ~ DP-3)</h2>
+        <h2 class="section-title">搜索取舍：微背包与空间冲突博弈 (DP-1 ~ DP-4)</h2>
       </div>
 
       <div class="card">
@@ -679,6 +679,14 @@
                 <td>暗室额外深入 25m，背包满载必须弃物</td>
                 <td><strong>$500 备件 B</strong> (全搜极限 <strong>$1120</strong>)</td>
                 <td>原路返回大厅红塔引路</td>
+              </tr>
+              <tr>
+                <td><strong>DP-4: 行政金库解谜 (支线 C)</strong></td>
+                <td>主管办公室与密闭金库门 (-1350, 1650)</td>
+                <td>主管桌发光便签与墙面白板；金库门显示锁闭。SOP-17 时序：动力(04)→冷却(03)→净化(中央)</td>
+                <td>横穿大厦三大区域交互 3 处终端；按错触发跳闸警报并唤醒感染者</td>
+                <td><strong>开启密闭金库</strong>，获得高价值电子废料 ($180) + 战备医疗包 (+35 HP)</td>
+                <td>动线与主线保险丝与合闸高度重合，自然顺路达成</td>
               </tr>
             </tbody>
           </table>
@@ -787,7 +795,7 @@
     <section id="design-iterations">
       <div class="section-header">
         <div class="section-tag">Phase 6 · Verification Evidence</div>
-        <h2 class="section-title">三项核心设计迭代深度对比 (Before / After)</h2>
+        <h2 class="section-title">四项核心设计迭代深度对比 (Before / After)</h2>
       </div>
 
       <!-- Iteration 1 -->
@@ -858,6 +866,29 @@
           </div>
         </div>
       </div>
+
+      <!-- Iteration 4 -->
+      <div class="iteration-card">
+        <div class="card-title">迭代四：现代办公拟真度与 SOP-17 辅机运维解谜体系</div>
+        <div class="iteration-flow">
+          <div class="flow-step step-problem">
+            <div class="flow-step-label">问题现状 (Problem)</div>
+            初期空间偏向“灰盒跑道”，工位仅有空桌，缺乏真实生活研发痕迹；主线仅为单纯跑腿，缺乏高阶推理解谜与大厦世界观融入。
+          </div>
+          <div class="flow-step step-hypo">
+            <div class="flow-step-label">设计假设 (Hypothesis)</div>
+            引入真实办公陈设（接待台、主管室、茶水间、机房冷通道），并将密闭金库与 SOP-17 运维时序绑定，能大幅强化沉浸感与解谜心流。
+          </div>
+          <div class="flow-step step-fix">
+            <div class="flow-step-label">落地修改 (Modification)</div>
+            工位增补鼠标/文件夹/电脑/垃圾桶；机房构建对置双排冷通道与悬空桥架；布设 SOP-17 白板备忘录与 4 处物理终端（动力04→冷却03→净化中央）。
+          </div>
+          <div class="flow-step step-verify">
+            <div class="flow-step-label">实机验证 (Verification)</div>
+            新增 2 项系统级断言（总数 257 项 100% 通过），终端逻辑与金库门开闭状态完美契合，空间叙事与探索趣味极大提升。
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Section 7: Verification System -->
@@ -868,7 +899,7 @@
       </div>
 
       <div class="card">
-        <div class="card-title">255 项系统级断言矩阵覆盖明细</div>
+        <div class="card-title">257 项系统级断言矩阵覆盖明细</div>
         <div class="table-container">
           <table>
             <thead>
@@ -905,6 +936,12 @@
                 <td><span class="badge badge-green">PASS (68/68)</span></td>
               </tr>
               <tr>
+                <td><strong>环境解谜与金库系统</strong></td>
+                <td>2 项</td>
+                <td>4处 SOP-17 辅机终端注册、金库密闭门初始闭锁与逻辑序列就绪</td>
+                <td><span class="badge badge-green">PASS (2/2)</span></td>
+              </tr>
+              <tr>
                 <td><strong>断电寻路与返程供电</strong></td>
                 <td>46 项</td>
                 <td>手电照明对比、机房保险丝交互、配电箱合闸通电、全楼照明复苏、气闸门升起</td>
@@ -918,9 +955,9 @@
               </tr>
               <tr style="font-weight:700;">
                 <td><strong>总计</strong></td>
-                <td><strong>255 项</strong></td>
+                <td><strong>257 项</strong></td>
                 <td><strong>单人搜打撤全流程垂直切片闭环</strong></td>
-                <td><span class="badge badge-green">100% PASS (54.43s)</span></td>
+                <td><span class="badge badge-green">100% PASS (54.41s)</span></td>
               </tr>
             </tbody>
           </table>
@@ -928,7 +965,7 @@
 
         <div class="callout callout-amber">
           <strong>局限性反思与诚信披露：</strong><br>
-          1. <strong>自动化耗时 54.43 秒绝不代表真实玩家通关时长</strong>：这是脚本按最优坐标传送执行的回归耗时。根据关卡尺度与搜索密度，真实新手通关时长目标为 <strong>8 ~ 12 分钟</strong>。<br>
+          1. <strong>自动化耗时 54.41 秒绝不代表真实玩家通关时长</strong>：这是脚本按最优坐标传送执行的回归耗时。根据关卡尺度与搜索密度，真实新手通关时长目标为 <strong>8 ~ 12 分钟</strong>。<br>
           2. <strong>测试辅助不留在自然游玩中</strong>：敌人冻结仅在开场未武装保护与 QA 脚本测量时启用，不使用永久无限弹药等破坏体验的“后门”。<br>
           3. <strong>可看见 ≠ 被注意到</strong>：光影与构图为视线提供了高概率捕捉，但真实玩家的注意力分配仍需依赖下一阶段真人录屏与访谈确认。
         </div>
@@ -948,8 +985,8 @@
           <p style="font-size:13px; color:var(--text-muted); line-height:1.7;">
             <strong>封锁区：零号大厦 · UE5 单人搜打撤关卡原型</strong>（独立策划 / AI 辅助开发，2026.09）<br>
             • 围绕“安全观察威胁—获取工具—有限弹药战斗—断电逆转—寻保险丝—通电撤离”设计闭环，以 C++ 程序化搭建 76m×42m 现代办公楼，组织双向视线与心流节拍；<br>
-            • 落地 3×2 有限微背包系统与资源竞争（9mm 自动堆叠 / 医疗包占 1 格 / 双格战利品竞争），任务关键道具解耦不占格；设计两条非对称高价值支线（最高带出 $1120），通过框架视线引导主动取舍；<br>
-            • 针对断电空间辨识难题，设计机房散热百叶窗剪影、配电间红色应急灯塔及十字反光路标；搭建 255 项自动化 QA 回归管线，保障后坐力、交互射线与重开逻辑零退化。
+            • 落地 3×2 有限微背包系统与资源竞争（9mm 自动堆叠 / 医疗包占 1 格 / 双格战利品竞争），任务关键道具解耦不占格；设计非对称高价值支线（最高带出 $1300），通过框架视线与 SOP-17 辅机运维解谜引导主动取舍；<br>
+            • 针对断电空间辨识难题，设计机房散热百叶窗剪影、配电间红色应急灯塔及十字反光路标；搭建 257 项自动化 QA 回归管线，保障后坐力、交互射线与重开逻辑零退化。
           </p>
         </div>
 
@@ -970,9 +1007,9 @@
           “面试官好，我向您分享我最近在 UE5 中主导策划的单人 FPS 搜打撤作品——《封锁区：零号大厦》。这个项目的核心目标是验证<strong>‘空间叙事、资源压力与断电后的空间复用’</strong>。<br><br>
           在设计上我着重解决了三个关卡痛点：<br>
           <strong>第一是开场的直观教学</strong>：玩家在苏醒室内，我通过 15° 偏角的视线构图，让玩家先在防弹玻璃后安全观察晃动的感染者建立威胁认知；接着利用工位台灯引导玩家发现仅剩 3 发底火的格洛克 17 和手电。玩家不需看弹窗，就能本能理解必须谨慎开火的底层规则。<br>
-          <strong>第二是有限背包驱动的搜索取舍</strong>：我设计了 3×2 共 6 格背包，并引入占连续两格的高价值服务器备件。在主走廊行进时，玩家能透过办公隔断瞥见深处粉色光圈。要想带走高额战利品，就必须在安全医疗包和贪婪收益之间二选一。同时主线保险丝独立显示，杜绝了背包满导致的卡关。<br>
+          <strong>第二是有限背包驱动的搜索取舍与解谜</strong>：我设计了 3×2 共 6 格背包，并引入占连续两格的高价值服务器备件与 SOP-17 辅机重启时序解谜。在主走廊行进时，玩家能透过办公隔断瞥见深处粉色光圈。要想带走高额战利品，就必须在安全医疗包和贪婪收益之间二选一。同时主线保险丝独立显示，杜绝了背包满导致的卡关。<br>
           <strong>第三是断电逆转与地标导航</strong>：第 4 次击杀会触发办公楼全面断电。为了防止迷路，我给南机房设计了散热格栅剪影，给北配电室配置了应急红色频闪灯塔，并在十字路口架设物理路标。玩家开启手电后，能精准调动白天的空间记忆完成‘搜保险丝—回配电室通电—气闸撤离’的返程闭环。<br><br>
-          项目逻辑由我制定系统与关卡规格后在 AI 辅助下实现轻量 C++ 生成，搭建了 255 项断言的回归验证管线保障核心机制零退化。期待您的交流与指正！”
+          项目逻辑由我制定系统与关卡规格后在 AI 辅助下实现轻量 C++ 生成，搭建了 257 项断言的回归验证管线保障核心机制零退化。期待您的交流与指正！”
         </div>
       </div>
     </section>
@@ -993,7 +1030,7 @@
               <li>开场安全教学、未武装保护与残弹压迫机制；</li>
               <li>微背包 3×2 网格规则、双格空间冲突与路线决策矩阵；</li>
               <li>断电反转形体剪影地标与双向动线组织；</li>
-              <li>255 项系统回归测试用例设计与自动化断言验证；</li>
+              <li>257 项系统回归测试用例设计与自动化断言验证；</li>
               <li>全套设计简报、矢量平面图、标注图与作品集页面搭建。</li>
             </ul>
           </div>

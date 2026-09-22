@@ -262,7 +262,7 @@ void ALZGameMode::BuildOfficeLevel()
     SpawnModularWall(TEXT("ServerRoomWall"), FVector(1150.0f, -1500.0f, 175.0f), FVector(80.0f, 1200.0f, 350.0f), FRotator::ZeroRotator, OfficeBlue);
     SpawnModularWall(TEXT("ElectricalRoomWall"), FVector(2200.0f, 1500.0f, 175.0f), FVector(80.0f, 1200.0f, 350.0f), FRotator::ZeroRotator, Emergency);
 
-    // Real art assets replace the former cube-only office furniture.
+    // Real art assets for office workstation pods, reception, server room, and executive suite.
     for (int32 Desk = 0; Desk < 10; ++Desk)
     {
         const float X = -1750.0f + (Desk % 5) * 480.0f;
@@ -277,12 +277,35 @@ void ALZGameMode::BuildOfficeLevel()
             FVector(X - 20.0f, Y, 78.0f), FRotator(0.0f, Yaw, 0.0f), FVector(0.14f), false);
         SpawnArtMesh(FString::Printf(TEXT("Keyboard_%d"), Desk), TEXT("/Game/Art/KenneyFurniture/SM_computerKeyboard.SM_computerKeyboard"),
             FVector(X + 45.0f, Y, 78.0f), FRotator(0.0f, Yaw, 0.0f), FVector(0.14f), false);
+        SpawnArtMesh(FString::Printf(TEXT("Mouse_%d"), Desk), TEXT("/Game/Art/KenneyFurniture/SM_computerMouse.SM_computerMouse"),
+            FVector(X + 45.0f, Y - 25.0f, 78.0f), FRotator(0.0f, Yaw, 0.0f), FVector(0.14f), false);
+        if (Desk % 3 == 0)
+        {
+            SpawnArtMesh(FString::Printf(TEXT("Trash_%d"), Desk), TEXT("/Game/Art/KenneyFurniture/SM_trashcan.SM_trashcan"),
+                FVector(X - 60.0f, Y - 40.0f, 0.0f), FRotator::ZeroRotator, FVector(0.14f), false);
+        }
+        if (Desk == 1 || Desk == 6)
+        {
+            SpawnArtMesh(FString::Printf(TEXT("Books_%d"), Desk), TEXT("/Game/Art/KenneyFurniture/SM_books.SM_books"),
+                FVector(X - 20.0f, Y + 30.0f, 78.0f), FRotator(0.0f, 25.0f, 0.0f), FVector(0.15f), false);
+        }
+        if (Desk == 3 || Desk == 8)
+        {
+            SpawnArtMesh(FString::Printf(TEXT("DeskLaptop_%d"), Desk), TEXT("/Game/Art/KenneyFurniture/SM_laptop.SM_laptop"),
+                FVector(X - 35.0f, Y - 20.0f, 78.0f), FRotator(0.0f, -10.0f, 0.0f), FVector(0.13f), false);
+        }
     }
+
+    // Server Cleanroom Cold-Aisle layout: South row (Y=-1710) and North row (Y=-1350)
     for (int32 Rack = 0; Rack < 4; ++Rack)
     {
-        SpawnArtMesh(FString::Printf(TEXT("ServerRack_%d"), Rack), TEXT("/Game/Art/ZeroTower/SM_ServerRack.SM_ServerRack"),
+        SpawnArtMesh(FString::Printf(TEXT("ServerRackSouth_%d"), Rack), TEXT("/Game/Art/ZeroTower/SM_ServerRack.SM_ServerRack"),
             FVector(1500.0f + Rack * 330.0f, -1710.0f, 0), FRotator(0,-90,0), FVector(1));
+        SpawnArtMesh(FString::Printf(TEXT("ServerRackNorth_%d"), Rack), TEXT("/Game/Art/ZeroTower/SM_ServerRack.SM_ServerRack"),
+            FVector(1500.0f + Rack * 330.0f, -1350.0f, 0), FRotator(0, 90, 0), FVector(1));
     }
+
+    // Executive Boardroom / Strategy Suite
     SpawnArtMesh(TEXT("ConferenceDeskA"), TEXT("/Game/Art/KenneyFurniture/SM_deskCorner.SM_deskCorner"),
         FVector(2420.0f, 150.0f, 0.0f), FRotator::ZeroRotator, FVector(0.28f));
     SpawnArtMesh(TEXT("ConferenceDeskB"), TEXT("/Game/Art/KenneyFurniture/SM_deskCorner.SM_deskCorner"),
@@ -296,11 +319,74 @@ void ALZGameMode::BuildOfficeLevel()
             FVector(bLeft ? 2320.0f : 3080.0f, ChairY, 0.0f),
             FRotator(0.0f, bLeft ? 0.0f : 180.0f, 0.0f), FVector(0.14f));
     }
+    SpawnArtMesh(TEXT("ConferenceLaptop"), TEXT("/Game/Art/KenneyFurniture/SM_laptop.SM_laptop"),
+        FVector(2550.0f, 250.0f, 78.0f), FRotator(0.0f, 45.0f, 0.0f), FVector(0.14f), false);
+    SpawnArtMesh(TEXT("ConferenceBooks"), TEXT("/Game/Art/KenneyFurniture/SM_books.SM_books"),
+        FVector(2750.0f, 400.0f, 78.0f), FRotator(0.0f, -30.0f, 0.0f), FVector(0.16f), false);
 
+    // Reception & Visitor Lobby Hub
+    SpawnArtMesh(TEXT("ReceptionDeskCounter"), TEXT("/Game/Art/KenneyFurniture/SM_deskCorner.SM_deskCorner"),
+        FVector(-2550.0f, 1100.0f, 0.0f), FRotator(0.0f, 90.0f, 0.0f), FVector(0.24f));
+    SpawnArtMesh(TEXT("ReceptionScreen"), TEXT("/Game/Art/KenneyFurniture/SM_computerScreen.SM_computerScreen"),
+        FVector(-2550.0f, 1100.0f, 78.0f), FRotator(0.0f, 90.0f, 0.0f), FVector(0.14f), false);
+    SpawnArtMesh(TEXT("ReceptionKeyboard"), TEXT("/Game/Art/KenneyFurniture/SM_computerKeyboard.SM_computerKeyboard"),
+        FVector(-2510.0f, 1100.0f, 78.0f), FRotator(0.0f, 90.0f, 0.0f), FVector(0.14f), false);
+    SpawnArtMesh(TEXT("ReceptionVisitorLog"), TEXT("/Game/Art/KenneyFurniture/SM_books.SM_books"),
+        FVector(-2550.0f, 1220.0f, 78.0f), FRotator(0.0f, 15.0f, 0.0f), FVector(0.16f), false);
+    SpawnArtMesh(TEXT("ReceptionChair"), TEXT("/Game/Art/KenneyFurniture/SM_chairDesk.SM_chairDesk"),
+        FVector(-2440.0f, 1100.0f, 0.0f), FRotator(0.0f, -90.0f, 0.0f), FVector(0.14f));
     SpawnArtMesh(TEXT("ReceptionSofa"), TEXT("/Game/Art/KenneyFurniture/SM_loungeSofa.SM_loungeSofa"),
         FVector(-3000.0f, 1320.0f, 0.0f), FRotator(0.0f, 90.0f, 0.0f), FVector(0.16f));
+    SpawnArtMesh(TEXT("ReceptionArmchair"), TEXT("/Game/Art/KenneyFurniture/SM_loungeChair.SM_loungeChair"),
+        FVector(-3100.0f, 1600.0f, 0.0f), FRotator(0.0f, 45.0f, 0.0f), FVector(0.16f));
     SpawnArtMesh(TEXT("ReceptionCoffeeTable"), TEXT("/Game/Art/KenneyFurniture/SM_tableCoffee.SM_tableCoffee"),
         FVector(-2720.0f, 1320.0f, 0.0f), FRotator::ZeroRotator, FVector(0.16f));
+
+    // Department Manager's Office & Executive Vault
+    SpawnModularWall(TEXT("ManagerOfficeWallSouth"), FVector(-850.0f, 1100.0f, 175.0f), FVector(700.0f, 60.0f, 350.0f), FRotator::ZeroRotator, Partition);
+    SpawnModularWall(TEXT("ManagerOfficeWallEast"), FVector(-500.0f, 1300.0f, 175.0f), FVector(60.0f, 400.0f, 350.0f), FRotator::ZeroRotator, Partition);
+    SpawnArtMesh(TEXT("ManagerDesk"), TEXT("/Game/Art/KenneyFurniture/SM_deskCorner.SM_deskCorner"),
+        FVector(-850.0f, 1400.0f, 0.0f), FRotator(0.0f, 180.0f, 0.0f), FVector(0.24f));
+    SpawnArtMesh(TEXT("ManagerChair"), TEXT("/Game/Art/KenneyFurniture/SM_chairModernFrameCushion.SM_chairModernFrameCushion"),
+        FVector(-770.0f, 1400.0f, 0.0f), FRotator(0.0f, 180.0f, 0.0f), FVector(0.14f));
+    SpawnArtMesh(TEXT("ManagerLaptop"), TEXT("/Game/Art/KenneyFurniture/SM_laptop.SM_laptop"),
+        FVector(-880.0f, 1400.0f, 78.0f), FRotator(0.0f, -15.0f, 0.0f), FVector(0.14f), false);
+
+    // Executive Data Vault (unlocked by solving the 3-node auxiliary power puzzle)
+    SpawnModularWall(TEXT("VaultWallNorth"), FVector(-450.0f, 1750.0f, 175.0f), FVector(300.0f, 60.0f, 350.0f), FRotator::ZeroRotator, Partition);
+    SpawnModularWall(TEXT("VaultWallSouth"), FVector(-450.0f, 1350.0f, 175.0f), FVector(300.0f, 60.0f, 350.0f), FRotator::ZeroRotator, Partition);
+    SpawnModularWall(TEXT("VaultWallEast"), FVector(-300.0f, 1550.0f, 175.0f), FVector(60.0f, 400.0f, 350.0f), FRotator::ZeroRotator, Partition);
+    VaultBarrier = SpawnArtMesh(TEXT("ExecutiveVaultGate"), TEXT("/Game/Art/ZeroTower/SM_IndustrialDoor.SM_IndustrialDoor"),
+        FVector(-600.0f, 1550.0f, 0.0f), FRotator(0.0f, 90.0f, 0.0f), FVector(1.0f));
+
+    // Environmental Puzzle Terminals: Clue, Generator (Power), Cooling, Purifier
+    if (ALZPuzzleTerminal* ClueTerm = GetWorld()->SpawnActor<ALZPuzzleTerminal>(
+        FVector(-920.0f, 1330.0f, 82.0f), FRotator(0.0f, 180.0f, 0.0f)))
+    {
+        ClueTerm->Configure(EPuzzleNode::Clue);
+    }
+    if (ALZPuzzleTerminal* GenTerm = GetWorld()->SpawnActor<ALZPuzzleTerminal>(
+        FVector(2050.0f, 1380.0f, 82.0f), FRotator(0.0f, 180.0f, 0.0f)))
+    {
+        GenTerm->Configure(EPuzzleNode::Generator);
+    }
+    if (ALZPuzzleTerminal* CoolTerm = GetWorld()->SpawnActor<ALZPuzzleTerminal>(
+        FVector(2050.0f, -1880.0f, 82.0f), FRotator(0.0f, 0.0f, 0.0f)))
+    {
+        CoolTerm->Configure(EPuzzleNode::Cooling);
+    }
+    if (ALZPuzzleTerminal* PurTerm = GetWorld()->SpawnActor<ALZPuzzleTerminal>(
+        FVector(-100.0f, 840.0f, 82.0f), FRotator(0.0f, -90.0f, 0.0f)))
+    {
+        PurTerm->Configure(EPuzzleNode::Purifier);
+    }
+
+    // Pantry / Break Room
+    SpawnArtMesh(TEXT("PantryTable"), TEXT("/Game/Art/KenneyFurniture/SM_tableCoffee.SM_tableCoffee"),
+        FVector(300.0f, -750.0f, 0.0f), FRotator::ZeroRotator, FVector(0.18f));
+    SpawnArtMesh(TEXT("PantryPlant"), TEXT("/Game/Art/KenneyFurniture/SM_plantSmall1.SM_plantSmall1"),
+        FVector(300.0f, -750.0f, 45.0f), FRotator::ZeroRotator, FVector(0.15f), false);
+
     SpawnArtMesh(TEXT("OfficeBookcaseA"), TEXT("/Game/Art/KenneyFurniture/SM_bookcaseOpen.SM_bookcaseOpen"),
         FVector(700.0f, 1880.0f, 0.0f), FRotator(0.0f, 180.0f, 0.0f), FVector(0.20f));
     SpawnArtMesh(TEXT("OfficeBookcaseB"), TEXT("/Game/Art/KenneyFurniture/SM_bookcaseClosed.SM_bookcaseClosed"),
@@ -855,7 +941,7 @@ bool ALZGameMode::IsPuzzleNodeActivated(EPuzzleNode Node) const
 
 void ALZGameMode::ShowPuzzleClue()
 {
-    StatusText = TEXT("维修记录：净化必须最后；冷却节点不能早于动力节点启动。");
+    StatusText = TEXT("【SOP-17 运维备忘】大厦断电时备用15A保险丝在03机房；金库解锁顺序：动力 -> 冷却 -> 净化。错误将触发警报！");
 }
 
 void ALZGameMode::TryActivatePuzzleNode(EPuzzleNode Node)
@@ -872,23 +958,26 @@ void ALZGameMode::TryActivatePuzzleNode(EPuzzleNode Node)
         if (PuzzleStep >= 3)
         {
             bPuzzleComplete = true;
-            StatusText = TEXT("供电恢复：隔离门已开启，可以取得净水控制模块");
+            StatusText = TEXT("辅助供电并网成功：02号行政保密金库已解锁！可在主管办公室拾取高阶战利品");
             if (VaultBarrier)
             {
                 VaultBarrier->Destroy();
                 VaultBarrier = nullptr;
             }
+            SpawnLoot(FVector(-450.0f, 1550.0f, 40.0f), static_cast<uint8>(ELootType::Scrap));
+            SpawnLoot(FVector(-450.0f, 1450.0f, 40.0f), static_cast<uint8>(ELootType::Medical));
         }
         else
         {
-            StatusText = FString::Printf(TEXT("节点启动正确：供电恢复进度 %d/3"), PuzzleStep);
+            const TCHAR* NextStepDesc = (PuzzleStep == 1) ? TEXT("03机房·冷却循环") : TEXT("中央走廊·环境净化");
+            StatusText = FString::Printf(TEXT("节点接入正常 (进度 %d/3)：下一步请启动【%s】"), PuzzleStep, NextStepDesc);
         }
     }
     else
     {
         PuzzleStep = 0;
-        StatusText = TEXT("顺序错误：保护性断电，节点全部重置；噪声引来了感染者");
-        SpawnEnemy(FVector(200.0f, -450.0f, 100.0f), false);
+        StatusText = TEXT("顺序错误：电路过载保护跳闸，节点已重置！蜂鸣警报引来了一只游荡感染者");
+        SpawnEnemy(FVector(0.0f, 0.0f, 100.0f), false);
     }
     RefreshPuzzleTerminals();
 }

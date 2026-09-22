@@ -322,6 +322,14 @@ void ALZGameMode::DressOffice()
     Sign(TEXT("CrosswayPowerSign"), TEXT("04 POWER [->]"), FVector(650, 895, 230), 90, 220, FColor(245, 130, 80), 18);
     Sign(TEXT("ExitOverheadSign"), TEXT("< EXIT AIRLOCK / 气闸撤离口 >"), FVector(3490, 0, 325), 180, 380, FColor(121, 241, 169), 22);
 
+    // Reception feature wall branding & Manager whiteboard SOP clue
+    Sign(TEXT("CorporateLogoSign"), TEXT("ZERO TOWER / BIOMEDICAL RESEARCH HUB"), FVector(-2500, 1750, 240), 180, 420, FColor(220, 240, 255), 24);
+    Sign(TEXT("ManagerWhiteboardSign"), TEXT("SOP-17 / FACILITY REBOOT MEMO"), FVector(-850, 1880, 210), 0, 320, FColor(100, 220, 255), 18);
+    Sign(TEXT("VaultLockSign"), TEXT("[02 EXECUTIVE DATA VAULT - LOCKED]"), FVector(-600, 1550, 250), -90, 340, FColor(255, 120, 80), 16);
+    Sign(TEXT("ServerAisleSign"), TEXT("COLD AISLE / RESTRICTED 03-A"), FVector(2000, -1530, 290), 0, 310, FColor(120, 210, 255), 16);
+    Sign(TEXT("HighVoltageSign"), TEXT("HIGH VOLTAGE 480V / 04 POWER"), FVector(2200, 1400, 240), -90, 310, FColor(255, 220, 60), 18);
+    Sign(TEXT("BreakroomSign"), TEXT("BREAK ROOM & PANTRY"), FVector(200, -850, 220), 90, 260, FColor(200, 230, 200), 18);
+
     // Server Room overhead landmark silhouette and hazard trim
     Box(TEXT("ServerEntryHeader"), FVector(1780, -960, 320), FVector(480, 25, 20),
         Charcoal, TEXT("M_ZT_DarkMetal"));
@@ -331,11 +339,25 @@ void ALZGameMode::DressOffice()
             Charcoal, TEXT("M_ZT_DarkMetal"));
     }
 
-    // Electrical Room doorway hazard frame
+    // Server Cold-Aisle overhead yellow cable tray network
+    Box(TEXT("ServerCableTrayMain"), FVector(2000, -1530, 320), FVector(1200, 40, 8),
+        Amber, TEXT("M_ZT_SafetyYellow"));
+    for (int32 TrayHanger = 0; TrayHanger < 5; ++TrayHanger)
+    {
+        Box(TEXT("ServerCableHanger"), FVector(1500 + TrayHanger * 260, -1530, 345), FVector(6, 6, 42),
+            Charcoal, TEXT("M_ZT_DarkMetal"));
+    }
+
+    // Electrical Room doorway hazard frame & transformer hazard striping
     Box(TEXT("PowerDoorFrameL"), FVector(2200, 905, 160), FVector(10, 8, 320),
         Amber, TEXT("M_ZT_SafetyYellow"));
     Box(TEXT("PowerDoorHeader"), FVector(2200, 1050, 320), FVector(10, 290, 12),
         Amber, TEXT("M_ZT_SafetyYellow"));
+    for (int32 TStripe = 0; TStripe < 6; ++TStripe)
+    {
+        Box(TEXT("TransformerHazardStripe"), FVector(2100 + TStripe * 65, 1400, 0.95f), FVector(14, 80, 0.25f),
+            Amber, TEXT("M_ZT_SafetyYellow"), FRotator(0, 35, 0));
+    }
 
     // Battery-backed navigation survives the scripted mains blackout.
     auto Beacon = [this, &Box](const FVector& Position, const FLinearColor& Color, bool bAmber, float Yaw)

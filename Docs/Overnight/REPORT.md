@@ -3,9 +3,9 @@
 **任务日期**：2026-09-23  
 **执行目标**：执行 `GEMINI_OVERNIGHT_TASKS.md`，全面提升《封锁区：零号大厦》作为游戏策划／关卡策划求职作品的专业度与证据链完整性。  
 **基线提交**：`7cb58b9af664599741c4258e26f87174e46a74f0`  
-**终态验证**：**255 / 255 PASS (耗时 54.44s，0 Failures, 0 Errors)**  
-**构建状态**：`LockdownZoneEditor Win64 Development` **Succeeded in 1.42s**  
-**最新运行日志**：`Saved/Logs/Play-20260923-044521-973.log`  
+**终态验证**：**257 / 257 PASS (耗时 54.41s，0 Failures, 0 Errors)**  
+**构建状态**：`LockdownZoneEditor Win64 Development` **Succeeded in 9.56s**  
+**最新运行日志**：`Saved/Logs/Play-20260923-050403-406.log`  
 **最新测试报告**：`Saved/LZSliceQA_Report.txt`
 
 ---
@@ -19,8 +19,9 @@
 | **阶段 2** | 开场教学构图与残弹压迫 | 出生点转向微调偏东北 15°；武器桌增设暖光工作台灯（DeskLamp 240 lm）与笔记本道具；破窗走廊增设腰高战术咖啡桌掩体；格洛克 17 维持 3/0 底火并强化前置中文警示。 | **100% 完成** |
 | **阶段 3** | 断电地标与暗夜双向导航 | 南侧机房门洞增设金属百叶窗格栅剪影与琥珀色门标（Amber Beacon）；北侧配电室部署常驻红色应急指示塔（Persistent Red Beacon）；十字走廊设置物理反光立牌；优化手电光锥消退近景桌面白化过曝。 | **100% 完成** |
 | **阶段 4** | 探索取舍与微背包博弈 | 稀有服务器备件（$500）由地表抬升至 +78cm 办公桌与推车台面，透过隔断形成“框架视线（Framed Sightline）”；背包拒收提示精细化为“需同行连续2格”；主线保险丝独立解耦不占背包；完成决策矩阵与两套典型库存推演。 | **100% 完成** |
-| **阶段 5** | 策划作品集全套交付物 | 输出完整求职作品集 `Docs/Portfolio/`：<br>1. `Portfolio.md`（6~8页综合策划案）<br>2. `index.html`（零外部依赖、响应式带打印排版的现代化展示页）<br>3. `Portfolio.pdf`（5.5MB 独立打印级 PDF 文档）<br>4. `RouteChoices.md`（路线取舍与决策推演）<br>5. `Playtest.md`（255项断言与真人盲测协议）<br>6. `ResumeBullets.md`（3条简历描述与90秒讲解稿）<br>7. `Screenshots/Annotated/`（6张高清矢量设计标注图，与原始截图严格分开） | **100% 完成** |
-| **阶段 6** | 最终回归与文档收尾 | 同步更新 `README.md` 与 `DESIGN.md` 中的空间地标与作品集入口；通过 `Build.ps1` 与 `Play.ps1 -QA` 完成 255 项全绿回归验证；撰写最终报告 `REPORT.md`。 | **100% 完成** |
+| **阶段 5** | 策划作品集全套交付物 | 输出完整求职作品集 `Docs/Portfolio/`：<br>1. `Portfolio.md`（综合策划案）<br>2. `index.html`（零外部依赖、响应式带打印排版的现代化展示页）<br>3. `Portfolio.pdf`（5.8MB 独立打印级 PDF 文档）<br>4. `RouteChoices.md`（路线取舍与决策推演）<br>5. `Playtest.md`（257项断言与真人盲测协议）<br>6. `ResumeBullets.md`（3条简历描述与90秒讲解稿）<br>7. `Screenshots/Annotated/`（6张高清矢量设计标注图） | **100% 完成** |
+| **阶段 6** | 最终回归与文档收尾 | 同步更新 `README.md` 与 `DESIGN.md` 中的空间地标与作品集入口；通过 `Build.ps1` 与 `Play.ps1 -QA` 完成回归验证；撰写最终报告 `REPORT.md`。 | **100% 完成** |
+| **阶段 7** | 真实办公拟真度与环境解谜体系 | **1. 真实办公陈设升级**：10 座工作岛增补鼠标/文件夹/笔记本/垃圾桶；布设 L 型企业前台（访客终端、皮椅、形象背景墙）与茶歇吧台；重构南机房为 3.6m 对置双排冷通道（Cold Aisle）与悬空电缆桥架。<br>**2. SOP-17 辅机运维解谜与金库**：主管桌白板便签引导 -> 4 个物理终端（动力04→冷却03→净化中央）-> 开启密闭金库门，掉落电子废料 ($180) + 战备医疗包 (+35 HP)；按错短路跳闸唤醒变异体。<br>**3. 系统回归扩充**：QA 自动化断言增至 257 项，100% 全绿（54.41s）。 | **100% 完成** |
 
 ---
 
@@ -111,23 +112,24 @@
 ```
 Command: powershell -ExecutionPolicy Bypass -File .\Scripts\Build.ps1
 Target: LockdownZoneEditor Win64 Development
-Result: Succeeded (1.42s)
+Result: Succeeded (9.56s)
 Errors: 0, Warnings: 0
 ```
 
 ### 2. 系统级 QA 回归验证
 ```
 Command: powershell -ExecutionPolicy Bypass -File .\Scripts\Play.ps1 -QA
-Log: Saved/Logs/Play-20260923-044521-973.log
+Log: Saved/Logs/Play-20260923-050403-406.log
 Report: Saved/LZSliceQA_Report.txt
-Summary: LZ_QA SUMMARY PASS assertions=255 failures=0 elapsed=54.44s
+Summary: LZ_QA SUMMARY PASS assertions=257 failures=0 elapsed=54.41s
 ```
-- **通过率**：**100% (255 PASS / 0 FAIL)**
+- **通过率**：**100% (257 PASS / 0 FAIL)**
 - **断言明细**：
   - 开场教学与未武装保护：28 项 PASS
   - 武器后坐力与射击逻辑：35 项 PASS
   - 碎窗战斗与断电触发：32 项 PASS
   - 6格背包、自动堆叠、连续双格拒收与原子操作：68 项 PASS
+  - SOP-17 辅机运维终端与密闭金库就绪：2 项 PASS
   - 断电寻路、保险丝与配电合闸：46 项 PASS
   - 气闸防跌落撤离、结算与 F5 重开：46 项 PASS
 
@@ -135,8 +137,8 @@ Summary: LZ_QA SUMMARY PASS assertions=255 failures=0 elapsed=54.44s
 
 ## 五、诚信披露与局限性反思 (Limitations & Honest Disclosure)
 
-1. **机器人运行耗时 (54.44s) ≠ 真实玩家通关时长**：
-   - 54.44 秒是 QA 机器人以最优预设坐标传送和点击完成全流程的耗时，**绝不能宣传为玩家通关时长**。根据 76m×42m 办公楼尺度与搜索节奏，真实新手通关时长目标预估为 **8 ~ 12 分钟**，需经真人盲测确认。
+1. **机器人运行耗时 (54.41s) ≠ 真实玩家通关时长**：
+   - 54.41 秒是 QA 机器人以最优预设坐标传送和点击完成全流程的耗时，**绝不能宣传为玩家通关时长**。根据 76m×42m 办公楼尺度与搜索节奏，真实新手通关时长目标预估为 **8 ~ 12 分钟**，需经真人盲测确认。
 2. **敌人战斗受控**：
    - 为确保拾取射线与后坐力回弹采样的稳定性，QA 脚本在交互阶段对敌人进行了局部冻结与确定性排布，未包含复杂战术包抄行为。
 3. **“可看见”不等于“被注意到”**：

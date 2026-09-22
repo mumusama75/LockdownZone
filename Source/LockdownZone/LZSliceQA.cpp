@@ -10,6 +10,7 @@
 #include "LZInventoryTypes.h"
 #include "LZLoot.h"
 #include "LZPowerInteractable.h"
+#include "LZPuzzleTerminal.h"
 #include "LZWeaponPickup.h"
 #include "Camera/CameraComponent.h"
 #include "Camera/PlayerCameraManager.h"
@@ -154,6 +155,12 @@ void ALZSliceQA::BeginPlay()
     Check(Player->GetUsedBagSlots() == 0 && Player->GetLootValue() == 0 &&
         Player->GetInventoryEntries().IsEmpty() && !Player->IsInventoryOpen(), TEXT("opening inventory is empty and closed"));
     Check(Fuse->IsHidden() && !Fuse->GetActorEnableCollision(), TEXT("fuse is unavailable before blackout"));
+    {
+        int32 PuzzleTermCount = 0;
+        for (TActorIterator<ALZPuzzleTerminal> It(GetWorld()); It; ++It) ++PuzzleTermCount;
+        Check(PuzzleTermCount == 4, TEXT("four environmental puzzle terminals exist for in-world guidance"));
+        Check(!GameMode->IsPuzzleComplete() && GameMode->GetPuzzleStep() == 0, TEXT("auxiliary security puzzle starts in armed offline state"));
+    }
     SaveEnemySnapshot();
     Advance(EStep::OpeningIdle, 3.25f);
 #else
