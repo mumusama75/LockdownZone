@@ -1,0 +1,26 @@
+# Visual Studio / VS Code
+.vs/
+.vscode/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+
+# Unreal Engine directories
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# IDE / OS files
+.idea/
+*.code-workspace
+.DS_Store
+Thumbs.db
+
+# Windows / Crash dumps
+*.dmp
+*.crashdump
