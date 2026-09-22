@@ -29,9 +29,10 @@ UE 5.8 单人第一人称搜打撤关卡作品集项目。场景是一层封锁�
 中文 HUD 展示当前目标、交互提示、生命与弹药等状态。场景通过 C++ 在运行时生成，启动地图使用引擎 Entry；无需手工新建关卡。空间设计、视觉引导和待验证问题见 [DESIGN.md](DESIGN.md)。
 
 ### 策划作品集入口 (Portfolio Deliverables)
-- **在线展示网页**：[Docs/Portfolio/index.html](Docs/Portfolio/index.html)（无外部依赖、支持打印排版的离线中文展示页）
+- **在线展示网页**：[Docs/Portfolio/index.html](Docs/Portfolio/index.html)（无外部依赖、支持打印排版的离线中文展示页，内置交互式检视面板）
 - **完整作品集文档**：[Docs/Portfolio/Portfolio.md](Docs/Portfolio/Portfolio.md) 与 [Docs/Portfolio/Portfolio.pdf](Docs/Portfolio/Portfolio.pdf)
-- **1:500 矢量关卡平面图**：[Docs/Portfolio/LevelPlan.svg](Docs/Portfolio/LevelPlan.svg)（精确到厘米坐标映射）
+- **1:500 矢量关卡平面图**：[Docs/Portfolio/LevelPlan.svg](Docs/Portfolio/LevelPlan.svg)（精确到厘米坐标映射，涵盖 DP-1~4 动线与 SOP-17 辅机解谜）
+- **关卡空间度量衡白皮书**：[Docs/Portfolio/SpatialMetrics.md](Docs/Portfolio/SpatialMetrics.md)（角色物理包络、通道层级、掩体高度与交火截断标准）
 - **探索路线与取舍推演**：[Docs/Portfolio/RouteChoices.md](Docs/Portfolio/RouteChoices.md)
 - **测试验证与真人盲测表**：[Docs/Portfolio/Playtest.md](Docs/Portfolio/Playtest.md)
 - **简历条目与 90 秒讲解稿**：[Docs/Portfolio/ResumeBullets.md](Docs/Portfolio/ResumeBullets.md)
@@ -96,7 +97,7 @@ powershell -ExecutionPolicy Bypass -File .\Scripts\Play.ps1 -QA
 
 `-QA` 使用 `-LZSliceQA -LZQAExit` 启动开发回归驱动，窗口渲染分辨率固定为 1280×720；执行后返回游戏退出码。报告位于 `Saved/LZSliceQA_Report.txt`，截图位于 `Saved/Screenshots/WindowsEditor/SliceQA_*.png`。正常游玩不传这些参数。
 
-2026-09-22 最新 Development Editor 编译成功，QA 已实际完成 **255 项通过 / 0 项失败**，返回码0。覆盖真实射击与后坐力、手电拾取/开关、B开关背包、方向键选格、容量与堆叠、满包拒收不丢物、医疗包使用/满血保留、丢弃与格子释放、换弹消耗实际库存、背包输入隔离及世界继续运行、物资带出和F5重开清空库存。QA 为稳定验证交互会暂时冻结敌人，因此该通过结果不代表完整自然战斗与难度平衡验收。
+2026-09-23 最新 Development Editor 编译成功，QA 已实际完成 **257 项通过 / 0 项失败**，返回码0。覆盖真实射击与后坐力、手电拾取/开关、B开关背包、方向键选格、容量与堆叠、满包拒收不丢物、SOP-17 辅机运维解谜终端与密闭金库闭锁、医疗包使用/满血保留、丢弃与格子释放、换弹消耗实际库存、背包输入隔离及世界继续运行、物资带出和F5重开清空库存。QA 为稳定验证交互会暂时冻结敌人，因此该通过结果不代表完整自然战斗与难度平衡验收。
 
 每轮改动都应完成：编译、运行回归、检查报告并打开本轮截图，再进行实际游玩确认。自动化可检查已覆盖的状态和生成画面，无法代替对引导清晰度、手感、碰撞和首次通关体验的人工评估。本阶段视觉检查已完成；自然游玩与战斗平衡仍需测试。
 

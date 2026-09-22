@@ -446,6 +446,7 @@
       <a href="#hero">项目定位与职责</a>
       <a href="#beat-chart">心流与体验节拍</a>
       <a href="#level-plan">1:500 关卡平面图</a>
+      <a href="#spatial-metrics">空间度量衡与建筑规范</a>
 
       <div class="nav-group-title">核心设计系统</div>
       <a href="#opening-tutorial">开场教学：安全观察与残弹</a>
@@ -546,6 +547,15 @@
           </div>
         </div>
       </div>
+
+      <!-- Interactive Level Design Inspector Widget -->
+      <div class="card" style="margin-top:20px;">
+        <div class="card-title" style="color:var(--accent-blue);">关卡策划交互式检视工具 (Interactive Level Design Inspector)</div>
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:12px;">
+          本交互面板可动态切换 7 个体验心流阶段的张力曲线、筛选角色/通道/掩体几何度量衡、模拟 4 种典型背包取舍方案，并检视 SOP-17 辅机运维解谜逻辑链。
+        </p>
+        <iframe src="level_design_inspector.html" style="width:100%; height:540px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-main);" title="Level Design Inspector"></iframe>
+      </div>
     </section>
 
     <!-- Section 2: Level Plan -->
@@ -560,7 +570,7 @@
         <div class="media-box">
           <img src="LevelPlan.svg" alt="1:500 关卡平面图">
           <div class="media-caption">
-            <span><strong>图 A：矢量比例平面图</strong> · 精确映射边界、房间拓扑、7名感染者分布、决策点 DP-1~3 与主支线动线</span>
+            <span><strong>图 A：矢量比例平面图</strong> · 精确映射边界、房间拓扑、7名感染者分布、决策点 DP-1~4、SOP-17解谜时序与主支线动线</span>
             <a href="LevelPlan.svg" target="_blank" style="color:var(--accent-blue); text-decoration:none;">[打开原始 SVG]</a>
           </div>
         </div>
@@ -572,12 +582,96 @@
           </div>
           <div class="flow-step">
             <div style="font-weight:700; color:var(--accent-amber); margin-bottom:4px;">02 中央核心办公区</div>
-            <div style="font-size:12px; color:var(--text-muted);">坐标 (-1500~1500, Y: -1000~1000)。矮隔断与立柱交错，配有腰高战术咖啡桌、十字路标及北休憩区支线。</div>
+            <div style="font-size:12px; color:var(--text-muted);">坐标 (-1500~1500, Y: -1000~1000)。10座拟真工作岛配鼠标/电脑/垃圾桶，矮隔断交错，配有战术咖啡掩体与路标。</div>
           </div>
           <div class="flow-step">
-            <div style="font-weight:700; color:var(--accent-green); margin-bottom:4px;">03 南机房与北配电室</div>
-            <div style="font-size:12px; color:var(--text-muted);">南侧取 15A 任务保险丝，北侧配电合闸解锁东侧气闸。依靠百叶窗剪影与红色指示塔建立暗夜导航。</div>
+            <div style="font-weight:700; color:var(--accent-purple); margin-bottom:4px;">03 行政前台与金库套间</div>
+            <div style="font-size:12px; color:var(--text-muted);">L型服务台、皮质会客沙发与主管办公室；密闭金库与 SOP-17 辅机运维时序绑定（DP-4 解谜终点）。</div>
           </div>
+          <div class="flow-step">
+            <div style="font-weight:700; color:var(--accent-blue); margin-bottom:4px;">04 南机房冷通道洁净室</div>
+            <div style="font-size:12px; color:var(--text-muted);">真实对置 8 台机柜形成 3.6m 冷通道（Cold Aisle），悬空黄色走线桥架与百叶窗剪影入口，主线保险丝与冷却终端所在地。</div>
+          </div>
+          <div class="flow-step">
+            <div style="font-weight:700; color:var(--accent-red); margin-bottom:4px;">05 东北配电总控间</div>
+            <div style="font-size:12px; color:var(--text-muted);">主线合闸所在地与动力终端。门楣装有暗夜中唯一独立蓄电供电的常驻红色应急指示塔（Beacon）。</div>
+          </div>
+          <div class="flow-step">
+            <div style="font-weight:700; color:var(--accent-green); margin-bottom:4px;">06 东侧气闸撤离口</div>
+            <div style="font-size:12px; color:var(--text-muted);">全封闭防跌落撤离结算室，通电后绿灯升门。物资结算金币核算，支持 F5 一键无缝重开新局。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2.5: Spatial Metrics -->
+    <section id="spatial-metrics">
+      <div class="section-header">
+        <div class="section-tag">Phase 2.5 · Level Design Bible</div>
+        <h2 class="section-title">空间度量衡与建筑规范 (Spatial Metrics)</h2>
+      </div>
+
+      <div class="card">
+        <div class="card-title">基于 1 UU = 1 cm 的严密空间包络与掩体规范</div>
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:14px;">
+          关卡坚决杜绝“凭手感随意摆放道具”。所有通道净宽、门洞高度、掩体离散尺寸与交火距离均遵循严格的工业级关卡策划规范（完整白皮书见 <a href="SpatialMetrics.md" target="_blank" style="color:var(--accent-blue); text-decoration:none; font-weight:600;">[查看完整手册 SpatialMetrics.md]</a>）。
+        </p>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>规范分类</th>
+                <th>设计参数 (cm)</th>
+                <th>对应参考物</th>
+                <th>关卡体验功能与设计意图</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>角色物理包络</strong></td>
+                <td>高 180cm, 半径 42cm</td>
+                <td>人体站立尺寸</td>
+                <td>通行净空基准；走廊最小狭道 ≥110cm 杜绝跑动刮蹭。</td>
+              </tr>
+              <tr>
+                <td><strong>平视视平线</strong></td>
+                <td>高 165cm (站) / 110cm (蹲)</td>
+                <td>第一人称相机</td>
+                <td>黄金视线基准面；台面道具与门楣标牌依此高度做仰俯构图。</td>
+              </tr>
+              <tr>
+                <td><strong>一级主干干道</strong></td>
+                <td>宽 360cm, 高 320cm</td>
+                <td>中央办公主走廊</td>
+                <td>双向高速机动与拉扯空间，悬空吊挂黄色电缆桥架。</td>
+              </tr>
+              <tr>
+                <td><strong>机房冷通道</strong></td>
+                <td>宽 360cm, 高 350cm</td>
+                <td>南侧数据中心夹道</td>
+                <td>真实对置 8 台机柜形成的洁净室走廊，狭窄逼仄高压感。</td>
+              </tr>
+              <tr>
+                <td><strong>半高腰身掩体</strong></td>
+                <td>45cm ~ 78cm</td>
+                <td>咖啡桌 (45) / 办公桌 (78)</td>
+                <td>蹲下完全隐蔽（视高110cm），站立可平视开火射击。</td>
+              </tr>
+              <tr>
+                <td><strong>全高视线掩体</strong></td>
+                <td>180cm ~ 350cm</td>
+                <td>承重混凝土方柱 / 服务器柜</td>
+                <td>100% 阻断视线与子弹，切断 AI 仇恨追踪。</td>
+              </tr>
+              <tr>
+                <td><strong>视线截断上限</strong></td>
+                <td>≤ 2200 cm (22m)</td>
+                <td>折叠交错墙体</td>
+                <td>全图无超 22m 直线长廊，杜绝无脑清怪，保障剔除渲染效率。</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
