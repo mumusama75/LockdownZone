@@ -1,0 +1,256 @@
+﻿LZ_QA PASS runtime player and game mode exist
+LZ_QA PASS office slice contains weapons, flashlight, ammo, medicine, scrap, two rare parts and all objective actors
+LZ_QA PASS opening starts unarmed
+LZ_QA PASS opening starts without a flashlight
+LZ_QA PASS unowned flashlight starts off
+LZ_QA PASS first-person weapon component exists for recoil presentation checks
+LZ_QA PASS optional 500-value server parts exist for loot regression
+LZ_QA PASS opening inventory is empty and closed
+LZ_QA PASS fuse is unavailable before blackout
+LZ_QA PASS unarmed idle >=3 seconds leaves every enemy XY unchanged within 1cm
+LZ_QA PASS unarmed idle >=3 seconds causes no player damage
+LZ_QA PASS unarmed first-person MeleeHead is explicitly invisible
+LZ_QA PASS unarmed first-person WeaponBody is explicitly invisible
+LZ_QA PASS pistol mesh longest world bound is 20.40cm (expected 20.4 +/-0.5cm)
+LZ_QA PASS opening window pier at Y=-400 blocks a bypass sightline
+LZ_QA PASS opening window pier at Y=652 blocks a bypass sightline
+LZ_QA PASS B opens the initial empty backpack is accepted by the normal input path
+LZ_QA PASS real B input opens a six-slot empty inventory
+LZ_QA PASS right arrow selects the next backpack slot is accepted by the normal input path
+LZ_QA PASS right-arrow input selects empty slot two in the three-column grid
+LZ_QA PASS B closes the initial backpack is accepted by the normal input path
+LZ_QA PASS second B input closes the backpack before world interaction
+LZ_QA PASS F before flashlight pickup is accepted by the normal input path
+LZ_QA PASS F does not grant an unowned flashlight
+LZ_QA PASS F before pickup cannot emit flashlight light
+LZ_QA PASS flashlight pickup actor exists
+LZ_QA PASS flashlight pickup has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS actual E trace hits flashlight pickup
+LZ_QA PASS E picks up the aimed flashlight is accepted by the normal input path
+LZ_QA PASS real E input acquires and removes flashlight pickup
+LZ_QA PASS acquired flashlight switches on automatically
+LZ_QA PASS flashlight equipment consumes no loot slots and adds no loot value
+LZ_QA PASS flashlight alone leaves the player unarmed
+LZ_QA PASS flashlight pickup does not unlock the powered exit or supply the fuse
+LZ_QA PASS flashlight spotlight follows the first-person camera
+LZ_QA PASS flashlight has a focused inner/outer cone, useful range and shadow casting
+LZ_QA PASS flashlight-only unarmed idle >=3 seconds with normal enemy ticks leaves every enemy XY unchanged within 1cm
+LZ_QA PASS flashlight-only unarmed idle >=3 seconds with normal enemy ticks causes no player damage
+LZ_QA PASS F switches acquired flashlight off is accepted by the normal input path
+LZ_QA PASS real F input switches flashlight off
+LZ_QA PASS F switches acquired flashlight back on is accepted by the normal input path
+LZ_QA PASS second real F input switches flashlight on
+LZ_QA PASS axe pickup actor exists
+LZ_QA PASS axe pickup has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS axe pickup actual interaction trace hits target
+LZ_QA PASS only axe acquired through Interact
+LZ_QA PASS one weapon idle >=3 seconds leaves every enemy XY unchanged within 1cm
+LZ_QA PASS one weapon idle >=3 seconds causes no player damage
+LZ_QA PASS pistol pickup actor exists
+LZ_QA PASS pistol pickup has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS pistol pickup actual interaction trace hits target
+LZ_QA PASS both weapons acquired through Interact
+LZ_QA PASS pistol starts with 3 rounds and zero reserve
+LZ_QA PASS firing during pickup inspection consumes no ammunition and creates no recoil
+LZ_QA PASS ammo box 1 actor exists
+LZ_QA PASS ammo box 1 has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS ammo box 1 actual interaction trace hits target
+LZ_QA PASS ammo box 2 actor exists
+LZ_QA PASS ammo box 2 has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS ammo box 2 actual interaction trace hits target
+LZ_QA PASS two ammo boxes stack 24 reserve rounds in one real backpack slot
+LZ_QA PASS reload does not transfer ammo instantly
+LZ_QA PASS firing during reload consumes no ammunition and creates no recoil
+LZ_QA PASS normal reload finishes at 17/10 and retains the partial ammunition stack
+LZ_QA PASS normal fire consumes exactly one round
+LZ_QA PASS normal hip fire immediately raises the view and displaces the weapon
+LZ_QA PASS normal weapon trace shatters glass in one shot
+LZ_QA PASS recoil recovers to the hip-fire resting weapon pose without lasting camera pitch
+LZ_QA PASS infected 1 exists for real pistol trace
+LZ_QA PASS infected 1 player camera exists
+LZ_QA PASS infected 1 is the first weapon-trace hit from a free standing position
+LZ_QA PASS ADS pistol fire has positive recoil lighter than hip fire
+LZ_QA PASS normal pistol trace deals 34 damage to infected 1
+LZ_QA PASS first shot at infected 1 consumes one round
+LZ_QA PASS infected 1 follow-up shot waits for recoil recovery
+LZ_QA PASS infected 1 exists for real pistol trace
+LZ_QA PASS infected 1 player camera exists
+LZ_QA PASS infected 1 is the first weapon-trace hit from a free standing position
+LZ_QA PASS second shot at infected 1 consumes one round
+LZ_QA PASS infected 1 dies after second normal pistol trace
+LZ_QA PASS kill counter is 1
+LZ_QA PASS blackout threshold after kill 1
+LZ_QA PASS infected 2 exists for real pistol trace
+LZ_QA PASS infected 2 player camera exists
+LZ_QA PASS infected 2 is the first weapon-trace hit from a free standing position
+LZ_QA PASS normal pistol trace deals 34 damage to infected 2
+LZ_QA PASS first shot at infected 2 consumes one round
+LZ_QA PASS infected 2 follow-up shot waits for recoil recovery
+LZ_QA PASS infected 2 exists for real pistol trace
+LZ_QA PASS infected 2 player camera exists
+LZ_QA PASS infected 2 is the first weapon-trace hit from a free standing position
+LZ_QA PASS second shot at infected 2 consumes one round
+LZ_QA PASS infected 2 dies after second normal pistol trace
+LZ_QA PASS kill counter is 2
+LZ_QA PASS blackout threshold after kill 2
+LZ_QA PASS infected 3 exists for real pistol trace
+LZ_QA PASS infected 3 player camera exists
+LZ_QA PASS infected 3 is the first weapon-trace hit from a free standing position
+LZ_QA PASS normal pistol trace deals 34 damage to infected 3
+LZ_QA PASS first shot at infected 3 consumes one round
+LZ_QA PASS infected 3 follow-up shot waits for recoil recovery
+LZ_QA PASS infected 3 exists for real pistol trace
+LZ_QA PASS infected 3 player camera exists
+LZ_QA PASS infected 3 is the first weapon-trace hit from a free standing position
+LZ_QA PASS second shot at infected 3 consumes one round
+LZ_QA PASS infected 3 dies after second normal pistol trace
+LZ_QA PASS kill counter is 3
+LZ_QA PASS blackout threshold after kill 3
+LZ_QA PASS infected 4 exists for real pistol trace
+LZ_QA PASS infected 4 player camera exists
+LZ_QA PASS infected 4 is the first weapon-trace hit from a free standing position
+LZ_QA PASS normal pistol trace deals 34 damage to infected 4
+LZ_QA PASS first shot at infected 4 consumes one round
+LZ_QA PASS infected 4 follow-up shot waits for recoil recovery
+LZ_QA PASS infected 4 exists for real pistol trace
+LZ_QA PASS infected 4 player camera exists
+LZ_QA PASS infected 4 is the first weapon-trace hit from a free standing position
+LZ_QA PASS second shot at infected 4 consumes one round
+LZ_QA PASS infected 4 dies after second normal pistol trace
+LZ_QA PASS kill counter is 4
+LZ_QA PASS blackout threshold after kill 4
+LZ_QA PASS blackout reveals a collidable fuse
+LZ_QA PASS extraction refused before restoring power
+LZ_QA PASS breaker refuses repair without fuse
+LZ_QA PASS F disables flashlight for the dark-room comparison is accepted by the normal input path
+LZ_QA PASS dark-room comparison begins with flashlight off
+LZ_QA PASS F enables flashlight at the unchanged dark-room camera is accepted by the normal input path
+LZ_QA PASS dark-room comparison ends with flashlight on
+LZ_QA PASS flashlight off/on screenshots use the same camera position and orientation
+LZ_QA PASS fuse in server room actor exists
+LZ_QA PASS fuse in server room has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS fuse in server room actual interaction trace hits target
+LZ_QA PASS visible fuse is reachable and collected
+LZ_QA PASS optional server parts actor exists
+LZ_QA PASS optional server parts has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS optional server parts actual interaction trace hits target
+LZ_QA PASS server parts occupy two slots beside the one-slot ammunition stack, total three slots
+LZ_QA PASS both adjacent same-row rare-part cells resolve to one inventory entry
+LZ_QA PASS collected server-parts pickup is removed
+LZ_QA PASS B opens the backpack containing ammunition and server parts is accepted by the normal input path
+LZ_QA PASS loot backpack is open for the inventory regression
+LZ_QA PASS attempted fire while backpack is open is accepted by the normal input path
+LZ_QA PASS attempted reload while backpack is open is accepted by the normal input path
+LZ_QA PASS attempted weapon switch while backpack is open is accepted by the normal input path
+LZ_QA PASS open backpack blocks firing, reloading and weapon switching without spending ammunition
+LZ_QA PASS open backpack blocks held movement input and controller look input
+LZ_QA PASS opening the backpack leaves world time advancing
+LZ_QA PASS B closes backpack to collect world supplies is accepted by the normal input path
+LZ_QA PASS world supplies are collected with backpack closed
+LZ_QA PASS inventory supply 1 actor exists
+LZ_QA PASS inventory supply 1 has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS inventory supply 1 real pickup input is accepted by the normal input path
+LZ_QA PASS world supply 1 enters a real slot and its pickup is removed
+LZ_QA PASS world supplies are collected with backpack closed
+LZ_QA PASS inventory supply 2 actor exists
+LZ_QA PASS inventory supply 2 has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS inventory supply 2 real pickup input is accepted by the normal input path
+LZ_QA PASS world supply 2 enters a real slot and its pickup is removed
+LZ_QA PASS world supplies are collected with backpack closed
+LZ_QA PASS inventory supply 3 actor exists
+LZ_QA PASS inventory supply 3 has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS inventory supply 3 real pickup input is accepted by the normal input path
+LZ_QA PASS world supply 3 enters a real slot and its pickup is removed
+LZ_QA PASS two medical kits remain stored beside the 120-value scrap in the six-slot backpack
+LZ_QA PASS rare parts rejected by the full backpack actor exists
+LZ_QA PASS rare parts rejected by the full backpack has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS real E attempts to collect rare parts with all six slots occupied is accepted by the normal input path
+LZ_QA PASS full backpack refuses the world pickup without destroying it or adding its value
+LZ_QA PASS failed world pickup records visible backpack-capacity feedback
+LZ_QA PASS rejected 21-round addition is atomic: full bag keeps the existing ten-round stack unchanged
+LZ_QA PASS B opens the full backpack with pickup-failure feedback is accepted by the normal input path
+LZ_QA PASS full six-slot backpack remains open
+LZ_QA PASS requested inventory item exists in an open backpack
+LZ_QA PASS inventory grid navigation selects the requested item's slot
+LZ_QA PASS E attempts to use a stored medical kit at full health is accepted by the normal input path
+LZ_QA PASS full-health medical use does not consume a stored kit
+LZ_QA PASS player can receive ordinary damage with backpack open
+LZ_QA PASS E uses the selected stored medical kit after taking damage is accepted by the normal input path
+LZ_QA PASS real inventory E restores 35 health, consumes one kit and releases its slot
+LZ_QA PASS requested inventory item exists in an open backpack
+LZ_QA PASS inventory grid navigation selects the requested item's slot
+LZ_QA PASS Delete discards the remaining stored medical kit is accepted by the normal input path
+LZ_QA PASS Delete removes the entire medical entry and creates no recoverable world pickup
+LZ_QA PASS discarded medical slots leave room for the still-aimed world rare parts
+LZ_QA PASS requested inventory item exists in an open backpack
+LZ_QA PASS inventory grid navigation selects the requested item's slot
+LZ_QA PASS inventory E on ammunition must not interact with the world rare parts is accepted by the normal input path
+LZ_QA PASS inventory E does not collect the aimed world pickup even when capacity is now available
+LZ_QA PASS requested inventory item exists in an open backpack
+LZ_QA PASS inventory grid navigation selects the requested item's slot
+LZ_QA PASS Delete discards the inventory-regression scrap is accepted by the normal input path
+LZ_QA PASS discarding scrap removes its 120 value and preserves only ammunition plus the original 500-value parts
+LZ_QA PASS B closes inventory before normal reload slot-release checks is accepted by the normal input path
+LZ_QA PASS inventory closes before continuing normal weapon play
+LZ_QA PASS closing backpack releases its movement and look locks
+LZ_QA PASS normal R reload draws ammunition from the inventory entry is accepted by the normal input path
+LZ_QA PASS reload from 8/10 leaves a real one-round partial stack at 17/1
+LZ_QA PASS normal floor-directed shot leaves room for the last inventory round is accepted by the normal input path
+LZ_QA PASS floor-directed shot consumes one round without changing the completed combat phase
+LZ_QA PASS normal R reload consumes the final inventory round is accepted by the normal input path
+LZ_QA PASS consuming the final reserve round deletes the empty stack and releases its backpack slot
+LZ_QA PASS inventory operations preserve separately carried weapons, flashlight and quest fuse
+LZ_QA PASS main breaker actor exists
+LZ_QA PASS main breaker has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS main breaker actual interaction trace hits target
+LZ_QA PASS installing fuse restores power and completes objective
+LZ_QA PASS powered exit actor exists
+LZ_QA PASS powered exit has a clear <=350cm interaction trace from a free standing position
+LZ_QA PASS powered exit actual interaction trace hits target
+LZ_QA PASS restored exit completes successful extraction
+LZ_QA PASS successful extraction retains the 500-value two-slot parts after reserve ammunition was consumed
+LZ_QA PASS completed run idle >=3 seconds with normal enemy ticks leaves every enemy XY unchanged within 1cm
+LZ_QA PASS completed run idle >=3 seconds with normal enemy ticks causes no player damage
+LZ_QA PASS extraction settlement has no open backpack overlay
+LZ_QA PASS extraction settlement disables flashlight emission
+LZ_QA PASS player controller exists for real F5 input
+LZ_QA PASS player input accepts F5 after extraction
+LZ_QA PASS F5 input opened a new world and created a fresh QA actor
+LZ_QA PASS F5 restart preserves normal rendering instead of shader-complexity debug mode
+LZ_QA PASS F5 new run starts unarmed
+LZ_QA PASS F5 new run restores 100 health
+LZ_QA PASS F5 new run clears ammunition
+LZ_QA PASS F5 new run clears flashlight ownership and recoil
+LZ_QA PASS F5 new run leaves flashlight off
+LZ_QA PASS F5 respawns one collectible flashlight
+LZ_QA PASS F5 new run clears inventory entries and closes the backpack
+LZ_QA PASS F5 new run clears kill count
+LZ_QA PASS F5 new run clears blackout, fuse and restored-power state
+LZ_QA PASS F5 new run clears outcome and objective state
+LZ_QA PASS F5 new run restores movement and look input
+LZ_QA PASS unarmed first-person MeleeHead is explicitly invisible
+LZ_QA PASS unarmed first-person WeaponBody is explicitly invisible
+LZ_QA PASS screenshot saved: SliceQA_01_Opening.png
+LZ_QA PASS screenshot saved: SliceQA_01c_InventoryEmpty.png
+LZ_QA PASS screenshot saved: SliceQA_01b_FlashlightPickup.png
+LZ_QA PASS screenshot saved: SliceQA_02_Axe.png
+LZ_QA PASS screenshot saved: SliceQA_03_Pistol.png
+LZ_QA PASS screenshot saved: SliceQA_04_Reloaded.png
+LZ_QA PASS screenshot saved: SliceQA_04b_HipFireRecoil.png
+LZ_QA PASS screenshot saved: SliceQA_05_ShatteredGlass.png
+LZ_QA PASS screenshot saved: SliceQA_05b_InfectedHit.png
+LZ_QA PASS screenshot saved: SliceQA_06_Blackout.png
+LZ_QA PASS screenshot saved: SliceQA_06c_FlashlightOff.png
+LZ_QA PASS screenshot saved: SliceQA_06d_FlashlightOn.png
+LZ_QA PASS screenshot saved: SliceQA_06b_ServerRoomWide.png
+LZ_QA PASS screenshot saved: SliceQA_07_ServerRoomFuse.png
+LZ_QA PASS screenshot saved: SliceQA_07b_OptionalServerParts.png
+LZ_QA PASS screenshot saved: SliceQA_07c_InventoryLoot.png
+LZ_QA PASS screenshot saved: SliceQA_07d_InventoryFull.png
+LZ_QA PASS screenshot saved: SliceQA_08_MainBreaker.png
+LZ_QA PASS screenshot saved: SliceQA_09_PowerRestored.png
+LZ_QA PASS screenshot saved: SliceQA_09b_OfficeRestoredWide.png
+LZ_QA PASS screenshot saved: SliceQA_10_Exit.png
+LZ_QA PASS screenshot saved: SliceQA_11_ExtractionSuccess.png
+LZ_QA PASS screenshot saved: SliceQA_12_RestartedOpening.png
+LZ_QA SUMMARY PASS assertions=255 failures=0 elapsed=54.43s

@@ -1,0 +1,245 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 960" width="100%" height="100%" style="background:#0f141a; font-family:'Segoe UI', 'PingFang SC', sans-serif;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+    </marker>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="1" stroke-opacity="0.6"/>
+    </pattern>
+  </defs>
+
+  <!-- Background Grid -->
+  <rect width="1600" height="960" fill="url(#grid)" />
+
+  <!-- Title & Metadata Header -->
+  <text x="50" y="46" fill="#f8fafc" font-size="22" font-weight="bold" letter-spacing="1">封锁区：零号大厦 · 关卡空间规划与体验流线图 (Level Plan &amp; Flow)</text>
+  <text x="50" y="72" fill="#94a3b8" font-size="13">比例尺 1:500 (1网格 = 2.22m) · 空间尺寸: 76m × 42m · 坐标原点 (0,0) 对应开放办公区中心</text>
+
+  <!-- Level Exterior Boundaries (7600 x 4200 cm -> 1368 x 756 px) -->
+  <rect x="116" y="102" width="1368" height="756" fill="#131c26" stroke="#334155" stroke-width="4" rx="4"/>
+
+  <!-- Room Zone Fills -->
+  <!-- Wake Room (West: X -3800 to -2520, Y -750 to 750) -->
+  <rect x="116" y="345" width="230" height="270" fill="#1e293b" fill-opacity="0.6" stroke="#475569" stroke-dasharray="4,4" stroke-width="1.5"/>
+  <text x="136" y="375" fill="#cbd5e1" font-size="14" font-weight="bold">西侧苏醒室</text>
+  <text x="136" y="395" fill="#64748b" font-size="11">Wake-up Room (安全观察区)</text>
+
+  <!-- North Lounge (X -3800 to 1150, Y 900 to 2100) -->
+  <rect x="116" y="102" width="940" height="216" fill="#0f2e2e" fill-opacity="0.2" stroke="#0d9488" stroke-opacity="0.3" stroke-width="1"/>
+  <text x="136" y="132" fill="#2dd4bf" font-size="14" font-weight="bold">北侧接待与休憩区</text>
+  <text x="136" y="152" fill="#0d9488" font-size="11">North Lounge (可选支线 A)</text>
+
+  <!-- South Server Room (X 1150 to 3500, Y -900 to -2100) -->
+  <rect x="1007" y="642" width="423" height="216" fill="#1e1b4b" fill-opacity="0.4" stroke="#6366f1" stroke-opacity="0.4" stroke-width="1.5"/>
+  <text x="1025" y="672" fill="#a5b4fc" font-size="14" font-weight="bold">南侧机房 (Server Room)</text>
+  <text x="1025" y="692" fill="#818cf8" font-size="11">主线保险丝目标 + 深度探索区 (支线 B)</text>
+
+  <!-- North-East Electrical Room (X 2200 to 3800, Y 900 to 2100) -->
+  <rect x="1196" y="102" width="288" height="216" fill="#311313" fill-opacity="0.4" stroke="#ef4444" stroke-opacity="0.4" stroke-width="1.5"/>
+  <text x="1216" y="132" fill="#fca5a5" font-size="14" font-weight="bold">北侧配电间 (Electrical Room)</text>
+  <text x="1216" y="152" fill="#f87171" font-size="11">主线恢复供电交互区</text>
+
+  <!-- East Airlock & Exit (X 3500 to 3850+, Y -270 to 270) -->
+  <rect x="1430" y="431" width="90" height="98" fill="#14532d" fill-opacity="0.5" stroke="#22c55e" stroke-width="2"/>
+  <text x="1435" y="470" fill="#86efac" font-size="12" font-weight="bold">气闸撤离口</text>
+  <text x="1435" y="490" fill="#4ade80" font-size="10">Exit Airlock</text>
+
+  <!-- Central Open Office -->
+  <text x="540" y="450" fill="#94a3b8" font-size="18" font-weight="bold" letter-spacing="2" fill-opacity="0.5">开放办公与核心交战区</text>
+  <text x="550" y="475" fill="#64748b" font-size="12" fill-opacity="0.5">Central Office (10座工位 / 双向视野)</text>
+
+  <!-- Walls (Dark Slate Grey) -->
+  <rect x="116" y="341" width="234" height="8" fill="#64748b" />
+  <rect x="116" y="611" width="234" height="8" fill="#64748b" />
+  <rect x="343" y="345" width="8" height="40" fill="#64748b" />
+  <line x1="346" y1="385" x2="346" y2="531" stroke="#38bdf8" stroke-width="4" stroke-dasharray="3,3" filter="url(#glow)"/>
+  <text x="356" y="460" fill="#38bdf8" font-size="11" font-weight="bold">可破坏观察窗</text>
+  <rect x="343" y="531" width="8" height="35" fill="#64748b" />
+  <rect x="343" y="566" width="8" height="45" fill="#94a3b8" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="270" y="595" fill="#94a3b8" font-size="10">安全门(锁闭)</text>
+
+  <!-- Corridor Partition Walls -->
+  <rect x="440" y="314" width="414" height="8" fill="#475569" />
+  <rect x="1010" y="314" width="306" height="8" fill="#475569" />
+  <rect x="548" y="638" width="576" height="8" fill="#475569" />
+  <rect x="1226" y="638" width="162" height="8" fill="#475569" />
+  <rect x="1003" y="642" width="8" height="216" fill="#6366f1" />
+  <rect x="1192" y="102" width="8" height="216" fill="#ef4444" />
+
+  <!-- Desks In Open Office (10 desks) -->
+  <g fill="#334155" stroke="#475569" stroke-width="1">
+    <rect x="465" y="435" width="28" height="18" rx="2"/>
+    <rect x="551" y="435" width="28" height="18" rx="2"/>
+    <rect x="637" y="435" width="28" height="18" rx="2"/>
+    <rect x="723" y="435" width="28" height="18" rx="2"/>
+    <rect x="809" y="435" width="28" height="18" rx="2"/>
+    <rect x="465" y="525" width="28" height="18" rx="2"/>
+    <rect x="551" y="525" width="28" height="18" rx="2"/>
+    <rect x="637" y="525" width="28" height="18" rx="2"/>
+    <rect x="723" y="525" width="28" height="18" rx="2"/>
+    <rect x="809" y="525" width="28" height="18" rx="2"/>
+  </g>
+
+  <!-- Server Racks in South Room -->
+  <g fill="#1e1b4b" stroke="#818cf8" stroke-width="1.5">
+    <rect x="1060" y="775" width="36" height="20" rx="2"/>
+    <rect x="1120" y="775" width="36" height="20" rx="2"/>
+    <rect x="1180" y="775" width="36" height="20" rx="2"/>
+    <rect x="1240" y="775" width="36" height="20" rx="2"/>
+    <text x="1080" y="815" fill="#a5b4fc" font-size="10">服务器机柜组 (100×80×220cm)</text>
+  </g>
+
+  <!-- Conference Table -->
+  <rect x="1225" y="440" width="85" height="45" rx="4" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+  <text x="1235" y="467" fill="#94a3b8" font-size="10">会议桌组</text>
+
+  <!-- GAMEPLAY ELEMENTS & MARKERS -->
+
+  <!-- 1. Player Spawn Point (-3300, 0) -> svg (206, 480) -->
+  <circle cx="206" cy="480" r="10" fill="#38bdf8" stroke="#fff" stroke-width="2" filter="url(#glow)"/>
+  <polygon points="206,472 220,480 206,488" fill="#fff"/>
+  <text x="175" y="508" fill="#38bdf8" font-size="12" font-weight="bold">玩家苏醒点</text>
+  <text x="165" y="523" fill="#94a3b8" font-size="10">Spawn (-33m, 0)</text>
+
+  <!-- Initial Sightline Cone -->
+  <polygon points="206,480 346,420 346,540" fill="#38bdf8" fill-opacity="0.1" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2,4"/>
+
+  <!-- Weapons In Wake Room -->
+  <circle cx="242" cy="392" r="7" fill="#f59e0b" stroke="#fff" stroke-width="1.5" filter="url(#glow)"/>
+  <text x="255" y="396" fill="#f59e0b" font-size="11" font-weight="bold">格洛克17 + 手电筒 (桌置)</text>
+  <circle cx="206" cy="552" r="7" fill="#ea580c" stroke="#fff" stroke-width="1.5"/>
+  <text x="219" y="556" fill="#fb923c" font-size="11" font-weight="bold">消防斧 (应急箱)</text>
+
+  <!-- Enemies -->
+  <g fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5">
+    <polygon points="431,427 439,435 431,443 423,435" filter="url(#glow)"/>
+    <text x="415" y="420" fill="#f87171" font-size="10">感染者 #1</text>
+    <polygon points="458,517 466,525 458,533 450,525" filter="url(#glow)"/>
+    <text x="445" y="548" fill="#f87171" font-size="10">感染者 #2</text>
+    <polygon points="638,418 646,426 638,434 630,426" />
+    <polygon points="755,535 763,543 755,551 747,543" />
+    <polygon points="926,427 934,435 926,443 918,435" />
+    <text x="890" y="420" fill="#f87171" font-size="10">第4杀触发断电</text>
+    <polygon points="1097,418 1105,426 1097,434 1089,426" />
+    <polygon points="1286,535 1294,543 1286,551 1278,543" />
+  </g>
+
+  <!-- Ammo Pickups -->
+  <g fill="#fbbf24" stroke="#b45309" stroke-width="1">
+    <rect x="389" y="568" width="12" height="12" rx="1"/>
+    <text x="370" y="595" fill="#fbbf24" font-size="10">9mm弹药(12发)</text>
+    <rect x="677" y="362" width="12" height="12" rx="1"/>
+    <rect x="1055" y="686" width="12" height="12" rx="1"/>
+  </g>
+
+  <!-- Valuables & Medical -->
+  <circle cx="314" cy="242" r="7" fill="#10b981" stroke="#fff" stroke-width="1.5"/>
+  <text x="328" y="246" fill="#34d399" font-size="10">医疗包 (+35HP)</text>
+  <circle cx="1313" cy="183" r="7" fill="#10b981" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="953" cy="174" r="6" fill="#06b6d4" stroke="#fff" stroke-width="1"/>
+  <text x="965" y="178" fill="#22d3ee" font-size="10">电子零件 ($120/1格)</text>
+  <rect x="880" y="148" width="16" height="14" rx="2" fill="#ec4899" stroke="#fff" stroke-width="1.5" filter="url(#glow)"/>
+  <text x="815" y="142" fill="#f472b6" font-size="10" font-weight="bold">服务器备件 ($500/占2格)</text>
+  <rect x="1305" y="787" width="16" height="14" rx="2" fill="#ec4899" stroke="#fff" stroke-width="1.5" filter="url(#glow)"/>
+  <text x="1245" y="818" fill="#f472b6" font-size="10" font-weight="bold">服务器备件 ($500/占2格)</text>
+
+  <!-- Interactive Story Props -->
+  <circle cx="1133" cy="714" r="9" fill="#f59e0b" stroke="#fff" stroke-width="2" filter="url(#glow)"/>
+  <text x="1148" y="718" fill="#fde047" font-size="12" font-weight="bold">主线目标：任务保险丝 (Fuse)</text>
+
+  <circle cx="1205" cy="208" r="9" fill="#ef4444" stroke="#fff" stroke-width="2" filter="url(#glow)"/>
+  <text x="1220" y="212" fill="#fca5a5" font-size="12" font-weight="bold">主线目标：总配电闸 (Breaker)</text>
+
+  <circle cx="1457" cy="480" r="11" fill="#22c55e" stroke="#fff" stroke-width="2" filter="url(#glow)"/>
+  <text x="1375" y="515" fill="#4ade80" font-size="12" font-weight="bold">最终撤离门 (Exit)</text>
+
+  <!-- PATHWAYS & FLOW ARROWS -->
+  <!-- Flow 1: Primary Assault Route (Solid Cyan) -->
+  <path d="M 206 480 L 242 392 L 346 450 L 520 480 L 700 480 L 920 450"
+        fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+        marker-mid="url(#arrow-blue)" marker-end="url(#arrow-blue)"/>
+
+  <!-- Flow 2: Blackout & Mission Flow (Amber Dashed) -->
+  <path d="M 920 450 Q 980 550 1060 670 L 1133 714 Q 1080 500 1150 350 L 1205 208 Q 1350 320 1457 480"
+        fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="8,6" stroke-linecap="round" stroke-linejoin="round"
+        marker-mid="url(#arrow-amber)" marker-end="url(#arrow-amber)"/>
+
+  <!-- Flow 3: Optional Search Routes (Dotted Green) -->
+  <path d="M 520 480 Q 420 300 314 242 Q 600 180 890 156 Q 950 300 920 450"
+        fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="4,4" stroke-linecap="round" stroke-linejoin="round"
+        marker-mid="url(#arrow-green)"/>
+  <path d="M 1133 714 L 1313 795"
+        fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="4,4" stroke-linecap="round" stroke-linejoin="round"
+        marker-end="url(#arrow-green)"/>
+
+  <!-- DECISION POINTS (DP1, DP2, DP3) -->
+  <g filter="url(#glow)">
+    <circle cx="370" cy="460" r="14" fill="#8b5cf6" fill-opacity="0.8" stroke="#fff" stroke-width="2"/>
+    <text x="364" y="465" fill="#fff" font-size="11" font-weight="bold">1</text>
+  </g>
+  <rect x="388" y="428" width="130" height="34" rx="4" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="1"/>
+  <text x="394" y="444" fill="#c4b5fd" font-size="10" font-weight="bold">决策点 1 (开场突破)</text>
+  <text x="394" y="457" fill="#a78bfa" font-size="9">正面对枪 vs 绕门近战</text>
+
+  <g filter="url(#glow)">
+    <circle cx="680" cy="480" r="14" fill="#8b5cf6" fill-opacity="0.8" stroke="#fff" stroke-width="2"/>
+    <text x="674" y="485" fill="#fff" font-size="11" font-weight="bold">2</text>
+  </g>
+  <rect x="698" y="475" width="138" height="34" rx="4" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="1"/>
+  <text x="704" y="491" fill="#c4b5fd" font-size="10" font-weight="bold">决策点 2 (支线抉择)</text>
+  <text x="704" y="504" fill="#a78bfa" font-size="9">北侧深搜补给 vs 直切主路</text>
+
+  <g filter="url(#glow)">
+    <circle cx="1150" cy="740" r="14" fill="#8b5cf6" fill-opacity="0.8" stroke="#fff" stroke-width="2"/>
+    <text x="1144" y="745" fill="#fff" font-size="11" font-weight="bold">3</text>
+  </g>
+  <rect x="1168" y="735" width="145" height="34" rx="4" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="1"/>
+  <text x="1174" y="751" fill="#c4b5fd" font-size="10" font-weight="bold">决策点 3 (风险与背包)</text>
+  <text x="1174" y="764" fill="#a78bfa" font-size="9">拿保险丝即走 vs 贪大件备件</text>
+
+  <!-- LEGEND & ANNOTATION CARD (Bottom Left) -->
+  <rect x="50" y="690" width="320" height="225" rx="6" fill="#0f172a" fill-opacity="0.9" stroke="#334155" stroke-width="1.5"/>
+  <text x="65" y="715" fill="#f8fafc" font-size="13" font-weight="bold">图例与交互标识 (Legend)</text>
+
+  <line x1="65" y1="735" x2="105" y2="735" stroke="#38bdf8" stroke-width="3" marker-end="url(#arrow-blue)"/>
+  <text x="115" y="739" fill="#94a3b8" font-size="11">主线交战推进流线 (Primary Combat)</text>
+
+  <line x1="65" y1="760" x2="105" y2="760" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#arrow-amber)"/>
+  <text x="115" y="764" fill="#94a3b8" font-size="11">断电寻物与供电返程 (Blackout Mission)</text>
+
+  <line x1="65" y1="785" x2="105" y2="785" stroke="#10b981" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow-green)"/>
+  <text x="115" y="789" fill="#94a3b8" font-size="11">可选高价值搜索支线 (Optional Detour)</text>
+
+  <circle cx="75" cy="812" r="6" fill="#38bdf8" stroke="#fff" stroke-width="1.5"/>
+  <text x="95" y="816" fill="#94a3b8" font-size="11">玩家出生点 / 关键装备 (枪/电/斧)</text>
+
+  <polygon points="75,830 81,836 75,842 69,836" fill="#ef4444" stroke="#7f1d1d" stroke-width="1"/>
+  <text x="95" y="840" fill="#94a3b8" font-size="11">感染者威胁点 (第4杀触发断电)</text>
+
+  <rect x="69" y="855" width="12" height="12" rx="1" fill="#fbbf24"/>
+  <text x="95" y="865" fill="#94a3b8" font-size="11">9毫米弹药箱 / 医疗包</text>
+
+  <rect x="69" y="878" width="12" height="12" rx="1" fill="#ec4899"/>
+  <text x="95" y="888" fill="#94a3b8" font-size="11">高价值战利品 (服务器备件 500/占2格)</text>
+
+  <!-- Compass Rose -->
+  <g transform="translate(1520, 80)">
+    <circle cx="0" cy="0" r="22" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+    <polygon points="0,-18 5,-2 0,2 -5,-2" fill="#ef4444"/>
+    <polygon points="0,18 5,2 0,-2 -5,2" fill="#64748b"/>
+    <text x="-4" y="-22" fill="#ef4444" font-size="10" font-weight="bold">N</text>
+    <text x="-3" y="28" fill="#64748b" font-size="9">S</text>
+    <text x="24" y="3" fill="#64748b" font-size="9">E</text>
+    <text x="-30" y="3" fill="#64748b" font-size="9">W</text>
+  </g>
+</svg>

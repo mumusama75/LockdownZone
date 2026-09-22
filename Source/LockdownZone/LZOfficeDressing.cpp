@@ -304,11 +304,38 @@ void ALZGameMode::DressOffice()
             TextComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         }
     };
+
+    // Wake room emergency equipment backer board behind the axe
+    Box(TEXT("EmergencyAxeMount"), FVector(-3300, -746, 140), FVector(180, 2, 85),
+        Amber, TEXT("M_ZT_SafetyYellow"));
+    Sign(TEXT("EmergencyAxeSign"), TEXT("EMERGENCY AXE / 应急消防斧"), FVector(-3300, -743, 165),
+        90, 240, FColor(255, 220, 80), 16);
+
     Sign(TEXT("QuarantineWallSign"), TEXT("01 / QUARANTINE"), FVector(-3220, 705, 252), -90, 365, FColor(221, 210, 153), 27);
     Sign(TEXT("OperationsWallSign"), TEXT("02 / OPERATIONS"), FVector(-1190, 855, 272), -90, 360, FColor(143, 200, 224), 27);
     Sign(TEXT("ServerWallSign"), TEXT("03 / SERVER"), FVector(1195, -1510, 265), 0, 310, FColor(238, 181, 91), 29);
     Sign(TEXT("PowerWallSign"), TEXT("04 / POWER"), FVector(2245, 1510, 265), 0, 300, FColor(238, 181, 91), 29);
     Sign(TEXT("ExitWallSign"), TEXT("EXIT  >"), FVector(3745, 560, 270), 180, 270, FColor(121, 241, 169), 32);
+
+    // Cross-corridor directional signs giving confirmation at key decision points
+    Sign(TEXT("CrosswayServerSign"), TEXT("03 SERVER [->]"), FVector(650, -895, 230), -90, 220, FColor(238, 181, 91), 18);
+    Sign(TEXT("CrosswayPowerSign"), TEXT("04 POWER [->]"), FVector(650, 895, 230), 90, 220, FColor(245, 130, 80), 18);
+    Sign(TEXT("ExitOverheadSign"), TEXT("< EXIT AIRLOCK / 气闸撤离口 >"), FVector(3490, 0, 325), 180, 380, FColor(121, 241, 169), 22);
+
+    // Server Room overhead landmark silhouette and hazard trim
+    Box(TEXT("ServerEntryHeader"), FVector(1780, -960, 320), FVector(480, 25, 20),
+        Charcoal, TEXT("M_ZT_DarkMetal"));
+    for (int32 Louvre = 0; Louvre < 6; ++Louvre)
+    {
+        Box(TEXT("ServerEntryLouvre"), FVector(1580 + Louvre * 80, -960, 315), FVector(4, 30, 15),
+            Charcoal, TEXT("M_ZT_DarkMetal"));
+    }
+
+    // Electrical Room doorway hazard frame
+    Box(TEXT("PowerDoorFrameL"), FVector(2200, 905, 160), FVector(10, 8, 320),
+        Amber, TEXT("M_ZT_SafetyYellow"));
+    Box(TEXT("PowerDoorHeader"), FVector(2200, 1050, 320), FVector(10, 290, 12),
+        Amber, TEXT("M_ZT_SafetyYellow"));
 
     // Battery-backed navigation survives the scripted mains blackout.
     auto Beacon = [this, &Box](const FVector& Position, const FLinearColor& Color, bool bAmber, float Yaw)
@@ -336,6 +363,8 @@ void ALZGameMode::DressOffice()
     Beacon(FVector(-2790, -705, 48), Green, false, 90);
     Beacon(FVector(-1110, -855, 48), Green, false, 90);
     Beacon(FVector(1195, -1180, 48), Amber, true, 0);
+    Beacon(FVector(1780, -960, 290), Amber, true, 90);
+    Beacon(FVector(2200, 915, 295), FLinearColor(1.0f, 0.12f, 0.08f), false, 180);
     Beacon(FVector(2245, 1220, 48), Amber, true, 0);
     Beacon(FVector(3745, 520, 225), Green, false, 180);
     for (int32 Mark = 0; Mark < 5; ++Mark)

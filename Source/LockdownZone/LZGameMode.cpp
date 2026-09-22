@@ -318,6 +318,20 @@ void ALZGameMode::BuildOfficeLevel()
         FVector(-3300,-400,0), FRotator::ZeroRotator, FVector(.20f));
     SpawnArtMesh(TEXT("WeaponDeskNorth"),TEXT("/Game/Art/KenneyFurniture/SM_desk.SM_desk"),
         FVector(-3100,490,0), FRotator::ZeroRotator, FVector(.20f));
+    SpawnArtMesh(TEXT("DeskLaptop"), TEXT("/Game/Art/KenneyFurniture/SM_laptop.SM_laptop"),
+        FVector(-3050.0f, 490.0f, 78.0f), FRotator(0.0f, -20.0f, 0.0f), FVector(0.14f), false);
+    if (APointLight* DeskLamp = GetWorld()->SpawnActor<APointLight>(FVector(-3100.0f, 490.0f, 155.0f), FRotator::ZeroRotator))
+    {
+        if (UPointLightComponent* Point = Cast<UPointLightComponent>(DeskLamp->GetLightComponent()))
+        {
+            Point->SetIntensity(240.0f);
+            Point->SetAttenuationRadius(320.0f);
+            Point->SetLightColor(FLinearColor(1.0f, 0.88f, 0.72f));
+            Point->SetSourceRadius(15.0f);
+            Point->SetCastShadows(false);
+        }
+        FacilityLights.Add(DeskLamp);
+    }
     if (ALZWeaponPickup* MeleePickup = GetWorld()->SpawnActor<ALZWeaponPickup>(FVector(-3300.0f, -400.0f, 89.0f), FRotator::ZeroRotator))
     {
         MeleePickup->Configure(EPlayerWeapon::Melee);
@@ -329,6 +343,12 @@ void ALZGameMode::BuildOfficeLevel()
     // Optional equipment beside the pistol. The pickup origin is its bottom, at desk height.
     GetWorld()->SpawnActor<ALZFlashlightPickup>(FVector(-3150.0f, 490.0f, 77.0f), FRotator(0.0f, 20.0f, 0.0f));
 
+    // Low tactical cover in corridor outside the observation window (non-blocking for AI/nav, waist-high cover)
+    SpawnArtMesh(TEXT("CorridorCoffeeTable"), TEXT("/Game/Art/KenneyFurniture/SM_tableCoffee.SM_tableCoffee"),
+        FVector(-2250.0f, 20.0f, 0.0f), FRotator::ZeroRotator, FVector(0.18f), true);
+    SpawnArtMesh(TEXT("CorridorPlant"), TEXT("/Game/Art/KenneyFurniture/SM_plantSmall1.SM_plantSmall1"),
+        FVector(-2250.0f, 20.0f, 45.0f), FRotator::ZeroRotator, FVector(0.16f), false);
+
     // Ammunition is deliberately outside the starting room: the player must conserve the first three rounds.
     SpawnLoot(FVector(-2250.0f, -520.0f, 35.0f), static_cast<uint8>(ELootType::Ammo));
     SpawnLoot(FVector(-650.0f, 620.0f, 35.0f), static_cast<uint8>(ELootType::Ammo));
@@ -337,8 +357,13 @@ void ALZGameMode::BuildOfficeLevel()
     SpawnLoot(FVector(-2700, 1320, 60), static_cast<uint8>(ELootType::Medical));
     SpawnLoot(FVector(2850, 1650, 35), static_cast<uint8>(ELootType::Medical));
     SpawnLoot(FVector(850, 1700, 35), static_cast<uint8>(ELootType::Scrap));
-    SpawnLoot(FVector(2850,-1750,35), static_cast<uint8>(ELootType::Rare));
-    SpawnLoot(FVector(500,1800,35), static_cast<uint8>(ELootType::Rare));
+    // Rare server parts are elevated on authored consoles/desks with visual sightlines from the main corridors
+    SpawnArtMesh(TEXT("SouthRareCart"), TEXT("/Game/Art/KenneyFurniture/SM_desk.SM_desk"),
+        FVector(2850.0f, -1750.0f, 0.0f), FRotator::ZeroRotator, FVector(0.16f, 0.16f, 0.18f), false);
+    SpawnLoot(FVector(2850, -1750, 75), static_cast<uint8>(ELootType::Rare));
+    SpawnArtMesh(TEXT("NorthRareDesk"), TEXT("/Game/Art/KenneyFurniture/SM_deskCorner.SM_deskCorner"),
+        FVector(500.0f, 1800.0f, 0.0f), FRotator(0.0f, 180.0f, 0.0f), FVector(0.22f), false);
+    SpawnLoot(FVector(500, 1800, 78), static_cast<uint8>(ELootType::Rare));
 
     // Colleagues visible through the glass before the player can leave the room.
     SpawnEnemy(FVector(-2050.0f, 250.0f, 100.0f), false);
@@ -700,7 +725,7 @@ void ALZGameMode::NotifyWeaponCollected(EPlayerWeapon Weapon)
     }
     if (Character->HasMeleeWeapon() && Character->HasFirearm())
     {
-        StatusText = TEXT("武器已备齐：按1切换消防斧，按2切换手枪。房门已解锁。");
+        StatusText = TEXT("武器已备齐：按1切换消防斧，按2切换手枪。房门已解锁，击碎观察窗迎敌。");
         if (StartRoomDoor)
         {
             StartRoomDoor->Destroy();
@@ -710,8 +735,8 @@ void ALZGameMode::NotifyWeaponCollected(EPlayerWeapon Weapon)
     else
     {
         StatusText = Weapon == EPlayerWeapon::Melee
-            ? TEXT("获得消防斧：检视完成后寻找远程武器。")
-            : TEXT("获得手枪：检视完成后寻找近战武器。");
+            ? TEXT("获得消防斧：检视完成后寻找格洛克手枪与手电。")
+            : TEXT("获得格洛克17（初始弹匣3发/备用0发）：节约弹药，寻找防身斧头与手电。");
     }
 }
 
@@ -738,8 +763,15 @@ void ALZGameMode::TriggerOfficeBlackout()
         {
             if (UPointLightComponent* Point = Cast<UPointLightComponent>(Light->GetLightComponent()))
             {
-                Point->SetIntensity(65.0f);
-                Point->SetLightColor(FLinearColor(1.0f, 0.04f, 0.02f));
+                if (Light->GetActorLocation().X < -2500.0f && Light->GetActorLocation().Y > 200.0f)
+                {
+                    Point->SetIntensity(0.0f);
+                }
+                else
+                {
+                    Point->SetIntensity(65.0f);
+                    Point->SetLightColor(FLinearColor(1.0f, 0.04f, 0.02f));
+                }
             }
         }
     }

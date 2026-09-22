@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675" style="background:#0f172a; font-family:'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f19" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <marker id="arrowCyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#06b6d4" />
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="675" fill="url(#bgGrad2)" />
+  <rect x="20" y="20" width="1160" height="635" rx="8" fill="none" stroke="#334155" stroke-width="2" />
+
+  <!-- Header Banner -->
+  <rect x="20" y="20" width="1160" height="60" rx="8" fill="#1e293b" />
+  <text x="50" y="58" fill="#38bdf8" font-size="20" font-weight="bold">【设计标注图 02】首次交战位：物理破窗、战术掩体与首箱补给 (First Encounter & Cover)</text>
+  <text x="980" y="58" fill="#94a3b8" font-size="14">对应实机: SliceQA_05_ShatteredGlass</text>
+
+  <!-- Left: Inside Room Viewpoint -->
+  <rect x="50" y="110" width="280" height="380" rx="6" fill="#1e293b" stroke="#475569" stroke-width="2" />
+  <text x="190" y="145" text-anchor="middle" fill="#94a3b8" font-size="16" font-weight="bold">苏醒观察室内 (Indoor)</text>
+  <circle cx="190" cy="220" r="24" fill="#0284c7" stroke="#38bdf8" stroke-width="3" />
+  <text x="190" y="226" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="bold">玩家</text>
+  <text x="190" y="265" text-anchor="middle" fill="#cbd5e1" font-size="12">持 Glock-17 (3/0) 或 消防斧</text>
+  
+  <rect x="70" y="300" width="240" height="170" rx="4" fill="#0f172a" stroke="#334155" stroke-width="1" />
+  <text x="90" y="325" fill="#fde047" font-size="13" font-weight="bold">交战决策输入：</text>
+  <text x="90" y="350" fill="#cbd5e1" font-size="12">• 玻璃受枪击或斧劈即碎</text>
+  <text x="90" y="375" fill="#cbd5e1" font-size="12">• 3 发手枪子弹需尽量爆头</text>
+  <text x="90" y="400" fill="#cbd5e1" font-size="12">• 枪声打破感染者静止</text>
+  <text x="90" y="425" fill="#cbd5e1" font-size="12">• 破窗后通道正式连通</text>
+  <text x="90" y="450" fill="#38bdf8" font-size="12">• 需利用外部半高掩体卡身位</text>
+
+  <!-- Middle: Shattered Glass & Tactical Cover -->
+  <line x1="330" y1="100" x2="330" y2="490" stroke="#0ea5e9" stroke-width="3" stroke-dasharray="8,6" />
+  <text x="340" y="130" fill="#0ea5e9" font-size="13" font-weight="bold">破损玻璃分界面 (-2520)</text>
+
+  <!-- Cover Coffee Table -->
+  <g transform="translate(420, 200)">
+    <rect x="0" y="0" width="130" height="80" rx="4" fill="#334155" stroke="#f59e0b" stroke-width="2" />
+    <text x="65" y="35" text-anchor="middle" fill="#fde047" font-size="14" font-weight="bold">战术矮茶几</text>
+    <text x="65" y="55" text-anchor="middle" fill="#94a3b8" font-size="11">高度 45cm / 阻挡冲刺</text>
+    <circle cx="150" cy="40" r="18" fill="#15803d" stroke="#4ade80" stroke-width="2" />
+    <text x="150" y="45" text-anchor="middle" fill="#ffffff" font-size="11">盆栽</text>
+    <rect x="-10" y="90" width="180" height="40" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="1" />
+    <text x="80" y="115" text-anchor="middle" fill="#fef08a" font-size="12">新增腰高掩体 (-2250, 20)</text>
+  </g>
+
+  <!-- Zombie Threat Trajectory -->
+  <g transform="translate(680, 160)">
+    <circle cx="50" cy="50" r="26" fill="#ef4444" fill-opacity="0.25" stroke="#ef4444" stroke-width="2.5" />
+    <text x="50" y="56" text-anchor="middle" fill="#ef4444" font-size="14" font-weight="bold">感染者 #1</text>
+    <path d="M 30 75 Q -50 120 -150 160" fill="none" stroke="#ef4444" stroke-width="2.5" marker-end="url(#arrowRed)" />
+    <text x="-40" y="110" fill="#f87171" font-size="12">近战冲刺路径 (被茶几阻隔卡角)</text>
+  </g>
+
+  <!-- Right: Reward (First 9mm Ammo Box) -->
+  <g transform="translate(900, 200)">
+    <rect x="0" y="0" width="220" height="150" rx="6" fill="#1e293b" stroke="#22c55e" stroke-width="2" />
+    <rect x="30" y="30" width="60" height="40" rx="4" fill="#854d0e" stroke="#facc15" stroke-width="2" />
+    <text x="60" y="55" text-anchor="middle" fill="#fef08a" font-size="13" font-weight="bold">9mm</text>
+    <text x="110" y="55" fill="#4ade80" font-size="15" font-weight="bold">首箱备用弹药</text>
+    <text x="30" y="100" fill="#cbd5e1" font-size="13">• 拾取获得 +12 发备弹</text>
+    <text x="30" y="125" fill="#cbd5e1" font-size="13">• 坐标: (-1200, 300, 15)</text>
+    <path d="M -150 100 Q -50 80 20 60" fill="none" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrowGreen)" />
+  </g>
+
+  <!-- Trajectory to Ammo -->
+  <text x="730" y="275" fill="#86efac" font-size="12">肃清后第一视觉奖励线</text>
+
+  <!-- Bottom Evaluation Summary -->
+  <rect x="50" y="520" width="1100" height="120" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.5" />
+  <text x="70" y="550" fill="#38bdf8" font-size="15" font-weight="bold">交战与空间引导收益 (Design Gains & Validation):</text>
+  <text x="70" y="575" fill="#cbd5e1" font-size="13">1. <tspan fill="#fde047">掩体几何切角</tspan>：新增矮茶几与盆栽破坏了直来直去的走廊空旷感，给只有 3 发手枪弹药的玩家提供了周旋拉扯的几何依托，防止空旷被秒。</text>
+  <text x="70" y="598" fill="#cbd5e1" font-size="13">2. <tspan fill="#4ade80">正反馈闭环</tspan>：破窗击杀两只感染者后，走廊地面的金色 9mm 弹药箱作为第一波奖励立即印入眼帘，背包子弹充实到 12/30 发，解除极度缺弹危机。</text>
+  <text x="70" y="621" fill="#cbd5e1" font-size="13">3. <tspan fill="#94a3b8">回归数据支撑</tspan>：QA 自动化验证覆盖破窗物理、开火后坐力、敌人死亡状态与首箱弹药拾取，断言 28~63 全部 100% 通过无逻辑卡壳。</text>
+</svg>

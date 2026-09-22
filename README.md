@@ -28,6 +28,14 @@ UE 5.8 单人第一人称搜打撤关卡作品集项目。场景是一层封锁�
 
 中文 HUD 展示当前目标、交互提示、生命与弹药等状态。场景通过 C++ 在运行时生成，启动地图使用引擎 Entry；无需手工新建关卡。空间设计、视觉引导和待验证问题见 [DESIGN.md](DESIGN.md)。
 
+### 策划作品集入口 (Portfolio Deliverables)
+- **在线展示网页**：[Docs/Portfolio/index.html](Docs/Portfolio/index.html)（无外部依赖、支持打印排版的离线中文展示页）
+- **完整作品集文档**：[Docs/Portfolio/Portfolio.md](Docs/Portfolio/Portfolio.md) 与 [Docs/Portfolio/Portfolio.pdf](Docs/Portfolio/Portfolio.pdf)
+- **1:500 矢量关卡平面图**：[Docs/Portfolio/LevelPlan.svg](Docs/Portfolio/LevelPlan.svg)（精确到厘米坐标映射）
+- **探索路线与取舍推演**：[Docs/Portfolio/RouteChoices.md](Docs/Portfolio/RouteChoices.md)
+- **测试验证与真人盲测表**：[Docs/Portfolio/Playtest.md](Docs/Portfolio/Playtest.md)
+- **简历条目与 90 秒讲解稿**：[Docs/Portfolio/ResumeBullets.md](Docs/Portfolio/ResumeBullets.md)
+
 手枪开火带有镜头抬升、轻微横向偏移和枪身回弹，停止射击后平滑恢复，右键瞄准时后坐力较轻。开场手枪桌上另有可拾取手电筒，按 E 获取后自动开启、按 F 开关；光束随视角照射并受实体遮挡。手电可与斧或枪一起使用，不占背包格，本阶段不消耗电池。
 
 ## 本阶段已整合内容

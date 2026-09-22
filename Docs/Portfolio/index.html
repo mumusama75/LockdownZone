@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>《封锁区：零号大厦》关卡与系统策划作品集 (LockdownZone Portfolio)</title>
+  <style>
+    /* CSS Reset & System Font Stacks - 100% Zero External CDN */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-main: #0b0f19;
+      --bg-card: #111827;
+      --bg-card-hover: #1f2937;
+      --bg-card-sub: #1e293b;
+      --border-color: #334155;
+      --border-accent: #0284c7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --accent-blue: #38bdf8;
+      --accent-amber: #f59e0b;
+      --accent-green: #22c55e;
+      --accent-red: #ef4444;
+      --accent-purple: #c084fc;
+      --sidebar-width: 280px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.65;
+      font-size: 15px;
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar Navigation */
+    aside.sidebar {
+      width: var(--sidebar-width);
+      background-color: #080c14;
+      border-right: 1px solid var(--border-color);
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      padding: 24px 16px;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 4px;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: var(--accent-blue);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 16px 0 8px 8px;
+    }
+
+    .sidebar nav a {
+      display: block;
+      padding: 8px 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      margin-bottom: 2px;
+    }
+
+    .sidebar nav a:hover, .sidebar nav a.active {
+      color: #ffffff;
+      background-color: var(--bg-card-sub);
+      border-left: 3px solid var(--accent-blue);
+    }
+
+    .sidebar-footer {
+      margin-top: 30px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* Main Container */
+    main.content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 40px 48px;
+      max-width: 1280px;
+    }
+
+    /* Header / Hero */
+    header.hero {
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 40px;
+    }
+
+    .hero-badge-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 9999px;
+      text-transform: uppercase;
+    }
+
+    .badge-blue { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-green { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); border: 1px solid rgba(34, 197, 94, 0.3); }
+    .badge-purple { background: rgba(192, 132, 252, 0.15); color: var(--accent-purple); border: 1px solid rgba(192, 132, 252, 0.3); }
+
+    .hero-title {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 12px;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 960px;
+    }
+
+    /* Section Styles */
+    section {
+      margin-bottom: 56px;
+    }
+
+    .section-header {
+      margin-bottom: 24px;
+    }
+
+    .section-tag {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+    }
+
+    /* Cards & Containers */
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      margin: 16px 0;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--bg-card-sub);
+      color: var(--accent-blue);
+      padding: 12px 14px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #1e293b;
+      color: var(--text-muted);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
+      color: var(--text-main);
+    }
+
+    /* Media & SVG Viewers */
+    .media-box {
+      background-color: #030712;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+
+    .media-box img, .media-box svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .media-caption {
+      padding: 10px 16px;
+      font-size: 12px;
+      color: var(--text-dim);
+      background-color: var(--bg-card);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .media-caption strong {
+      color: var(--text-muted);
+    }
+
+    /* Key Callout Boxes */
+    .callout {
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin: 16px 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .callout-blue { background: rgba(56, 189, 248, 0.08); border-left: 4px solid var(--accent-blue); color: #bae6fd; }
+    .callout-amber { background: rgba(245, 158, 11, 0.08); border-left: 4px solid var(--accent-amber); color: #fef3c7; }
+    .callout-green { background: rgba(34, 197, 94, 0.08); border-left: 4px solid var(--accent-green); color: #dcfce7; }
+    .callout-red { background: rgba(239, 68, 68, 0.08); border-left: 4px solid var(--accent-red); color: #fee2e2; }
+
+    /* Iteration Cards */
+    .iteration-card {
+      border-left: 4px solid var(--border-accent);
+      background: var(--bg-card);
+      border-radius: 0 8px 8px 0;
+      padding: 20px;
+      margin-bottom: 24px;
+      border-top: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .iteration-flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .flow-step {
+      background: var(--bg-card-sub);
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .flow-step-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .flow-step.step-problem .flow-step-label { color: var(--accent-red); }
+    .flow-step.step-hypo .flow-step-label { color: var(--accent-amber); }
+    .flow-step.step-fix .flow-step-label { color: var(--accent-blue); }
+    .flow-step.step-verify .flow-step-label { color: var(--accent-green); }
+
+    /* Screenshot Comparison Grid */
+    .compare-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+    }
+
+    .compare-item {
+      background: #030712;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .compare-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .compare-label {
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Print Viewport Optimizations */
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        font-size: 11pt;
+      }
+      aside.sidebar {
+        display: none !important;
+      }
+      main.content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+      .card, .iteration-card, .callout {
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+      th {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+      }
+      td {
+        color: #334155 !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+      }
+      .hero-title, .section-title, .card-title {
+        color: #0f172a !important;
+      }
+      .section-header {
+        page-break-after: avoid;
+      }
+      section {
+        page-break-before: always;
+      }
+      section:first-of-type {
+        page-break-before: avoid;
+      }
+      .media-box, .compare-item {
+        border: 1px solid #cbd5e1 !important;
+        page-break-inside: avoid;
+      }
+      .media-caption {
+        background-color: #f8fafc !important;
+        color: #475569 !important;
+      }
+    }
+
+    /* Responsive for Small Displays */
+    @media (max-width: 1024px) {
+      aside.sidebar {
+        display: none;
+      }
+      main.content {
+        margin-left: 0;
+        padding: 24px 20px;
+      }
+      .grid-2, .grid-3, .iteration-flow, .compare-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Left Sticky Navigation Sidebar -->
+  <aside class="sidebar">
+    <div class="brand-title">封锁区：零号大厦</div>
+    <div class="brand-sub">策划与系统作品集</div>
+
+    <nav>
+      <div class="nav-group-title">概览与规划</div>
+      <a href="#hero">项目定位与职责</a>
+      <a href="#beat-chart">心流与体验节拍</a>
+      <a href="#level-plan">1:500 关卡平面图</a>
+
+      <div class="nav-group-title">核心设计系统</div>
+      <a href="#opening-tutorial">开场教学：安全观察与残弹</a>
+      <a href="#inventory-tradeoffs">搜索取舍：微背包与冲突</a>
+      <a href="#blackout-navigation">断电逆转：形体地标与复用</a>
+
+      <div class="nav-group-title">设计证据与验证</div>
+      <a href="#design-iterations">三项设计迭代对比</a>
+      <a href="#verification-system">255项自动化回归与局限</a>
+      <a href="#playtest-protocol">下一阶段真人盲测表</a>
+
+      <div class="nav-group-title">求职交付物</div>
+      <a href="#resume-pitch">简历条目与90秒讲解</a>
+      <a href="#credits-boundaries">诚信披露与边界说明</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div>版本: 2026.09 Vertical Slice</div>
+      <div>引擎: Unreal Engine 5.8</div>
+      <div>回归断言: 255/255 PASS (54.43s)</div>
+    </div>
+  </aside>
+
+  <!-- Main Content Body -->
+  <main class="content">
+
+    <!-- Hero Header -->
+    <header class="hero" id="hero">
+      <div class="hero-badge-group">
+        <span class="badge badge-blue">UE 5.8 垂直切片</span>
+        <span class="badge badge-amber">1:500 真实坐标空间</span>
+        <span class="badge badge-green">255/255 自动化回归全绿</span>
+        <span class="badge badge-purple">单人搜打撤 FPS</span>
+      </div>
+      <h1 class="hero-title">《封锁区：零号大厦》关卡策划与系统设计案</h1>
+      <p class="hero-desc">
+        本作品集展示基于 Unreal Engine 5.8 研发的单人搜打撤 FPS 关卡原型（76m×42m 现代办公大楼）。
+        聚焦解决<strong>“无弹窗沉浸教学”</strong>、<strong>“有限背包驱动的高价值物资取舍”</strong>以及<strong>“全场断电后依靠建筑剪影的双向空间复用”</strong>三大核心命题。
+      </p>
+    </header>
+
+    <!-- Section 1: Beat Chart -->
+    <section id="beat-chart">
+      <div class="section-header">
+        <div class="section-tag">Phase 1 · Rhythm & Tension</div>
+        <h2 class="section-title">体验心流与情绪张弛律 (Beat Chart)</h2>
+      </div>
+
+      <div class="card">
+        <div class="card-title">情绪张力推演曲线</div>
+        <div class="media-box">
+          <svg viewBox="0 0 1000 300" style="background:#0f172a; width:100%;">
+            <defs>
+              <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.0"/>
+              </linearGradient>
+            </defs>
+            <!-- Grid Lines -->
+            <line x1="60" y1="240" x2="960" y2="240" stroke="#334155" stroke-width="1"/>
+            <line x1="60" y1="180" x2="960" y2="180" stroke="#334155" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="60" y1="120" x2="960" y2="120" stroke="#334155" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="60" y1="60" x2="960" y2="60" stroke="#334155" stroke-width="1" stroke-dasharray="4,4"/>
+
+            <text x="30" y="245" fill="#64748b" font-size="11">低压</text>
+            <text x="30" y="150" fill="#64748b" font-size="11">中压</text>
+            <text x="30" y="65" fill="#ef4444" font-size="11">绝境</text>
+
+            <!-- Tension Area & Line -->
+            <path d="M 80 230 Q 150 200 200 170 Q 280 90 340 100 Q 420 180 500 160 Q 600 40 680 50 Q 760 170 820 110 Q 890 220 950 230 L 950 240 L 80 240 Z" fill="url(#chartGrad)"/>
+            <path d="M 80 230 Q 150 200 200 170 Q 280 90 340 100 Q 420 180 500 160 Q 600 40 680 50 Q 760 170 820 110 Q 890 220 950 230" fill="none" stroke="#38bdf8" stroke-width="3"/>
+
+            <!-- Node Points -->
+            <circle cx="80" cy="230" r="4" fill="#38bdf8"/>
+            <text x="80" y="260" text-anchor="middle" fill="#94a3b8" font-size="11">① 醒来观察 (0s)</text>
+
+            <circle cx="200" cy="170" r="4" fill="#f59e0b"/>
+            <text x="200" y="200" text-anchor="middle" fill="#f59e0b" font-size="11">② 拾枪 (3/0发)</text>
+
+            <circle cx="340" cy="100" r="5" fill="#ef4444"/>
+            <text x="340" y="85" text-anchor="middle" fill="#ef4444" font-size="11">③ 破窗交战与掩体</text>
+
+            <circle cx="500" cy="160" r="4" fill="#22c55e"/>
+            <text x="500" y="190" text-anchor="middle" fill="#22c55e" font-size="11">④ 首箱备弹与主线</text>
+
+            <circle cx="680" cy="50" r="6" fill="#ef4444"/>
+            <text x="680" y="35" text-anchor="middle" fill="#ef4444" font-size="12" font-weight="bold">⑤ 第4杀全场断电！</text>
+
+            <circle cx="820" cy="110" r="5" fill="#f59e0b"/>
+            <text x="820" y="95" text-anchor="middle" fill="#f59e0b" font-size="11">⑥ 北侧配电通电</text>
+
+            <circle cx="950" cy="230" r="5" fill="#22c55e"/>
+            <text x="950" y="260" text-anchor="middle" fill="#22c55e" font-size="11">⑦ 气闸撤离结算</text>
+          </svg>
+          <div class="media-caption">
+            <span><strong>情绪心流节拍图</strong>：清晰展现危机建立、掩体战斗释放、暗夜压迫与最终脱出的五幕结构。</span>
+            <span>目标通关体验: 8 ~ 12 分钟 (待真人验证)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Level Plan -->
+    <section id="level-plan">
+      <div class="section-header">
+        <div class="section-tag">Phase 2 · Spatial Architecture</div>
+        <h2 class="section-title">1:500 关卡平面图与拓扑布局 (Level Plan)</h2>
+      </div>
+
+      <div class="card">
+        <div class="card-title">办公大楼标准层单层室内规划 (76m × 42m)</div>
+        <div class="media-box">
+          <img src="LevelPlan.svg" alt="1:500 关卡平面图">
+          <div class="media-caption">
+            <span><strong>图 A：矢量比例平面图</strong> · 精确映射边界、房间拓扑、7名感染者分布、决策点 DP-1~3 与主支线动线</span>
+            <a href="LevelPlan.svg" target="_blank" style="color:var(--accent-blue); text-decoration:none;">[打开原始 SVG]</a>
+          </div>
+        </div>
+
+        <div class="grid-3" style="margin-top:16px;">
+          <div class="flow-step">
+            <div style="font-weight:700; color:var(--accent-blue); margin-bottom:4px;">01 西侧苏醒观察区</div>
+            <div style="font-size:12px; color:var(--text-muted);">坐标 (-3300, 0)。防弹玻璃隔离两只感染者，布置格洛克 17 (3/0)、工作台灯与消防斧，承担无缝开场教学。</div>
+          </div>
+          <div class="flow-step">
+            <div style="font-weight:700; color:var(--accent-amber); margin-bottom:4px;">02 中央核心办公区</div>
+            <div style="font-size:12px; color:var(--text-muted);">坐标 (-1500~1500, Y: -1000~1000)。矮隔断与立柱交错，配有腰高战术咖啡桌、十字路标及北休憩区支线。</div>
+          </div>
+          <div class="flow-step">
+            <div style="font-weight:700; color:var(--accent-green); margin-bottom:4px;">03 南机房与北配电室</div>
+            <div style="font-size:12px; color:var(--text-muted);">南侧取 15A 任务保险丝，北侧配电合闸解锁东侧气闸。依靠百叶窗剪影与红色指示塔建立暗夜导航。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Opening Tutorial -->
+    <section id="opening-tutorial">
+      <div class="section-header">
+        <div class="section-tag">Phase 3 · Teaching & Encounter</div>
+        <h2 class="section-title">开场教学：安全观察、聚焦光圈与残弹克制</h2>
+      </div>
+
+      <div class="card">
+        <p style="margin-bottom:16px; color:var(--text-muted);">
+          传统 FPS 往往依赖打断沉浸感的大段弹窗或开场直接堆怪。本关卡采用<strong>“空间叙事与视线构图”</strong>：
+          开场初始偏角 15°，让左侧工位聚焦台灯（引导武器拾取）与正前方防弹窗外晃动的感染者（建立生存威胁）自然并存。
+        </p>
+
+        <div class="media-box">
+          <img src="Screenshots/Annotated/Annotated_01_OpeningSightline.svg" alt="开场构图标注图">
+          <div class="media-caption">
+            <span><strong>设计标注图 01</strong> · 苏醒室双聚焦构图、未武装敌人冻结保护与 3/0 残弹信息前置</span>
+            <span>对应实机: SliceQA_01_Opening.png</span>
+          </div>
+        </div>
+
+        <div class="compare-container">
+          <div class="compare-item">
+            <div class="compare-label">
+              <span>实机画面: 开场苏醒室 (SliceQA_01)</span>
+              <span style="color:var(--accent-amber)">聚焦台灯与残弹</span>
+            </div>
+            <img src="Screenshots/Raw/SliceQA_01_Opening.png" alt="开场画面">
+          </div>
+          <div class="compare-item">
+            <div class="compare-label">
+              <span>实机画面: 物理碎窗交战 (SliceQA_05)</span>
+              <span style="color:var(--accent-red)">掩体周旋</span>
+            </div>
+            <img src="Screenshots/Raw/SliceQA_05_ShatteredGlass.png" alt="物理破窗交战">
+          </div>
+        </div>
+
+        <div class="media-box">
+          <img src="Screenshots/Annotated/Annotated_02_CombatWindowCover.svg" alt="首战掩体标注图">
+          <div class="media-caption">
+            <span><strong>设计标注图 02</strong> · 首次破窗交战位、腰高掩体咖啡桌阻挡冲刺与首箱备弹正反馈</span>
+            <span>对应实机: SliceQA_05_ShatteredGlass.png</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Inventory & Trade-offs -->
+    <section id="inventory-tradeoffs">
+      <div class="section-header">
+        <div class="section-tag">Phase 4 · Economic Conflict</div>
+        <h2 class="section-title">搜索取舍：微背包与空间冲突博弈 (DP-1 ~ DP-3)</h2>
+      </div>
+
+      <div class="card">
+        <div class="card-title">非对称探索回报与决策推演矩阵</div>
+        <p style="color:var(--text-muted); margin-bottom:14px;">
+          关卡坚决杜绝“把奖励藏在只有开发者知道的地方”。所有偏离主线的探索均建立在<strong>“门洞透视瞥见线索—权衡背包代价—获取高价值物资—安全折返”</strong>之上。
+        </p>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>决策点</th>
+                <th>触发位置</th>
+                <th>视觉线索 (看见什么)</th>
+                <th>付出代价 (Cost)</th>
+                <th>潜在收益 (Reward)</th>
+                <th>折返关系</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>DP-1: 开场突破</strong></td>
+                <td>观察窗前 (-2520, 120)</td>
+                <td>玻璃外两只感染者徘徊，远端地面黄光</td>
+                <td>消耗仅有的 3 发手枪底火</td>
+                <td>占领掩体，拿到首箱 12 发备弹</td>
+                <td>安全切入中央走廊</td>
+              </tr>
+              <tr>
+                <td><strong>DP-2: 北休憩区 (支线 A)</strong></td>
+                <td>中央走廊十字路 (650, 0)</td>
+                <td>隔断缝隙透视粉色光斑与医疗包</td>
+                <td>绕行 35m，强制占用同行连续 2 格</td>
+                <td><strong>$500 备件 A</strong> + 医疗包 + $120零件</td>
+                <td>穿过走廊直达北配电室</td>
+              </tr>
+              <tr>
+                <td><strong>DP-3: 南机房深搜 (支线 B)</strong></td>
+                <td>机房保险丝台 (1850, -1300)</td>
+                <td>保险丝后方夹道尽头控制台蓝光</td>
+                <td>暗室额外深入 25m，背包满载必须弃物</td>
+                <td><strong>$500 备件 B</strong> (全搜极限 <strong>$1120</strong>)</td>
+                <td>原路返回大厅红塔引路</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="media-box">
+          <img src="Screenshots/Annotated/Annotated_03_FramedRouteA.svg" alt="北侧框架视线标注图">
+          <div class="media-caption">
+            <span><strong>设计标注图 03</strong> · 隔断门洞构成的框架视窗（Framed Sightline）与抬升台面物资</span>
+            <span>对应实机: SliceQA_07b_OptionalServerParts.png</span>
+          </div>
+        </div>
+
+        <div class="media-box">
+          <img src="Screenshots/Annotated/Annotated_04_InventoryConflict.svg" alt="背包冲突标注图">
+          <div class="media-caption">
+            <span><strong>设计标注图 04</strong> · 3×2 网格微背包同行连续双格冲突与丢弃医疗包的极限定位博弈</span>
+            <span>对应实机: SliceQA_07d_InventoryFull.png</span>
+          </div>
+        </div>
+
+        <div class="compare-container">
+          <div class="compare-item">
+            <div class="compare-label">
+              <span>实机画面: 背包整理与堆叠 (SliceQA_07c)</span>
+              <span style="color:var(--accent-green)">正常状态</span>
+            </div>
+            <img src="Screenshots/Raw/SliceQA_07c_InventoryLoot.png" alt="背包整理界面">
+          </div>
+          <div class="compare-item">
+            <div class="compare-label">
+              <span>实机画面: 双格跨度超载拒收 (SliceQA_07d)</span>
+              <span style="color:var(--accent-red)">清晰原因反馈</span>
+            </div>
+            <img src="Screenshots/Raw/SliceQA_07d_InventoryFull.png" alt="背包超载拒收界面">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Blackout Navigation -->
+    <section id="blackout-navigation">
+      <div class="section-header">
+        <div class="section-tag">Phase 5 · Blackout & Spatial Reuse</div>
+        <h2 class="section-title">断电逆转：形体剪影地标与暗夜双向导航</h2>
+      </div>
+
+      <div class="card">
+        <p style="margin-bottom:16px; color:var(--text-muted);">
+          第 4 次击杀后触发全场跳闸断电。在无小地图的前提下，关卡拒绝使用悬浮箭头，而是依靠<strong>形体剪影（百叶窗格栅）、独立供电常驻红塔与物理立柱路牌</strong>引导返程：
+        </p>
+
+        <div class="media-box">
+          <img src="Screenshots/Annotated/Annotated_05_BlackoutLandmarkSouth.svg" alt="南机房暗夜地标标注图">
+          <div class="media-caption">
+            <span><strong>设计标注图 05</strong> · 南机房百叶窗格栅剪影、琥珀色门标与手电光锥平衡</span>
+            <span>对应实机: SliceQA_06b / SliceQA_07</span>
+          </div>
+        </div>
+
+        <div class="compare-container">
+          <div class="compare-item">
+            <div class="compare-label">
+              <span>同一机位: 关手电暗室状态 (SliceQA_06c)</span>
+              <span style="color:var(--text-dim)">保留通道轮廓</span>
+            </div>
+            <img src="Screenshots/Raw/SliceQA_06c_FlashlightOff.png" alt="关手电暗室">
+          </div>
+          <div class="compare-item">
+            <div class="compare-label">
+              <span>同一机位: 开手电照明状态 (SliceQA_06d)</span>
+              <span style="color:var(--accent-blue)">消除近距过曝眩光</span>
+            </div>
+            <img src="Screenshots/Raw/SliceQA_06d_FlashlightOn.png" alt="开手电暗室">
+          </div>
+        </div>
+
+        <div class="media-box">
+          <img src="Screenshots/Annotated/Annotated_06_BlackoutReturnNorth.svg" alt="北配电返程标注图">
+          <div class="media-caption">
+            <span><strong>设计标注图 06</strong> · 北侧配电常驻红塔灯柱、拉闸通电与防跌落全封闭撤离气闸</span>
+            <span>对应实机: SliceQA_08 / SliceQA_09 / SliceQA_10</span>
+          </div>
+        </div>
+
+        <div class="compare-container">
+          <div class="compare-item">
+            <div class="compare-label">
+              <span>实机画面: 北侧总配电箱合闸 (SliceQA_08)</span>
+              <span style="color:var(--accent-amber)">插入 15A 保险丝</span>
+            </div>
+            <img src="Screenshots/Raw/SliceQA_08_MainBreaker.png" alt="总配电箱合闸">
+          </div>
+          <div class="compare-item">
+            <div class="compare-label">
+              <span>实机画面: 全楼供电复苏 (SliceQA_09)</span>
+              <span style="color:var(--accent-green)">大楼白炽灯复苏</span>
+            </div>
+            <img src="Screenshots/Raw/SliceQA_09_PowerRestored.png" alt="供电复苏画面">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Design Iterations -->
+    <section id="design-iterations">
+      <div class="section-header">
+        <div class="section-tag">Phase 6 · Verification Evidence</div>
+        <h2 class="section-title">三项核心设计迭代深度对比 (Before / After)</h2>
+      </div>
+
+      <!-- Iteration 1 -->
+      <div class="iteration-card">
+        <div class="card-title">迭代一：开场构图视线与残弹认知前置</div>
+        <div class="iteration-flow">
+          <div class="flow-step step-problem">
+            <div class="flow-step-label">问题现状 (Problem)</div>
+            初始朝向正东直视空窗，武器桌在左后方盲区；玩家拾枪未察觉仅有 3 发子弹，破窗后连续扣扳机卡壳遇险。
+          </div>
+          <div class="flow-step step-hypo">
+            <div class="flow-step-label">设计假设 (Hypothesis)</div>
+            微调朝向偏东北 15°，在武器桌上方增设 240lm 暖色台灯，拾取即弹出黄字残弹警示，能让玩家 15s 内自然完成观察拾取。
+          </div>
+          <div class="flow-step step-fix">
+            <div class="flow-step-label">落地修改 (Modification)</div>
+            修改出生点 Yaw=15°，生成 DeskLamp 与笔记本道具；手枪拾取提示明确写明：“手枪仅余 3 发底火，切勿挥霍”。
+          </div>
+          <div class="flow-step step-verify">
+            <div class="flow-step-label">实机验证 (Verification)</div>
+            自动化 QA 拾取秒级达成，断言 1~28 全绿；构图前后实机比对清晰，残弹察觉率预期由 20% 升至 80% (待盲测)。
+          </div>
+        </div>
+      </div>
+
+      <!-- Iteration 2 -->
+      <div class="iteration-card">
+        <div class="card-title">迭代二：支线探索动机与高价值物资台面抬升</div>
+        <div class="iteration-flow">
+          <div class="flow-step step-problem">
+            <div class="flow-step-label">问题现状 (Problem)</div>
+            高价值服务器备件平铺于地表阴影中，主路无法察觉；满包时只弹“背包满”，玩家不解为何有空格却无法拾取。
+          </div>
+          <div class="flow-step step-hypo">
+            <div class="flow-step-label">设计假设 (Hypothesis)</div>
+            将备件抬升至 +78cm 办公桌并透过隔断开口形成透视框，明确反馈“需同行连续 2 格”，驱动玩家主动丢药带货。
+          </div>
+          <div class="flow-step step-fix">
+            <div class="flow-step-label">落地修改 (Modification)</div>
+            挂载于拐角桌台与推车；拓宽隔断开口视窗；提示精细化：“背包空间不足：服务器备件需同行连续2格！[B] 整理或 [Delete] 丢弃”。
+          </div>
+          <div class="flow-step step-verify">
+            <div class="flow-step-label">实机验证 (Verification)</div>
+            验证了直接撤离($0)与满载全搜($1120)两条闭环，原子拒收机制 0 丢物，断言 68 项 100% 通过。
+          </div>
+        </div>
+      </div>
+
+      <!-- Iteration 3 -->
+      <div class="iteration-card">
+        <div class="card-title">迭代三：断电暗夜辨识与手电近景眩光消除</div>
+        <div class="iteration-flow">
+          <div class="flow-step step-problem">
+            <div class="flow-step-label">问题现状 (Problem)</div>
+            断电后全场同质化漆黑，门洞全为平板；开启手电时桌面近距漫反射白化过曝严重，暗夜压迫感被破坏。
+          </div>
+          <div class="flow-step step-hypo">
+            <div class="flow-step-label">设计假设 (Hypothesis)</div>
+            依靠形体剪影（百叶窗格栅）、红色应急指示塔与反光立牌构建地标，压低手电近景反弹光，可消除迷路阻滞。
+          </div>
+          <div class="flow-step step-fix">
+            <div class="flow-step-label">落地修改 (Modification)</div>
+            搭建机房百叶窗剪影门框与琥珀地标；配电间门楣布置常驻红色频闪 Beacon；调整手电衰减与武器高光反射。
+          </div>
+          <div class="flow-step step-verify">
+            <div class="flow-step-label">实机验证 (Verification)</div>
+            实机对比图 (06c vs 06d) 显示门洞轮廓清晰，桌面过曝完全消除，主线返程与通电断言 46 项全绿。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Verification System -->
+    <section id="verification-system">
+      <div class="section-header">
+        <div class="section-tag">Phase 7 · Quality Assurance</div>
+        <h2 class="section-title">自动化 QA 回归体系与局限反思 (Honest Disclosure)</h2>
+      </div>
+
+      <div class="card">
+        <div class="card-title">255 项系统级断言矩阵覆盖明细</div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>验证模块</th>
+                <th>断言数</th>
+                <th>验证核心逻辑</th>
+                <th>自动化结果</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>开场教学与武装保护</strong></td>
+                <td>28 项</td>
+                <td>未武装敌人冻结、手电/手枪/消防斧场景交互、手电光锥随相机俯仰</td>
+                <td><span class="badge badge-green">PASS (28/28)</span></td>
+              </tr>
+              <tr>
+                <td><strong>武器手感与射击后坐力</strong></td>
+                <td>35 项</td>
+                <td>格洛克 3/0 初始残弹、镜头上抬与枪身位移、停止开火平滑复位、瞄准降低后坐</td>
+                <td><span class="badge badge-green">PASS (35/35)</span></td>
+              </tr>
+              <tr>
+                <td><strong>办公区战斗与事件触发</strong></td>
+                <td>32 项</td>
+                <td>强化玻璃真实物理碎裂、受击与死亡判定、<strong>第 4 杀触发全场跳闸断电</strong></td>
+                <td><span class="badge badge-green">PASS (32/32)</span></td>
+              </tr>
+              <tr>
+                <td><strong>微背包容量与原子操作</strong></td>
+                <td>68 项</td>
+                <td>3×2 背包开闭、9mm 弹药自动堆叠、医疗包 +35 HP 且满血拒用、<strong>同行连续双格拒收与原子保留</strong></td>
+                <td><span class="badge badge-green">PASS (68/68)</span></td>
+              </tr>
+              <tr>
+                <td><strong>断电寻路与返程供电</strong></td>
+                <td>46 项</td>
+                <td>手电照明对比、机房保险丝交互、配电箱合闸通电、全楼照明复苏、气闸门升起</td>
+                <td><span class="badge badge-green">PASS (46/46)</span></td>
+              </tr>
+              <tr>
+                <td><strong>撤离结算与防掉落重开</strong></td>
+                <td>46 项</td>
+                <td>撤离气闸防跌落实体碰撞、战利品金币核算 ($0~$1120)、<strong>F5 一键重开新局重置</strong></td>
+                <td><span class="badge badge-green">PASS (46/46)</span></td>
+              </tr>
+              <tr style="font-weight:700;">
+                <td><strong>总计</strong></td>
+                <td><strong>255 项</strong></td>
+                <td><strong>单人搜打撤全流程垂直切片闭环</strong></td>
+                <td><span class="badge badge-green">100% PASS (54.43s)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-amber">
+          <strong>局限性反思与诚信披露：</strong><br>
+          1. <strong>自动化耗时 54.43 秒绝不代表真实玩家通关时长</strong>：这是脚本按最优坐标传送执行的回归耗时。根据关卡尺度与搜索密度，真实新手通关时长目标为 <strong>8 ~ 12 分钟</strong>。<br>
+          2. <strong>测试辅助不留在自然游玩中</strong>：敌人冻结仅在开场未武装保护与 QA 脚本测量时启用，不使用永久无限弹药等破坏体验的“后门”。<br>
+          3. <strong>可看见 ≠ 被注意到</strong>：光影与构图为视线提供了高概率捕捉，但真实玩家的注意力分配仍需依赖下一阶段真人录屏与访谈确认。
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 8: Resume & Pitch -->
+    <section id="resume-pitch">
+      <div class="section-header">
+        <div class="section-tag">Phase 8 · Career Artifacts</div>
+        <h2 class="section-title">简历条目与 90 秒面试现场讲解稿 (Pitch)</h2>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color:var(--accent-blue);">简历条目 A：关卡策划向（推荐）</div>
+          <p style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+            <strong>封锁区：零号大厦 · UE5 单人搜打撤关卡原型</strong>（独立策划 / AI 辅助开发，2026.09）<br>
+            • 围绕“安全观察威胁—获取工具—有限弹药战斗—断电逆转—寻保险丝—通电撤离”设计闭环，以 C++ 程序化搭建 76m×42m 现代办公楼，组织双向视线与心流节拍；<br>
+            • 落地 3×2 有限微背包系统与资源竞争（9mm 自动堆叠 / 医疗包占 1 格 / 双格战利品竞争），任务关键道具解耦不占格；设计两条非对称高价值支线（最高带出 $1120），通过框架视线引导主动取舍；<br>
+            • 针对断电空间辨识难题，设计机房散热百叶窗剪影、配电间红色应急灯塔及十字反光路标；搭建 255 项自动化 QA 回归管线，保障后坐力、交互射线与重开逻辑零退化。
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color:var(--accent-amber);">简历条目 B：系统 / 数值策划向</div>
+          <p style="font-size:13px; color:var(--text-muted); line-height:1.7;">
+            <strong>封锁区：零号大厦 · FPS 战斗与微背包搜打撤原型</strong>（独立策划 / AI 辅助开发，2026.09）<br>
+            • 制定并实现第一人称武器机制规格：手枪开场 3 发底火 / 备用 0 发、弹匣上限 17 发、开火镜头平滑上抬与后坐复位；结合场景手电与应急灯，营造极度缺弹的高压资源管理氛围；<br>
+            • 设计同行连续 2 格大件战利品（服务器备件 $500）与基础生存物资的排他性容量冲突，构建“为带走高额财富必须主动丢弃医疗包”的极限定位博弈，主线道具解耦保障通关主径；<br>
+            • 完成 1:500 关卡平面规划（LevelPlan.svg），撰写涵盖设计假设、实机对比与局限反思的完整策划作品集案。
+          </p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px;">
+        <div class="card-title" style="color:var(--accent-green);">90 秒面试现场讲解稿 (Elevator Pitch)</div>
+        <div class="callout callout-green" style="font-size:13.5px; line-height:1.8;">
+          “面试官好，我向您分享我最近在 UE5 中主导策划的单人 FPS 搜打撤作品——《封锁区：零号大厦》。这个项目的核心目标是验证<strong>‘空间叙事、资源压力与断电后的空间复用’</strong>。<br><br>
+          在设计上我着重解决了三个关卡痛点：<br>
+          <strong>第一是开场的直观教学</strong>：玩家在苏醒室内，我通过 15° 偏角的视线构图，让玩家先在防弹玻璃后安全观察晃动的感染者建立威胁认知；接着利用工位台灯引导玩家发现仅剩 3 发底火的格洛克 17 和手电。玩家不需看弹窗，就能本能理解必须谨慎开火的底层规则。<br>
+          <strong>第二是有限背包驱动的搜索取舍</strong>：我设计了 3×2 共 6 格背包，并引入占连续两格的高价值服务器备件。在主走廊行进时，玩家能透过办公隔断瞥见深处粉色光圈。要想带走高额战利品，就必须在安全医疗包和贪婪收益之间二选一。同时主线保险丝独立显示，杜绝了背包满导致的卡关。<br>
+          <strong>第三是断电逆转与地标导航</strong>：第 4 次击杀会触发办公楼全面断电。为了防止迷路，我给南机房设计了散热格栅剪影，给北配电室配置了应急红色频闪灯塔，并在十字路口架设物理路标。玩家开启手电后，能精准调动白天的空间记忆完成‘搜保险丝—回配电室通电—气闸撤离’的返程闭环。<br><br>
+          项目逻辑由我制定系统与关卡规格后在 AI 辅助下实现轻量 C++ 生成，搭建了 255 项断言的回归验证管线保障核心机制零退化。期待您的交流与指正！”
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 9: Credits & Boundaries -->
+    <section id="credits-boundaries">
+      <div class="section-header">
+        <div class="section-tag">Phase 9 · Attribution & Boundaries</div>
+        <h2 class="section-title">制作边界与诚信声明 (Attribution)</h2>
+      </div>
+
+      <div class="card">
+        <div class="grid-2">
+          <div>
+            <div style="font-weight:700; color:#ffffff; margin-bottom:8px;">原创策划与设计范围</div>
+            <ul style="padding-left:18px; color:var(--text-muted); font-size:13px; line-height:1.7;">
+              <li>关卡整体体验节拍设计与 1:500 平面拓扑规划；</li>
+              <li>开场安全教学、未武装保护与残弹压迫机制；</li>
+              <li>微背包 3×2 网格规则、双格空间冲突与路线决策矩阵；</li>
+              <li>断电反转形体剪影地标与双向动线组织；</li>
+              <li>255 项系统回归测试用例设计与自动化断言验证；</li>
+              <li>全套设计简报、矢量平面图、标注图与作品集页面搭建。</li>
+            </ul>
+          </div>
+          <div>
+            <div style="font-weight:700; color:#ffffff; margin-bottom:8px;">第三方资产与技术实现说明</div>
+            <ul style="padding-left:18px; color:var(--text-muted); font-size:13px; line-height:1.7;">
+              <li><strong>武器与手臂</strong>：Unreal Engine 官方 First Person 模板资产；</li>
+              <li><strong>敌人模型</strong>：UE 官方 Mannequin（玩法占位）；</li>
+              <li><strong>办公家具</strong>：Kenney CC0 模块库；</li>
+              <li><strong>墙板门框与材质</strong>：自制轻量模块；</li>
+              <li><strong>代码实现</strong>：底层由策划主导架构与规格后，在 AI 编程助手协同下完成 C++ 落地。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border-color); font-size:12px; color:var(--text-dim); text-align:center;">
+          《封锁区：零号大厦》策划作品集 · 2026.09 · 独立开发与验证
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Simple smooth scrolling and active nav link highlighter
+    document.querySelectorAll('.sidebar nav a').forEach(link => {
+      link.addEventListener('click', function(e) {
+        document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

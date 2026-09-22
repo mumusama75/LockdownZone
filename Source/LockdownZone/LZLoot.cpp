@@ -131,7 +131,11 @@ FString ALZLoot::GetInteractionPrompt(const ALZCharacter* Character) const
 {
     if (Character && !Character->CanStoreItem(GetInventoryType(), GetPickupQuantity()))
     {
-        return TEXT("背包空间不足：[B] 整理背包后再拾取");
+        if (LootType == ELootType::Rare)
+        {
+            return TEXT("背包空间不足：服务器备件需同行连续2格！[B] 整理或按 [Delete] 丢弃");
+        }
+        return TEXT("背包空间不足：[B] 整理背包或按 [Delete] 丢弃物品");
     }
     switch (LootType)
     {

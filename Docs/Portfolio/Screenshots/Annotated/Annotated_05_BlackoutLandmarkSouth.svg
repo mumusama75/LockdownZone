@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675" style="background:#0a0f1d; font-family:'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad5" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#050811" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <radialGradient id="flashlightBeam" cx="20%" cy="80%" r="70%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="25%" stop-color="#bae6fd" stop-opacity="0.6" />
+      <stop offset="60%" stop-color="#38bdf8" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="amberBeacon" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#d97706" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#b45309" stop-opacity="0"/>
+    </radialGradient>
+    <marker id="arrowAmberM" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#fbbf24" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="675" fill="url(#bgGrad5)" />
+  <rect x="20" y="20" width="1160" height="635" rx="8" fill="none" stroke="#1e293b" stroke-width="2" />
+
+  <!-- Header Banner -->
+  <rect x="20" y="20" width="1160" height="60" rx="8" fill="#111827" />
+  <text x="50" y="58" fill="#38bdf8" font-size="20" font-weight="bold">【设计标注图 05】断电空间辨识：南侧机房剪影地标与琥珀地标 (South Server Landmark)</text>
+  <text x="960" y="58" fill="#94a3b8" font-size="14">对应实机: SliceQA_06b / SliceQA_07</text>
+
+  <!-- Player Flashlight Emission Point -->
+  <g transform="translate(100, 480)">
+    <circle cx="30" cy="30" r="22" fill="#0284c7" stroke="#38bdf8" stroke-width="3" />
+    <text x="30" y="36" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="bold">玩家</text>
+    <text x="30" y="75" text-anchor="middle" fill="#94a3b8" font-size="12">持开手电 (按F)</text>
+    <text x="30" y="95" text-anchor="middle" fill="#38bdf8" font-size="11">断电模式启用</text>
+  </g>
+
+  <!-- Flashlight Beam Cone projecting towards South Doorway -->
+  <path d="M 125 490 L 550 140 L 980 430 Z" fill="url(#flashlightBeam)" />
+
+  <!-- South Server Room Doorway & Landmark Structure -->
+  <g transform="translate(620, 140)">
+    <!-- Overhead Silhouette Frame (Louver Tray & Metal Bracket) -->
+    <rect x="-40" y="-30" width="340" height="45" rx="4" fill="#1e293b" stroke="#475569" stroke-width="2" />
+    <!-- Louver Grill Slots -->
+    <line x1="-20" y1="-18" x2="280" y2="-18" stroke="#334155" stroke-width="4" stroke-dasharray="8,6" />
+    <line x1="-20" y1="-8" x2="280" y2="-8" stroke="#334155" stroke-width="4" stroke-dasharray="8,6" />
+    <text x="130" y="-40" text-anchor="middle" fill="#fde047" font-size="13" font-weight="bold">新增：南机房门楣散热格栅剪影</text>
+
+    <!-- Door Frame (3.5m wide / 4m high) -->
+    <rect x="0" y="15" width="260" height="280" fill="#030712" stroke="#475569" stroke-width="3" />
+    <!-- Hazard Stripes on Pillars -->
+    <rect x="-20" y="15" width="20" height="280" fill="#ca8a04" stroke="#eab308" stroke-width="1" />
+    <rect x="260" y="15" width="20" height="280" fill="#ca8a04" stroke="#eab308" stroke-width="1" />
+
+    <!-- Amber Beacon on Threshold -->
+    <circle cx="130" cy="20" r="40" fill="url(#amberBeacon)" />
+    <circle cx="130" cy="20" r="10" fill="#fef08a" />
+    <text x="130" y="55" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="bold">琥珀色微弱门标指示灯</text>
+
+    <!-- Deep Server Room Interior (Fuse Table inside) -->
+    <rect x="70" y="140" width="120" height="70" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    <text x="130" y="170" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="bold">主线保险丝台</text>
+    <text x="130" y="195" text-anchor="middle" fill="#ffffff" font-size="12">[E] 取 15A 备用保险丝</text>
+  </g>
+
+  <!-- Pillar Signage Callout -->
+  <g transform="translate(320, 300)">
+    <rect x="0" y="0" width="180" height="70" rx="4" fill="#1e293b" stroke="#eab308" stroke-width="2" />
+    <text x="90" y="30" text-anchor="middle" fill="#fde047" font-size="14" font-weight="bold">03 SERVER [->]</text>
+    <text x="90" y="55" text-anchor="middle" fill="#cbd5e1" font-size="12">十字走廊物理反光路标</text>
+    <path d="M 180 35 L 560 220" fill="none" stroke="#fbbf24" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrowAmberM)" />
+  </g>
+
+  <!-- Bottom Annotation Box -->
+  <rect x="50" y="520" width="1100" height="120" rx="6" fill="#111827" stroke="#334155" stroke-width="1.5" />
+  <text x="70" y="548" fill="#38bdf8" font-size="15" font-weight="bold">断电空间引导设计收益 (Blackout Spatial Navigation):</text>
+  <text x="70" y="573" fill="#cbd5e1" font-size="13">1. <tspan fill="#fde047">形体剪影优于单一色块</tspan>：传统暗室中纯依靠地标颜色容易在黑白光照中失效。通过在机房入口增加独特的机柜顶部散热格栅与百叶窗剪影，玩家即使在手电扫过的瞬间也能凭轮廓辨识。</text>
+  <text x="70" y="596" fill="#cbd5e1" font-size="13">2. <tspan fill="#fbbf24">非眩光微弱地标</tspan>：门楣琥珀色 Beacon 与通道地贴反光提供微弱的“走对了”中途确认，避免全程铺满荧光箭头的“廉价保姆式指引”。</text>
+  <text x="70" y="619" fill="#cbd5e1" font-size="13">3. <tspan fill="#38bdf8">手电实测对比</tspan>：在实机截图 SliceQA_06c (关手电) 与 SliceQA_06d (开手电) 中，环境保留暗部压迫感同时完全照亮门洞与内部台面，消除近景过曝热点。</text>
+</svg>
