@@ -88,6 +88,7 @@ private:
     double InventoryProbeWorldTime = 0.0;
     int32 InventorySupplyIndex = 0;
     int32 InventoryWorldLootCount = 0;
+    TArray<int32> QAFillerItemIds;
     int32 KillIndex = 0;
     int32 Assertions = 0;
     int32 Failures = 0;

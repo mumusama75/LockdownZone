@@ -33,6 +33,13 @@ public:
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
         class AController* EventInstigator, AActor* DamageCauser) override;
 
+    UFUNCTION(BlueprintCallable, Category="Movement")
+    void StartCrouch();
+    UFUNCTION(BlueprintCallable, Category="Movement")
+    void StopCrouch();
+    UFUNCTION(BlueprintCallable, Category="Movement")
+    void ToggleCrouchState();
+
     UFUNCTION(BlueprintCallable, Category="Inventory")
     bool AddLoot(int32 Value, int32 Slots, int32 AmmoAmount, int32 HealAmount);
 
@@ -40,19 +47,55 @@ public:
     bool TryStoreItem(ELZInventoryItemType Type, int32 Quantity = 1);
     UFUNCTION(BlueprintPure, Category="Inventory")
     bool CanStoreItem(ELZInventoryItemType Type, int32 Quantity = 1) const;
+
     const TArray<FLZInventoryEntry>& GetInventoryEntries() const { return InventoryEntries; }
+    const FLZInventoryEntry* GetInventoryItemAtCell(int32 X, int32 Y) const;
+    FLZInventoryEntry* GetInventoryItemAtCellMutable(int32 X, int32 Y);
     const FLZInventoryEntry* GetInventoryItemAtSlot(int32 Slot) const;
-    UFUNCTION(BlueprintPure, Category="Inventory") int32 GetSelectedInventorySlot() const { return SelectedInventorySlot; }
-    void SetSelectedInventorySlot(int32 Slot) { SelectedInventorySlot = FMath::Clamp(Slot, 0, InventorySlotCount - 1); }
+    const FLZInventoryEntry* GetInventoryItemById(int32 ItemId) const;
+
+    UFUNCTION(BlueprintPure, Category="Inventory") int32 GetInventoryGridWidth() const { return InventoryGridWidth; }
+    UFUNCTION(BlueprintPure, Category="Inventory") int32 GetInventoryGridHeight() const { return InventoryGridHeight; }
+    UFUNCTION(BlueprintPure, Category="Inventory") int32 GetCursorX() const { return CursorX; }
+    UFUNCTION(BlueprintPure, Category="Inventory") int32 GetCursorY() const { return CursorY; }
+    void SetCursorPos(int32 NewX, int32 NewY);
+    UFUNCTION(BlueprintPure, Category="Inventory") int32 GetSelectedInventorySlot() const { return CursorY * InventoryGridWidth + CursorX; }
+    void SetSelectedInventorySlot(int32 Slot);
+
+    UFUNCTION(BlueprintPure, Category="Inventory") int32 GetHeldItemId() const { return HeldItemId; }
+    UFUNCTION(BlueprintPure, Category="Inventory") int32 GetHeldWidth() const { return HeldWidth; }
+    UFUNCTION(BlueprintPure, Category="Inventory") int32 GetHeldHeight() const { return HeldHeight; }
+    UFUNCTION(BlueprintPure, Category="Inventory") bool HasHeldItem() const { return HeldItemId != 0; }
+    const FLZInventoryEntry* GetHeldItem() const { return GetInventoryItemById(HeldItemId); }
+
+    UFUNCTION(BlueprintCallable, Category="Inventory") void PickUpItemAtCursor();
+    UFUNCTION(BlueprintCallable, Category="Inventory") void PickUpItemAtCell(int32 X, int32 Y);
+    UFUNCTION(BlueprintCallable, Category="Inventory") bool PlaceHeldItemAtCursor();
+    UFUNCTION(BlueprintCallable, Category="Inventory") bool PlaceHeldItemAtCell(int32 X, int32 Y);
+    UFUNCTION(BlueprintCallable, Category="Inventory") void RotateHeldItem();
+    UFUNCTION(BlueprintCallable, Category="Inventory") void CancelHeldItem();
+
+    UFUNCTION(BlueprintPure, Category="Inventory")
+    bool CanPlaceItem(int32 TargetX, int32 TargetY, int32 W, int32 H, int32 IgnoreItemId = 0) const;
+    bool AutoFindPlacement(int32 W, int32 H, int32& OutX, int32& OutY) const;
+    static void GetDefaultItemSize(ELZInventoryItemType Type, int32& OutW, int32& OutH);
+
     UFUNCTION(BlueprintPure, Category="Inventory") bool IsInventoryOpen() const { return bInventoryOpen; }
     UFUNCTION(BlueprintPure, Category="Inventory") FString GetInventoryStatusText() const { return InventoryStatusText; }
+    void SetInventoryStatusText(const FString& InText) { InventoryStatusText = InText; }
     UFUNCTION(BlueprintCallable, Category="Inventory") void ToggleInventory();
     void InventoryLeft();
     void InventoryRight();
     void InventoryUp();
     void InventoryDown();
+    void InventoryRotate();
+    void InventoryInteract();
+    void InventoryCancel();
     UFUNCTION(BlueprintCallable, Category="Inventory") bool UseSelectedInventoryItem();
     UFUNCTION(BlueprintCallable, Category="Inventory") bool DiscardSelectedInventoryItem();
+    UFUNCTION(BlueprintCallable, Category="Inventory") bool DiscardItemAtCell(int32 X, int32 Y);
+    UFUNCTION(BlueprintCallable, Category="Inventory") bool DiscardItemById(int32 ItemId);
+    void SyncEquippedGear();
 
     UFUNCTION(BlueprintPure, Category="Interaction")
     ALZInteractable* FindInteractable(float Range = 350.0f) const;
@@ -61,7 +104,7 @@ public:
     UFUNCTION(BlueprintPure) int32 GetAmmoInMagazine() const { return AmmoInMagazine; }
     UFUNCTION(BlueprintPure) int32 GetReserveAmmo() const;
     UFUNCTION(BlueprintPure) int32 GetUsedBagSlots() const;
-    UFUNCTION(BlueprintPure) int32 GetMaxBagSlots() const { return InventorySlotCount; }
+    UFUNCTION(BlueprintPure) int32 GetMaxBagSlots() const { return InventoryGridWidth * InventoryGridHeight; }
     UFUNCTION(BlueprintPure) int32 GetLootValue() const;
     UFUNCTION(BlueprintPure) bool HasMeleeWeapon() const { return bHasMeleeWeapon; }
     UFUNCTION(BlueprintPure) bool HasFirearm() const { return bHasFirearm; }
@@ -130,13 +173,24 @@ protected:
     UPROPERTY(BlueprintReadOnly, Category="Equipment") bool bFlashlightOn = false;
 
 private:
-    static constexpr int32 InventoryColumnCount = 3;
-    static constexpr int32 InventorySlotCount = 6;
+    static constexpr int32 InventoryGridWidth = 6;
+    static constexpr int32 InventoryGridHeight = 6;
     static constexpr int32 AmmoStackLimit = 30;
     UPROPERTY() TArray<FLZInventoryEntry> InventoryEntries;
+    int32 NextItemId = 1;
     bool bInventoryOpen = false;
-    int32 SelectedInventorySlot = 0;
+    int32 CursorX = 0;
+    int32 CursorY = 0;
+    int32 HeldItemId = 0;
+    int32 HeldWidth = 1;
+    int32 HeldHeight = 1;
+    int32 HeldOriginalX = 0;
+    int32 HeldOriginalY = 0;
+    int32 HeldOriginalWidth = 1;
+    int32 HeldOriginalHeight = 1;
     FString InventoryStatusText;
+    float CrouchPressTime = 0.0f;
+    bool bCrouchToggled = false;
     TWeakObjectPtr<APlayerController> InventoryInputController;
     bool bInventoryInputLockApplied = false;
     bool bAiming = false;

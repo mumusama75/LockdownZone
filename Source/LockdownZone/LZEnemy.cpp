@@ -139,9 +139,26 @@ void ALZEnemy::Tick(float DeltaSeconds)
     FVector ToTarget = Target->GetActorLocation() - GetActorLocation();
     ToTarget.Z = 0.0f;
     const float Distance = ToTarget.Size();
-    if (Distance > DetectionRange)
+    const float EffectiveDetectionRange = Target->bIsCrouched ? (DetectionRange * 0.45f) : DetectionRange;
+    if (Distance > EffectiveDetectionRange)
     {
         return;
+    }
+
+    // Line of sight check to respect office cubicle and low desk cover when sneaking
+    if (Target->bIsCrouched)
+    {
+        FHitResult SightHit;
+        FCollisionQueryParams SightParams(SCENE_QUERY_STAT(EnemySight), false, this);
+        const FVector EyePos = GetActorLocation() + FVector(0.0f, 0.0f, 50.0f);
+        const FVector TargetEyePos = Target->GetActorLocation() + FVector(0.0f, 0.0f, 25.0f);
+        if (GetWorld()->LineTraceSingleByChannel(SightHit, EyePos, TargetEyePos, ECC_Visibility, SightParams))
+        {
+            if (SightHit.GetActor() != Target)
+            {
+                return;
+            }
+        }
     }
 
     SetActorRotation(ToTarget.Rotation());

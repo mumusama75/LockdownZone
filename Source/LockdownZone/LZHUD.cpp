@@ -97,7 +97,7 @@ void ALZHUD::DrawHUD()
         FLinearColor(1.0f, 0.8f, 0.25f), 1.1f);
     DrawShadowedText(FString::Printf(TEXT("已清除感染者  %d"), GameMode->GetEnemiesKilled()),
         34.0f, Canvas->ClipY - 49.0f, FLinearColor(0.75f, 0.9f, 0.75f), 1.0f);
-    DrawShadowedText(TEXT("E交互  1/2切枪  R换弹  F手电  B背包"), Canvas->ClipX - 390, Canvas->ClipY - 37,
+    DrawShadowedText(TEXT("Ctrl蹲下潜行  E交互  1/2切枪  R换弹  F手电  B背包"), Canvas->ClipX - 440, Canvas->ClipY - 37,
         FLinearColor(.64f,.72f,.74f), .68f);
     const FString FlashlightLine = !Character->HasFlashlight() ? TEXT("手电筒：未拾取")
         : Character->IsFlashlightOn() ? TEXT("手电筒：开启  [F] 关闭") : TEXT("手电筒：关闭  [F] 开启");
@@ -106,6 +106,18 @@ void ALZHUD::DrawHUD()
     DrawShadowedText(FString::Printf(TEXT("背包 %d / %d  |  物资价值 %d"), Character->GetUsedBagSlots(),
         Character->GetMaxBagSlots(), Character->GetLootValue()), Canvas->ClipX - 360, Canvas->ClipY - 65,
         FLinearColor(.88f,.78f,.48f), .78f);
+
+    if (Character->bIsCrouched)
+    {
+        const float StealthBoxW = 280.0f;
+        const float StealthBoxH = 30.0f;
+        const float StealthBoxX = CenterX - StealthBoxW * 0.5f;
+        const float StealthBoxY = Canvas->ClipY - 170.0f;
+        DrawRect(FLinearColor(0.005f, 0.02f, 0.015f, 0.85f), StealthBoxX, StealthBoxY, StealthBoxW, StealthBoxH);
+        DrawRect(FLinearColor(0.22f, 0.94f, 0.58f, 0.95f), StealthBoxX, StealthBoxY, 3.0f, StealthBoxH);
+        DrawShadowedText(TEXT("▼ 潜行静默中 · 敌方侦测-55% · 掩体遮蔽"), CenterX, StealthBoxY + 6.0f,
+            FLinearColor(0.22f, 0.94f, 0.58f), 0.82f, true);
+    }
 
     DrawShadowedText(GameMode->GetObjectiveText(), Canvas->ClipX - 550.0f, 32.0f,
         GameMode->IsObjectiveComplete() ? FLinearColor(0.3f, 1.0f, 0.45f) : FLinearColor(0.95f, 0.85f, 0.35f), 1.0f);
@@ -185,6 +197,28 @@ void ALZHUD::DrawInventoryIcon(ELZInventoryItemType Type, float X, float Y, floa
             Rect(50, 16 + Rack * 9, 4, 4, Color);
         }
         break;
+    case ELZInventoryItemType::Axe:
+        Rect(28, 6, 6, 48, Color * 0.7f);
+        Rect(14, 8, 20, 16, Color);
+        Rect(10, 10, 6, 12, Color * 1.25f);
+        Line(34, 12, 42, 16);
+        Line(42, 16, 34, 20);
+        break;
+    case ELZInventoryItemType::Pistol:
+        Rect(10, 14, 40, 12, Color);
+        Rect(14, 18, 6, 4, Dark);
+        Rect(14, 26, 14, 22, Color * 0.82f);
+        Line(28, 26, 28, 33);
+        Line(28, 33, 24, 33);
+        break;
+    case ELZInventoryItemType::Flashlight:
+        Rect(8, 22, 34, 14, Color * 0.82f);
+        Rect(42, 18, 12, 22, Color);
+        Rect(54, 20, 4, 18, FLinearColor(1.0f, 0.95f, 0.5f));
+        Line(16, 24, 16, 34);
+        Line(24, 24, 24, 34);
+        Line(32, 24, 32, 34);
+        break;
     }
 }
 
@@ -256,37 +290,65 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
     const FLinearColor Cyan(0.35f, 0.85f, 1.0f);
     const FLinearColor DarkBG(0.008f, 0.014f, 0.020f, 0.97f);
     const FLinearColor PanelBG(0.016f, 0.026f, 0.034f, 0.95f);
+    const FLinearColor CellBG(0.020f, 0.032f, 0.040f, 0.90f);
     const FLinearColor GridBorder(0.12f, 0.22f, 0.28f);
     const FLinearColor Red(0.95f, 0.25f, 0.22f);
     const FLinearColor Amber(0.96f, 0.65f, 0.22f);
     const FLinearColor White(0.92f, 0.95f, 0.96f);
     const FLinearColor Muted(0.55f, 0.64f, 0.68f);
 
-    constexpr float CellWidth = 236.0f;
-    constexpr float CellHeight = 128.0f;
-    constexpr float Gap = 12.0f;
+    constexpr float CellSize = 68.0f;
+    constexpr float CellGap = 6.0f;
+    constexpr float GridStartX = 72.0f;
+    constexpr float GridStartY = 158.0f;
 
-    // Mouse click selection support
-    if (APlayerController* PC = GetOwningPlayerController())
+    APlayerController* PC = GetOwningPlayerController();
+    ALZCharacter* MutableChar = const_cast<ALZCharacter*>(Character);
+
+    // Mouse click selection & drag-and-drop support
+    int32 HoverCol = INDEX_NONE;
+    int32 HoverRow = INDEX_NONE;
+    if (PC)
     {
         float MouseX = 0.0f, MouseY = 0.0f;
         if (PC->GetMousePosition(MouseX, MouseY) && MouseX > 0.0f && MouseY > 0.0f)
         {
             const float CanvasMouseX = (MouseX - OriginX) / Scale;
             const float CanvasMouseY = (MouseY - OriginY) / Scale;
-            for (int32 Slot = 0; Slot < 6; ++Slot)
+            if (CanvasMouseX >= GridStartX && CanvasMouseX < (GridStartX + 6 * (CellSize + CellGap)) &&
+                CanvasMouseY >= GridStartY && CanvasMouseY < (GridStartY + 6 * (CellSize + CellGap)))
             {
-                const float X = 76 + (Slot % 3) * (CellWidth + Gap);
-                const float Y = 268 + (Slot / 3) * (CellHeight + Gap);
-                if (CanvasMouseX >= X && CanvasMouseX <= X + CellWidth &&
-                    CanvasMouseY >= Y && CanvasMouseY <= Y + CellHeight)
+                HoverCol = FMath::Clamp(FMath::FloorToInt32((CanvasMouseX - GridStartX) / (CellSize + CellGap)), 0, 5);
+                HoverRow = FMath::Clamp(FMath::FloorToInt32((CanvasMouseY - GridStartY) / (CellSize + CellGap)), 0, 5);
+                MutableChar->SetCursorPos(HoverCol, HoverRow);
+
+                if (PC->WasInputKeyJustPressed(EKeys::LeftMouseButton))
                 {
-                    if (PC->WasInputKeyJustPressed(EKeys::LeftMouseButton))
+                    if (Character->HasHeldItem())
                     {
-                        const_cast<ALZCharacter*>(Character)->SetSelectedInventorySlot(Slot);
+                        MutableChar->PlaceHeldItemAtCell(HoverCol, HoverRow);
+                    }
+                    else
+                    {
+                        MutableChar->PickUpItemAtCell(HoverCol, HoverRow);
+                    }
+                }
+                else if (PC->WasInputKeyJustPressed(EKeys::RightMouseButton))
+                {
+                    if (Character->HasHeldItem())
+                    {
+                        MutableChar->CancelHeldItem();
                     }
                 }
             }
+        }
+        if (PC->WasInputKeyJustPressed(EKeys::R))
+        {
+            MutableChar->RotateHeldItem();
+        }
+        if (PC->WasInputKeyJustPressed(EKeys::Delete))
+        {
+            MutableChar->DiscardSelectedInventoryItem();
         }
     }
 
@@ -294,74 +356,50 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
     DrawRect(FLinearColor(0.002f, 0.005f, 0.008f, 0.88f), 0, 0, Canvas->ClipX, Canvas->ClipY);
 
     // Master Tactical Chassis Frame
-    Frame(50, 36, 1180, 648, GridBorder, DarkBG);
-    Rect(50, 36, 4, 648, Cyan);
+    Frame(44, 30, 1192, 660, GridBorder, DarkBG);
+    Rect(44, 30, 4, 660, Cyan);
 
     // Corner decorative tactical reticles
-    Rect(54, 38, 14, 2, Cyan);
-    Rect(54, 38, 2, 14, Cyan);
-    Rect(1212, 38, 14, 2, Cyan);
-    Rect(1224, 38, 2, 14, Cyan);
+    Rect(48, 32, 14, 2, Cyan);
+    Rect(48, 32, 2, 14, Cyan);
+    Rect(1222, 32, 14, 2, Cyan);
+    Rect(1234, 32, 2, 14, Cyan);
 
     // HEADER SECTION
-    Text(TEXT("战区战术背包 / TACTICAL BACKPACK"), 76, 54, White, 1.35f);
-    Text(TEXT("零号大厦 · 隔离办公层 | 特战单兵携行系统"), 76, 92, Muted, 0.74f, 620);
+    Text(TEXT("战区战术背包 / TACTICAL BACKPACK  [6×6 战术矩阵]"), 72, 48, White, 1.30f);
+    Text(TEXT("零号大厦 · 隔离办公层 | 三角洲战术网格 · 空间自由收纳系统 (36 格空间)"), 72, 82, Muted, 0.74f, 620);
 
     // Player Vitals in Header
-    Text(FString::Printf(TEXT("干员体征: %03.0f / 100"), Character->GetHealth()), 660, 58,
+    Text(FString::Printf(TEXT("干员体征: %03.0f / 100"), Character->GetHealth()), 660, 50,
         Character->GetHealth() < 30.0f ? Red : Emerald, 0.82f, 210);
     for (int32 Bar = 0; Bar < 8; ++Bar)
     {
         const bool bActive = (Character->GetHealth() / 100.0f) * 8 > Bar;
-        Rect(660 + Bar * 24, 82, 18, 8, bActive ? (Character->GetHealth() < 30.0f ? Red : Emerald) : FLinearColor(0.06f, 0.10f, 0.12f));
+        Rect(660 + Bar * 24, 74, 18, 8, bActive ? (Character->GetHealth() < 30.0f ? Red : Emerald) : FLinearColor(0.06f, 0.10f, 0.12f));
     }
 
     // Extraction Valuation Chip & Warning Badge
-    Frame(896, 52, 310, 48, Gold, FLinearColor(0.08f, 0.06f, 0.02f, 0.95f), 1.5f);
-    Rect(896, 52, 4, 48, Gold);
-    Text(TEXT("◆ 撤离资产估值"), 912, 60, Muted, 0.68f);
-    Text(FString::Printf(TEXT("$%d"), Character->GetLootValue()), 912, 75, Gold, 1.25f);
-    Frame(1048, 62, 146, 28, FLinearColor(0.48f, 0.18f, 0.12f), FLinearColor(0.12f, 0.04f, 0.03f));
-    Text(TEXT("⚠️ 战区状态 · 危险未暂停"), 1056, 68, Amber, 0.68f, 130);
+    Frame(896, 44, 316, 46, Gold, FLinearColor(0.08f, 0.06f, 0.02f, 0.95f), 1.5f);
+    Rect(896, 44, 4, 46, Gold);
+    Text(TEXT("◆ 撤离资产估值"), 910, 51, Muted, 0.66f);
+    Text(FString::Printf(TEXT("$%d"), Character->GetLootValue()), 910, 66, Gold, 1.25f);
+    Frame(1054, 52, 146, 28, FLinearColor(0.48f, 0.18f, 0.12f), FLinearColor(0.12f, 0.04f, 0.03f));
+    Text(TEXT("⚠️ 战区状态 · 危险未暂停"), 1062, 58, Amber, 0.68f, 130);
 
-    Rect(76, 122, 1128, 1, GridBorder);
+    Rect(72, 108, 1140, 1, GridBorder);
 
-    // SECTION 1: TACTICAL GEAR & SECURE CONTAINER (TOP BAR)
-    Text(TEXT("◆ 特战战备装具 / TACTICAL GEAR"), 76, 132, TechBlue, 0.74f);
-    Text(TEXT("装具槽位 (独立携带·不可丢弃)"), 610, 132, Muted, 0.67f, 198);
+    // SECTION 1: 6x6 TACTICAL STORAGE GRID (LEFT)
+    Text(TEXT("◆ 战术收纳矩阵 / 6×6 SPATIAL GRID"), 72, 118, TechBlue, 0.80f);
+    Text(TEXT("容量: 6 × 6 共 36 格 | [鼠标/方向键] 选格  [E/空格/点击] 拿起/放下  [R] 旋转  [Del] 丢弃"),
+        360, 118, Muted, 0.68f, 400);
 
-    // Slot 1: Primary Weapon (Glock)
-    Frame(76, 154, 236, 68, GridBorder, PanelBG);
-    Rect(76, 154, 3, 68, Character->GetSelectedWeapon() == EPlayerWeapon::Firearm ? Cyan : GridBorder);
-    Text(TEXT("主武器"), 88, 162, TechBlue, 0.70f);
-    Text(TEXT("格洛克 17 战术手枪"), 88, 182, White, 0.85f, 215);
-    Text(FString::Printf(TEXT("弹匣: %02d / 17   备用: %02d"), Character->GetAmmoInMagazine(), Character->GetReserveAmmo()),
-        88, 204, Muted, 0.70f, 215);
-
-    // Slot 2: Melee Weapon (Fire Axe)
-    Frame(324, 154, 236, 68, GridBorder, PanelBG);
-    Rect(324, 154, 3, 68, Character->GetSelectedWeapon() == EPlayerWeapon::Melee ? Red : GridBorder);
-    Text(TEXT("近战武器"), 336, 162, Red, 0.70f);
-    Text(TEXT("应急重型消防斧"), 336, 182, White, 0.85f, 215);
-    Text(TEXT("近身破拆 · 静默击杀 · 无限损耗"), 336, 204, Muted, 0.70f, 215);
-
-    // Slot 3: Tactical Flashlight
-    Frame(572, 154, 236, 68, GridBorder, PanelBG);
-    Rect(572, 154, 3, 68, Character->IsFlashlightOn() ? Amber : GridBorder);
-    Text(TEXT("战术照明"), 584, 162, Amber, 0.70f);
-    Text(Character->HasFlashlight() ? TEXT("战术强光手电 (已装备)") : TEXT("未装备战术手电"), 584, 182, White, 0.85f, 215);
-    Text(Character->HasFlashlight()
-        ? (Character->IsFlashlightOn() ? TEXT("状态: [F] 照射开启") : TEXT("状态: [F] 已关闭"))
-        : TEXT("前往配电室控制台拾取"), 584, 204, Character->IsFlashlightOn() ? Amber : Muted, 0.70f, 215);
-
-    // SECTION 2: 3x2 STORAGE GRID (CENTER)
-    Text(TEXT("◆ 战术收纳矩阵 / TACTICAL STORAGE MATRIX"), 76, 240, TechBlue, 0.74f);
-    Text(TEXT("容量: 3 x 2  共 6 格"), 700, 240, Muted, 0.68f, 108);
-
-    auto ItemColor = [&Gold, &Emerald, &TechBlue, &White](ELZInventoryItemType Type) -> FLinearColor
+    auto ItemColor = [&Gold, &Emerald, &TechBlue, &White, &Red, &Amber](ELZInventoryItemType Type) -> FLinearColor
     {
         switch (Type)
         {
+        case ELZInventoryItemType::Axe: return Red;
+        case ELZInventoryItemType::Pistol: return Amber;
+        case ELZInventoryItemType::Flashlight: return Gold;
         case ELZInventoryItemType::Rare: return Gold;
         case ELZInventoryItemType::Medical: return Emerald;
         case ELZInventoryItemType::Ammo: return TechBlue;
@@ -372,6 +410,9 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
     {
         switch (Type)
         {
+        case ELZInventoryItemType::Axe: return TEXT("应急重型消防斧");
+        case ELZInventoryItemType::Pistol: return TEXT("格洛克17 战术手枪");
+        case ELZInventoryItemType::Flashlight: return TEXT("战术强光手电筒");
         case ELZInventoryItemType::Ammo: return TEXT("9x19mm 手枪备弹");
         case ELZInventoryItemType::Medical: return TEXT("便携急救医疗包");
         case ELZInventoryItemType::Rare: return TEXT("机密服务器备件");
@@ -382,183 +423,275 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
     {
         switch (Item.Type)
         {
+        case ELZInventoryItemType::Axe: return 280;
+        case ELZInventoryItemType::Pistol: return 350;
+        case ELZInventoryItemType::Flashlight: return 80;
         case ELZInventoryItemType::Rare: return 500;
         case ELZInventoryItemType::Medical: return 60;
         case ELZInventoryItemType::Ammo: return Item.Quantity * 3;
-        default: return 35;
+        default: return 120;
         }
     };
 
-    const int32 SelectedSlot = Character->GetSelectedInventorySlot();
-    const FLZInventoryEntry* Selected = Character->GetInventoryItemAtSlot(SelectedSlot);
+    const int32 CursorCol = Character->GetCursorX();
+    const int32 CursorRow = Character->GetCursorY();
 
-    // Draw grid matrix cells
-    for (int32 Slot = 0; Slot < 6; ++Slot)
+    // Column markers (1..6)
+    for (int32 Col = 0; Col < 6; ++Col)
     {
-        const int32 Row = Slot / 3;
-        const int32 Col = Slot % 3;
-        const float X = 76 + Col * (CellWidth + Gap);
-        const float Y = 268 + Row * (CellHeight + Gap);
-        const bool bIsSelected = (Slot == SelectedSlot);
+        const float MarkerX = GridStartX + Col * (CellSize + CellGap) + CellSize * 0.5f - 4;
+        Text(FString::Printf(TEXT("%d"), Col + 1), MarkerX, 140, Col == CursorCol ? Cyan : FLinearColor(0.35f, 0.45f, 0.50f), 0.70f);
+    }
+    // Row markers (A..F)
+    for (int32 Row = 0; Row < 6; ++Row)
+    {
+        const float MarkerY = GridStartY + Row * (CellSize + CellGap) + CellSize * 0.5f - 8;
+        Text(FString::Printf(TEXT("%c"), 'A' + Row), 52, MarkerY, Row == CursorRow ? Cyan : FLinearColor(0.35f, 0.45f, 0.50f), 0.70f);
+    }
 
-        Frame(X, Y, CellWidth, CellHeight, bIsSelected ? Cyan : GridBorder,
-            bIsSelected ? FLinearColor(0.02f, 0.05f, 0.07f, 0.95f) : PanelBG);
-
-        // Delta Force style grid coordinate label (A1, A2, A3, B1, B2, B3)
-        const FString Coord = FString::Printf(TEXT("%c%d"), 'A' + Row, Col + 1);
-        Text(Coord, X + 10, Y + 8, bIsSelected ? Cyan : FLinearColor(0.25f, 0.35f, 0.40f), 0.68f);
-
-        // Highlight selection corner brackets
-        if (bIsSelected)
+    // 1. Draw 36 empty background cells
+    for (int32 Row = 0; Row < 6; ++Row)
+    {
+        for (int32 Col = 0; Col < 6; ++Col)
         {
-            Rect(X + 1, Y + 1, 12, 2, Cyan);
-            Rect(X + 1, Y + 1, 2, 12, Cyan);
-            Rect(X + CellWidth - 13, Y + 1, 12, 2, Cyan);
-            Rect(X + CellWidth - 3, Y + 1, 2, 12, Cyan);
-            Rect(X + 1, Y + CellHeight - 3, 12, 2, Cyan);
-            Rect(X + 1, Y + CellHeight - 13, 2, 12, Cyan);
-            Rect(X + CellWidth - 13, Y + CellHeight - 3, 12, 2, Cyan);
-            Rect(X + CellWidth - 3, Y + CellHeight - 13, 2, 12, Cyan);
-        }
+            const float X = GridStartX + Col * (CellSize + CellGap);
+            const float Y = GridStartY + Row * (CellSize + CellGap);
+            const bool bIsCursor = (Col == CursorCol && Row == CursorRow);
 
-        const FLZInventoryEntry* Item = Character->GetInventoryItemAtSlot(Slot);
-        if (!Item)
-        {
-            Rect(X + CellWidth * 0.5f - 8, Y + CellHeight * 0.5f - 1, 16, 2, FLinearColor(0.12f, 0.18f, 0.22f));
-            Rect(X + CellWidth * 0.5f - 1, Y + CellHeight * 0.5f - 8, 2, 16, FLinearColor(0.12f, 0.18f, 0.22f));
-            continue;
-        }
+            Frame(X, Y, CellSize, CellSize, bIsCursor ? Cyan : GridBorder,
+                bIsCursor ? FLinearColor(0.025f, 0.055f, 0.075f, 0.95f) : CellBG);
 
-        // If this slot is secondary part of multi-slot item, avoid re-drawing main labels
-        if (Item->StartSlot != Slot)
-        {
-            Text(TEXT("◄ 占用延伸"), X + 24, Y + 56, Muted * 0.8f, 0.70f);
-            continue;
-        }
+            // Subtle coordinate watermark in cell
+            const FString Coord = FString::Printf(TEXT("%c%d"), 'A' + Row, Col + 1);
+            Text(Coord, X + 6, Y + 6, bIsCursor ? Cyan : FLinearColor(0.18f, 0.26f, 0.30f), 0.55f);
 
-        const int32 Span = Item->SlotsPerItem;
-        const float Width = Span > 1 ? (CellWidth * Span + Gap * (Span - 1)) : CellWidth;
-        const FLinearColor Tint = ItemColor(Item->Type);
-
-        // Quality border stripe on top
-        Rect(X, Y, Width, 3, Tint);
-
-        DrawInventoryIcon(Item->Type, OriginX + (X + 14) * Scale, OriginY + (Y + 36) * Scale, Scale, Tint);
-        Text(ItemName(Item->Type), X + 82, Y + 34, White, 0.88f, Width - 94);
-
-        if (Item->Type == ELZInventoryItemType::Ammo)
-        {
-            Frame(X + Width - 72, Y + 8, 64, 20, TechBlue * 0.6f, FLinearColor(0.04f, 0.12f, 0.16f));
-            Text(FString::Printf(TEXT("x%02d"), Item->Quantity), X + Width - 60, Y + 10, TechBlue, 0.74f);
-        }
-        else if (Item->Quantity > 1)
-        {
-            Text(FString::Printf(TEXT("x%d"), Item->Quantity), X + Width - 48, Y + 10, White, 0.74f);
-        }
-
-        Text(Item->Type == ELZInventoryItemType::Rare ? TEXT("机密战利品 · 高价值资产")
-            : Item->Type == ELZInventoryItemType::Medical ? TEXT("战地医疗包 · 恢复35HP")
-            : Item->Type == ELZInventoryItemType::Ammo ? TEXT("9x19mm 手枪备用弹药") : TEXT("工业电子废料 · 回收价值"),
-            X + 82, Y + 72, Muted, 0.65f, Width - 94);
-        Text(FString::Printf(TEXT("占用 %d 格"), Span), X + 15, Y + 104, Muted, 0.67f);
-        Text(FString::Printf(TEXT("估值 $%d"), ItemValue(*Item)), X + Width - 118, Y + 104, Tint, 0.72f, 104);
-        if (Span > 1)
-        {
-            Rect(X + CellWidth + Gap * 0.5f, Y + 34, 1, 60, Tint * 0.35f);
+            // Center subtle crosshair
+            Rect(X + CellSize * 0.5f - 4, Y + CellSize * 0.5f - 1, 8, 2, FLinearColor(0.08f, 0.14f, 0.18f));
+            Rect(X + CellSize * 0.5f - 1, Y + CellSize * 0.5f - 4, 2, 8, FLinearColor(0.08f, 0.14f, 0.18f));
         }
     }
 
-    // SECTION 3: DELTA FORCE SECURE CONTAINER (LEFT-BOTTOM)
-    Frame(76, 544, 732, 46, Gold * 0.75f, FLinearColor(0.04f, 0.03f, 0.015f, 0.95f), 1.2f);
-    Rect(76, 544, 4, 46, Gold);
-    const FString FuseState = GameMode->IsOfficePowerRestored() ? TEXT("已通电 · 供电全恢复 · 安全门开启")
-        : GameMode->HasFuse() ? TEXT("安全携带中 · 15A主线保险丝 · 前往配电室安装") : TEXT("未获取 · 前往办公区拾取15A保险丝");
-    Text(TEXT("◆ 密保安全箱 (金品质·必带出)"), 90, 553, Gold, 0.75f);
-    Text(FuseState, 280, 553, GameMode->HasFuse() ? Cyan : Muted, 0.76f, 440);
-    Text(TEXT("密保槽位: 1/1"), 720, 553, Muted, 0.67f, 80);
-
-    // SECTION 4: TACTICAL ITEM INSPECTOR (RIGHT PANEL)
-    Frame(842, 122, 362, 468, GridBorder, PanelBG);
-    Rect(842, 122, 4, 468, Cyan);
-    Text(TEXT("战术物资检视 / INSPECTION"), 862, 136, Cyan, 0.88f);
-    Rect(862, 160, 322, 1, GridBorder);
-
-    if (Selected)
+    // 2. Draw placed items
+    const int32 HeldItemId = Character->GetHeldItemId();
+    for (const FLZInventoryEntry& Item : Character->GetInventoryEntries())
     {
-        const FLinearColor Tint = ItemColor(Selected->Type);
-        const FString CategoryTag = Selected->Type == ELZInventoryItemType::Rare ? TEXT("【高阶机密战利品】")
-            : Selected->Type == ELZInventoryItemType::Medical ? TEXT("【战地急救耗材】")
-            : Selected->Type == ELZInventoryItemType::Ammo ? TEXT("【战术通用备弹】") : TEXT("【工业回收物资】");
-        Text(CategoryTag, 862, 172, Tint, 0.74f, 322);
-        Text(ItemName(Selected->Type), 862, 196, White, 1.28f, 322);
+        if (Item.ItemId == HeldItemId && HeldItemId != 0)
+        {
+            continue; // Currently being held/moved
+        }
+
+        const float X = GridStartX + Item.PosX * (CellSize + CellGap);
+        const float Y = GridStartY + Item.PosY * (CellSize + CellGap);
+        const float W = Item.Width * CellSize + (Item.Width - 1) * CellGap;
+        const float H = Item.Height * CellSize + (Item.Height - 1) * CellGap;
+        const bool bIsSelected = Item.CoversCell(CursorCol, CursorRow);
+        const FLinearColor Tint = ItemColor(Item.Type);
+
+        // Filled item background
+        Frame(X, Y, W, H, bIsSelected ? Cyan : Tint * 0.8f,
+            FLinearColor(Tint.R * 0.10f, Tint.G * 0.10f, Tint.B * 0.10f, 0.95f), bIsSelected ? 2.0f : 1.0f);
+        // Top quality stripe
+        Rect(X, Y, W, 3, Tint);
+
+        // Center item icon
+        const float IconScale = FMath::Min(1.0f, FMath::Min(W, H) / 55.0f);
+        DrawInventoryIcon(Item.Type, OriginX + (X + W * 0.5f - 32 * IconScale) * Scale,
+            OriginY + (Y + H * 0.5f - 24 * IconScale) * Scale, IconScale * Scale, Tint);
+
+        // Item name & size label
+        if (W >= 120.0f || H >= 120.0f)
+        {
+            Text(ItemName(Item.Type), X + 8, Y + 8, White, 0.76f, W - 16);
+            Text(FString::Printf(TEXT("%d×%d 格"), Item.Width, Item.Height), X + 8, Y + H - 20, Muted, 0.65f);
+        }
+        else
+        {
+            Text(FString::Printf(TEXT("%d×%d"), Item.Width, Item.Height), X + 6, Y + H - 18, Muted, 0.60f);
+        }
+
+        // Ammo count or stack count
+        if (Item.Type == ELZInventoryItemType::Ammo)
+        {
+            Frame(X + W - 38, Y + 6, 32, 16, TechBlue * 0.7f, FLinearColor(0.04f, 0.12f, 0.16f));
+            Text(FString::Printf(TEXT("x%02d"), Item.Quantity), X + W - 34, Y + 7, TechBlue, 0.65f);
+        }
+        else if (Item.Quantity > 1)
+        {
+            Text(FString::Printf(TEXT("x%d"), Item.Quantity), X + W - 28, Y + 6, White, 0.65f);
+        }
+
+        // Corner brackets on selected item
+        if (bIsSelected)
+        {
+            Rect(X + 1, Y + 1, 8, 2, Cyan);
+            Rect(X + 1, Y + 1, 2, 8, Cyan);
+            Rect(X + W - 9, Y + 1, 8, 2, Cyan);
+            Rect(X + W - 3, Y + 1, 2, 8, Cyan);
+            Rect(X + 1, Y + H - 3, 8, 2, Cyan);
+            Rect(X + 1, Y + H - 9, 2, 8, Cyan);
+            Rect(X + W - 9, Y + H - 3, 8, 2, Cyan);
+            Rect(X + W - 3, Y + H - 9, 2, 8, Cyan);
+        }
+    }
+
+    // 3. Draw held item footprint preview (Delta Force / Backpack Battles drag-and-drop feedback)
+    if (Character->HasHeldItem())
+    {
+        const int32 HeldW = Character->GetHeldWidth();
+        const int32 HeldH = Character->GetHeldHeight();
+        const bool bCanPlace = Character->CanPlaceItem(CursorCol, CursorRow, HeldW, HeldH, HeldItemId);
+        const float FPX = GridStartX + CursorCol * (CellSize + CellGap);
+        const float FPY = GridStartY + CursorRow * (CellSize + CellGap);
+        const float FPW = HeldW * CellSize + (HeldW - 1) * CellGap;
+        const float FPH = HeldH * CellSize + (HeldH - 1) * CellGap;
+        const FLinearColor PreviewFill = bCanPlace ? FLinearColor(0.15f, 0.85f, 0.45f, 0.38f) : FLinearColor(0.95f, 0.20f, 0.18f, 0.42f);
+        const FLinearColor PreviewBorder = bCanPlace ? Emerald : Red;
+
+        Frame(FPX, FPY, FPW, FPH, PreviewBorder, PreviewFill, 2.5f);
+        const FString PlacementHint = bCanPlace ? TEXT("✓ 可放置 [点击/E]") : TEXT("✗ 位置受阻 [不可放置]");
+        Text(PlacementHint, FPX + 6, FPY + 6, PreviewBorder, 0.75f, FPW - 12);
+        Text(FString::Printf(TEXT("规格: %d×%d [按R旋转]"), HeldW, HeldH), FPX + 6, FPY + FPH - 22, White, 0.70f);
+
+        // Preview icon in floating footprint
+        const FLZInventoryEntry* HeldEntry = Character->GetHeldItem();
+        if (HeldEntry)
+        {
+            DrawInventoryIcon(HeldEntry->Type, OriginX + (FPX + FPW * 0.5f - 30) * Scale,
+                OriginY + (FPY + FPH * 0.5f - 22) * Scale, Scale, PreviewBorder);
+        }
+    }
+
+    // SECTION 2: TACTICAL ITEM INSPECTOR (RIGHT PANEL)
+    const float PanelX = 538.0f;
+    const float PanelWidth = 674.0f;
+    const float PanelY = 130.0f;
+    const float PanelHeight = 472.0f;
+
+    Frame(PanelX, PanelY, PanelWidth, PanelHeight, GridBorder, PanelBG);
+    Rect(PanelX, PanelY, 4, PanelHeight, Cyan);
+
+    Text(TEXT("战术物资检视 / INSPECTION"), PanelX + 20, PanelY + 16, Cyan, 0.88f);
+    Rect(PanelX + 20, PanelY + 40, PanelWidth - 40, 1, GridBorder);
+
+    // Current selected entry or held entry
+    const FLZInventoryEntry* ActiveEntry = Character->HasHeldItem()
+        ? Character->GetHeldItem()
+        : Character->GetInventoryItemAtCell(CursorCol, CursorRow);
+
+    if (ActiveEntry)
+    {
+        const FLinearColor Tint = ItemColor(ActiveEntry->Type);
+        const FString CategoryTag = ActiveEntry->Type == ELZInventoryItemType::Axe ? TEXT("【近战破拆武器 · 无限损耗】")
+            : ActiveEntry->Type == ELZInventoryItemType::Pistol ? TEXT("【主武器 · 9mm战术手枪】")
+            : ActiveEntry->Type == ELZInventoryItemType::Flashlight ? TEXT("【战术照明器材 · 探照侦察】")
+            : ActiveEntry->Type == ELZInventoryItemType::Rare ? TEXT("【高阶机密战利品 · 核心资产】")
+            : ActiveEntry->Type == ELZInventoryItemType::Medical ? TEXT("【战地急救耗材 · 恢复35HP】")
+            : ActiveEntry->Type == ELZInventoryItemType::Ammo ? TEXT("【战术通用备弹 · 9x19mm】") : TEXT("【工业回收物资 · 变现资源】");
+
+        Text(CategoryTag, PanelX + 20, PanelY + 50, Tint, 0.75f, PanelWidth - 40);
+        Text(ItemName(ActiveEntry->Type), PanelX + 20, PanelY + 74, White, 1.25f, PanelWidth - 40);
 
         // Preview Box
-        Frame(862, 236, 322, 88, Tint * 0.4f, FLinearColor(0.012f, 0.022f, 0.030f, 0.95f));
-        DrawInventoryIcon(Selected->Type, OriginX + 876 * Scale, OriginY + 252 * Scale, 1.2f * Scale, Tint);
-        Text(Selected->Type == ELZInventoryItemType::Ammo
-            ? FString::Printf(TEXT("现有储量:  %d 发 / 30"), Selected->Quantity)
-            : FString::Printf(TEXT("现有储量:  %d 件"), Selected->Quantity), 964, 250, White, 0.82f, 210);
-        Text(FString::Printf(TEXT("网格负载:  %d 格"), Selected->SlotsPerItem), 964, 276, Muted, 0.78f, 210);
-        Text(FString::Printf(TEXT("撤离估值:  ◆ $%d"), ItemValue(*Selected)), 964, 300, Gold, 0.84f, 210);
+        Frame(PanelX + 20, PanelY + 110, PanelWidth - 40, 84, Tint * 0.4f, FLinearColor(0.012f, 0.022f, 0.030f, 0.95f));
+        DrawInventoryIcon(ActiveEntry->Type, OriginX + (PanelX + 36) * Scale, OriginY + (PanelY + 126) * Scale, 1.25f * Scale, Tint);
 
-        // Attribute Specs
-        Text(TEXT("战术属性与使用指南"), 862, 336, White, 0.80f);
+        const FString CountStr = ActiveEntry->Type == ELZInventoryItemType::Ammo
+            ? FString::Printf(TEXT("现有储量:  %d 发 / 30"), ActiveEntry->Quantity)
+            : FString::Printf(TEXT("现有数量:  %d 件"), ActiveEntry->Quantity);
+        Text(CountStr, PanelX + 130, PanelY + 120, White, 0.82f, 240);
+        Text(FString::Printf(TEXT("网格占位:  %d × %d 格  (共 %d 格)"), ActiveEntry->Width, ActiveEntry->Height, ActiveEntry->Width * ActiveEntry->Height),
+            PanelX + 130, PanelY + 144, Muted, 0.78f, 240);
+        Text(FString::Printf(TEXT("估值收益:  ◆ $%d"), ItemValue(*ActiveEntry)), PanelX + 130, PanelY + 168, Gold, 0.84f, 240);
+
+        // Tactical Specs & Description
+        Text(TEXT("战术属性与使用指南"), PanelX + 20, PanelY + 206, White, 0.80f);
         FString UseHint;
         FString Description;
-        switch (Selected->Type)
+        switch (ActiveEntry->Type)
         {
+        case ELZInventoryItemType::Axe:
+            UseHint = TEXT("指令: 按 1 切出应急重型消防斧，近距离破拆与击杀");
+            Description = TEXT("占用 2×6 (或 6×2) 格空间。近距离攻击无需子弹，对感染者造成重创。在背包中即可随身装备。");
+            break;
+        case ELZInventoryItemType::Pistol:
+            UseHint = TEXT("指令: 按 2 切合格洛克17手枪，按 R 装填弹匣");
+            Description = FString::Printf(TEXT("占用 2×2 格空间。当前弹匣: %02d / 17，后备备弹: %02d。可靠的中近距离防卫火器。"),
+                Character->GetAmmoInMagazine(), Character->GetReserveAmmo());
+            break;
+        case ELZInventoryItemType::Flashlight:
+            UseHint = TEXT("指令: 探索中按 F 开关战术手电筒");
+            Description = TEXT("占用 2×1 (或 1×2) 格空间。高流明防暴照明，穿透办公层黑暗走廊，不消耗电量。");
+            break;
         case ELZInventoryItemType::Ammo:
-            UseHint = TEXT("指令: 关闭背包后按 R 装填弹匣");
-            Description = TEXT("9x19mm 手枪通用弹药，换弹时自动扣减背包存量。");
+            UseHint = TEXT("指令: 关闭背包后按 R 从背包备弹装入格洛克弹匣");
+            Description = TEXT("占用 1×1 单格空间，单格最大堆叠 30 发。换弹时自动优先扣除背包备弹。");
             break;
         case ELZInventoryItemType::Medical:
             UseHint = Character->GetHealth() < 100.0f ? TEXT("指令: [E] 战地包扎 · 恢复 35 HP") : TEXT("状态: 生命值已达上限，无需使用");
-            Description = FString::Printf(TEXT("便携军用医疗包，当前体征: %.0f / 100。"), Character->GetHealth());
+            Description = FString::Printf(TEXT("占用 1×2 格空间。便携军用急救医疗包，当前体征: %.0f / 100。"), Character->GetHealth());
             break;
         case ELZInventoryItemType::Rare:
-            UseHint = TEXT("指令: 成功撤离后计入高额带出估值");
-            Description = TEXT("企业级服务器机架刀片备件，需同一行两个连续网格。");
+            UseHint = TEXT("指令: 成功撤离后计入高额带出估值 ($500)");
+            Description = TEXT("占用 2×2 格空间。企业级机房刀片服务器备件，核心机密数据资产。");
             break;
         default:
-            UseHint = TEXT("指令: 成功撤离后折算回收收益");
-            Description = TEXT("轻型工业电子元器件，可单格随身携带。");
+            UseHint = TEXT("指令: 成功撤离后折算工业回收收益");
+            Description = TEXT("占用 1×1 格空间。轻型工业电子废料元器件，可单格灵活塞入背包空隙。");
             break;
         }
-        Text(UseHint, 862, 362, Selected->Type == ELZInventoryItemType::Medical ? Emerald : White, 0.78f, 322);
-        Text(Description, 862, 392, Muted, 0.68f, 322);
 
-        // Action Buttons Box
-        Frame(862, 428, 322, 44, Red * 0.6f, FLinearColor(0.08f, 0.03f, 0.02f, 0.90f));
-        Text(TEXT("[ Delete ] 战区丢弃整组 (无法找回)"), 874, 442, Red, 0.75f, 300);
+        Text(UseHint, PanelX + 20, PanelY + 228, ActiveEntry->Type == ELZInventoryItemType::Medical ? Emerald : White, 0.78f, PanelWidth - 40);
+        Text(Description, PanelX + 20, PanelY + 252, Muted, 0.70f, PanelWidth - 40);
+
+        // Control Buttons Box
+        Frame(PanelX + 20, PanelY + 296, PanelWidth - 40, 56, GridBorder, FLinearColor(0.012f, 0.02f, 0.026f, 0.95f));
+        Text(TEXT("[ 鼠标左键 / E ] 拿起 / 放置装备到当前网格"), PanelX + 32, PanelY + 306, Cyan, 0.75f);
+        Text(TEXT("[ R 键 ] 旋转装备方向 (宽×高切换)   [ 右键 ] 取消移动   [ Delete ] 战区丢弃整组"),
+            PanelX + 32, PanelY + 328, Gold, 0.72f);
     }
     else
     {
-        Text(TEXT("【可用储物槽位】"), 862, 175, Muted, 0.76f, 322);
-        Text(TEXT("空闲网格"), 862, 202, White, 1.25f, 322);
-        Text(TEXT("该槽位处于就绪状态。"), 862, 260, Muted, 0.82f, 322);
-        Text(TEXT("靠近场景物资按 [E] 搜刮装入。"), 862, 295, White, 0.82f, 322);
-        Text(TEXT("大件物资需同排相邻两格连续空间。"), 862, 330, Muted, 0.76f, 322);
-        Text(TEXT("装备器材与主线保险丝独立携带。"), 862, 365, Muted, 0.76f, 322);
+        Text(TEXT("【空闲就绪网格】"), PanelX + 20, PanelY + 54, Muted, 0.76f);
+        Text(FString::Printf(TEXT("网格坐标: %c%d  (就绪)"), 'A' + CursorRow, CursorCol + 1), PanelX + 20, PanelY + 80, White, 1.22f);
+        Text(TEXT("该网格处于完全空闲就绪状态。"), PanelX + 20, PanelY + 120, Muted, 0.82f);
+        Text(TEXT("◆ 装备规格与自由收纳指南:"), PanelX + 20, PanelY + 150, White, 0.82f);
+        Text(TEXT("• 应急消防破拆斧: 占用 2×6 (或 6×2) 格"), PanelX + 32, PanelY + 176, Red, 0.78f);
+        Text(TEXT("• 格洛克17战术手枪: 占用 2×2 格"), PanelX + 32, PanelY + 200, Amber, 0.78f);
+        Text(TEXT("• 战术强光手电筒: 占用 2×1 (或 1×2) 格"), PanelX + 32, PanelY + 224, Gold, 0.78f);
+        Text(TEXT("• 战地医疗急救包: 占用 1×2 格 (可按E使用)"), PanelX + 32, PanelY + 248, Emerald, 0.78f);
+        Text(TEXT("• 9mm备弹 / 电子零件: 占用 1×1 单格"), PanelX + 32, PanelY + 272, TechBlue, 0.78f);
+        Text(TEXT("• 按 [R] 自由旋转物品方向，合理规划36格收纳空间。"), PanelX + 20, PanelY + 310, Cyan, 0.80f);
     }
+
+    // Secure Container Status Chip (Right Bottom)
+    Frame(PanelX + 20, PanelY + 364, PanelWidth - 40, 36, Gold * 0.75f, FLinearColor(0.04f, 0.03f, 0.015f, 0.95f), 1.2f);
+    Rect(PanelX + 20, PanelY + 364, 4, 36, Gold);
+    const FString FuseState = GameMode->IsOfficePowerRestored() ? TEXT("已通电 · 供电全恢复 · 安全门开启")
+        : GameMode->HasFuse() ? TEXT("安全携带中 · 15A主线保险丝 · 前往配电室安装") : TEXT("未获取 · 前往办公区拾取15A保险丝");
+    Text(TEXT("◆ 密保安全箱:"), PanelX + 32, PanelY + 372, Gold, 0.75f);
+    Text(FuseState, PanelX + 140, PanelY + 372, GameMode->HasFuse() ? Cyan : Muted, 0.75f, PanelWidth - 160);
 
     // Capacity & Load Progress Meter at Bottom of Inspector
-    Rect(862, 488, 322, 1, GridBorder);
+    Rect(PanelX + 20, PanelY + 410, PanelWidth - 40, 1, GridBorder);
     const int32 UsedSlots = Character->GetUsedBagSlots();
     const int32 MaxSlots = Character->GetMaxBagSlots();
-    Text(FString::Printf(TEXT("网格占用率:  %d / %d 格 (%d%%)"), UsedSlots, MaxSlots, (UsedSlots * 100) / MaxSlots),
-        864, 498, UsedSlots >= MaxSlots ? Amber : White, 0.82f, 318);
-    for (int32 SlotBar = 0; SlotBar < 6; ++SlotBar)
+    Text(FString::Printf(TEXT("网格负载:  %d / %d 格 (%d%%)"), UsedSlots, MaxSlots, (UsedSlots * 100) / MaxSlots),
+        PanelX + 20, PanelY + 420, UsedSlots >= MaxSlots ? Amber : White, 0.82f, 318);
+
+    // 36 small load bars
+    for (int32 SlotBar = 0; SlotBar < 36; ++SlotBar)
     {
         const bool bSlotFilled = SlotBar < UsedSlots;
-        Rect(864 + SlotBar * 53, 524, 48, 10, bSlotFilled ? (UsedSlots >= MaxSlots ? Amber : Cyan) : FLinearColor(0.06f, 0.10f, 0.12f));
+        const float BarX = PanelX + 20 + (SlotBar % 18) * 35.0f;
+        const float BarY = PanelY + 444 + (SlotBar / 18) * 8.0f;
+        Rect(BarX, BarY, 32.0f, 6.0f, bSlotFilled ? (UsedSlots >= MaxSlots ? Amber : Cyan) : FLinearColor(0.05f, 0.09f, 0.12f));
     }
-    Text(FString::Printf(TEXT("战利品总值:  $%d"), Character->GetLootValue()), 864, 548, Gold, 1.05f, 318);
 
     // FOOTER COMMAND BAR
-    Rect(76, 604, 1128, 1, GridBorder);
+    Rect(72, 622, 1140, 1, GridBorder);
     const FString Feedback = Character->GetInventoryStatusText();
-    Text(Feedback.IsEmpty() ? TEXT("战区提示: 只搜取高价值与必要补给。整理背包时现实世界不会暂停。") : Feedback,
-        78, 614, Feedback.IsEmpty() ? Muted : Amber, 0.76f, 1124);
-    Text(TEXT("[B / ESC] 收拢背包   [↑↓←→ / 鼠标点击] 选择网格   [E] 战地使用医疗包   [Delete] 丢弃整组   [R] 装填备弹"),
-        78, 642, White, 0.78f, 1124);
+    Text(Feedback.IsEmpty() ? TEXT("战区提示: 三角洲空间收纳背包。按 R 旋转装备，自由分配物品位置。世界不会暂停。") : Feedback,
+        74, 630, Feedback.IsEmpty() ? Muted : Amber, 0.76f, 1136);
+    Text(TEXT("[B / ESC] 关闭背包   [鼠标点击 / 方向键] 选择网格   [E / 空格] 拿起/放置   [R] 旋转方向   [Delete] 丢弃装备"),
+        74, 654, White, 0.78f, 1136);
 }

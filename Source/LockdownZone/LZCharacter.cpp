@@ -25,6 +25,9 @@ namespace
         case ELZInventoryItemType::Medical: return TEXT("医疗包");
         case ELZInventoryItemType::Scrap: return TEXT("电子零件");
         case ELZInventoryItemType::Rare: return TEXT("服务器备件");
+        case ELZInventoryItemType::Axe: return TEXT("消防斧");
+        case ELZInventoryItemType::Pistol: return TEXT("格洛克17手枪");
+        case ELZInventoryItemType::Flashlight: return TEXT("战术手电筒");
         default: return TEXT("物品");
         }
     }
@@ -37,6 +40,9 @@ ALZCharacter::ALZCharacter()
     GetCharacterMovement()->MaxWalkSpeed = 480.0f;
     GetCharacterMovement()->JumpZVelocity = 520.0f;
     GetCharacterMovement()->AirControl = 0.25f;
+    GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
+    GetCharacterMovement()->SetCrouchedHalfHeight(48.0f);
+    GetCharacterMovement()->MaxWalkSpeedCrouched = 180.0f;
 
     FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
     FirstPersonCamera->SetupAttachment(GetCapsuleComponent());
@@ -306,6 +312,11 @@ void ALZCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
     PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &APawn::AddControllerPitchInput);
     PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &ALZCharacter::StartJump);
     PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
+    PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Pressed, this, &ALZCharacter::StartCrouch);
+    PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Released, this, &ALZCharacter::StopCrouch);
+    PlayerInputComponent->BindKey(EKeys::LeftControl, IE_Pressed, this, &ALZCharacter::StartCrouch);
+    PlayerInputComponent->BindKey(EKeys::LeftControl, IE_Released, this, &ALZCharacter::StopCrouch);
+    PlayerInputComponent->BindKey(EKeys::C, IE_Pressed, this, &ALZCharacter::ToggleCrouchState);
     PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ALZCharacter::StartFire);
     PlayerInputComponent->BindAction(TEXT("Aim"), IE_Pressed, this, &ALZCharacter::StartAim);
     PlayerInputComponent->BindAction(TEXT("Aim"), IE_Released, this, &ALZCharacter::StopAim);
@@ -321,6 +332,41 @@ void ALZCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
     PlayerInputComponent->BindAction(TEXT("InventoryUp"), IE_Pressed, this, &ALZCharacter::InventoryUp);
     PlayerInputComponent->BindAction(TEXT("InventoryDown"), IE_Pressed, this, &ALZCharacter::InventoryDown);
     PlayerInputComponent->BindAction(TEXT("InventoryDiscard"), IE_Pressed, this, &ALZCharacter::InventoryDiscard);
+    PlayerInputComponent->BindAction(TEXT("InventoryRotate"), IE_Pressed, this, &ALZCharacter::InventoryRotate);
+    PlayerInputComponent->BindAction(TEXT("InventoryInteract"), IE_Pressed, this, &ALZCharacter::InventoryInteract);
+    PlayerInputComponent->BindAction(TEXT("InventoryCancel"), IE_Pressed, this, &ALZCharacter::InventoryCancel);
+}
+
+void ALZCharacter::StartCrouch()
+{
+    if (bInventoryOpen || IsRunInactive()) return;
+    bCrouchToggled = false;
+    Crouch();
+    if (GetCharacterMovement()) GetCharacterMovement()->Crouch(false);
+}
+
+void ALZCharacter::StopCrouch()
+{
+    if (bCrouchToggled) return;
+    UnCrouch();
+    if (GetCharacterMovement()) GetCharacterMovement()->UnCrouch(false);
+}
+
+void ALZCharacter::ToggleCrouchState()
+{
+    if (bInventoryOpen || IsRunInactive()) return;
+    if (bIsCrouched)
+    {
+        bCrouchToggled = false;
+        UnCrouch();
+        if (GetCharacterMovement()) GetCharacterMovement()->UnCrouch(false);
+    }
+    else
+    {
+        bCrouchToggled = true;
+        Crouch();
+        if (GetCharacterMovement()) GetCharacterMovement()->Crouch(false);
+    }
 }
 
 void ALZCharacter::MoveForward(float Value)
@@ -341,6 +387,12 @@ void ALZCharacter::MoveRight(float Value)
 
 void ALZCharacter::StartJump()
 {
+    if (bIsCrouched)
+    {
+        bCrouchToggled = false;
+        UnCrouch();
+        return;
+    }
     if (!bInventoryOpen && !IsRunInactive()) Jump();
 }
 
@@ -455,10 +507,28 @@ void ALZCharacter::AcquireWeapon(EPlayerWeapon Weapon)
     CancelWeaponActions();
     if (Weapon == EPlayerWeapon::Melee)
     {
+        bool bAlreadyInBag = false;
+        for (const FLZInventoryEntry& Entry : InventoryEntries)
+        {
+            if (Entry.Type == ELZInventoryItemType::Axe) { bAlreadyInBag = true; break; }
+        }
+        if (!bAlreadyInBag)
+        {
+            TryStoreItem(ELZInventoryItemType::Axe, 1);
+        }
         bHasMeleeWeapon = true;
     }
     else if (Weapon == EPlayerWeapon::Firearm)
     {
+        bool bAlreadyInBag = false;
+        for (const FLZInventoryEntry& Entry : InventoryEntries)
+        {
+            if (Entry.Type == ELZInventoryItemType::Pistol) { bAlreadyInBag = true; break; }
+        }
+        if (!bAlreadyInBag)
+        {
+            TryStoreItem(ELZInventoryItemType::Pistol, 1);
+        }
         bHasFirearm = true;
         AmmoInMagazine = 3;
     }
@@ -566,7 +636,15 @@ bool ALZCharacter::AddLoot(int32 Value, int32 Slots, int32 AmmoAmount, int32 Hea
         else return false;
     }
     else if (Slots != 0) return false;
+    for (FLZInventoryEntry& Entry : PlannedEntries)
+    {
+        if (Entry.ItemId <= 0)
+        {
+            Entry.ItemId = NextItemId++;
+        }
+    }
     InventoryEntries = MoveTemp(PlannedEntries);
+    SyncEquippedGear();
     InventoryStatusText = TEXT("物资已放入背包");
     return true;
 }
@@ -613,6 +691,15 @@ bool ALZCharacter::IsRunInactive() const
 void ALZCharacter::AcquireFlashlight()
 {
     if (IsRunInactive()) return;
+    bool bAlreadyInBag = false;
+    for (const FLZInventoryEntry& Entry : InventoryEntries)
+    {
+        if (Entry.Type == ELZInventoryItemType::Flashlight) { bAlreadyInBag = true; break; }
+    }
+    if (!bAlreadyInBag)
+    {
+        TryStoreItem(ELZInventoryItemType::Flashlight, 1);
+    }
     bHasFlashlight = true;
     SetFlashlightEnabled(true);
 }
@@ -746,7 +833,10 @@ int32 ALZCharacter::GetReserveAmmo() const
 int32 ALZCharacter::GetUsedBagSlots() const
 {
     int32 Total = 0;
-    for (const FLZInventoryEntry& Entry : InventoryEntries) Total += Entry.SlotsPerItem;
+    for (const FLZInventoryEntry& Entry : InventoryEntries)
+    {
+        Total += Entry.Width * Entry.Height;
+    }
     return Total;
 }
 
@@ -761,31 +851,141 @@ int32 ALZCharacter::GetLootValue() const
     return Total;
 }
 
-const FLZInventoryEntry* ALZCharacter::GetInventoryItemAtSlot(int32 Slot) const
+void ALZCharacter::GetDefaultItemSize(ELZInventoryItemType Type, int32& OutW, int32& OutH)
 {
-    if (Slot < 0 || Slot >= InventorySlotCount) return nullptr;
+    switch (Type)
+    {
+    case ELZInventoryItemType::Axe:
+        OutW = 2; OutH = 6;
+        break;
+    case ELZInventoryItemType::Pistol:
+        OutW = 2; OutH = 2;
+        break;
+    case ELZInventoryItemType::Flashlight:
+        OutW = 2; OutH = 1;
+        break;
+    case ELZInventoryItemType::Medical:
+        OutW = 1; OutH = 2;
+        break;
+    case ELZInventoryItemType::Rare:
+        OutW = 2; OutH = 2;
+        break;
+    case ELZInventoryItemType::Ammo:
+    case ELZInventoryItemType::Scrap:
+    default:
+        OutW = 1; OutH = 1;
+        break;
+    }
+}
+
+bool ALZCharacter::CanPlaceItem(int32 TargetX, int32 TargetY, int32 W, int32 H, int32 IgnoreItemId) const
+{
+    if (TargetX < 0 || TargetY < 0 || (TargetX + W) > InventoryGridWidth || (TargetY + H) > InventoryGridHeight)
+    {
+        return false;
+    }
     for (const FLZInventoryEntry& Entry : InventoryEntries)
     {
-        if (Slot >= Entry.StartSlot && Slot < Entry.StartSlot + Entry.SlotsPerItem) return &Entry;
+        if (Entry.ItemId == IgnoreItemId && IgnoreItemId != 0)
+        {
+            continue;
+        }
+        const bool bOverlapX = (TargetX < Entry.PosX + Entry.Width) && (TargetX + W > Entry.PosX);
+        const bool bOverlapY = (TargetY < Entry.PosY + Entry.Height) && (TargetY + H > Entry.PosY);
+        if (bOverlapX && bOverlapY)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ALZCharacter::AutoFindPlacement(int32 W, int32 H, int32& OutX, int32& OutY) const
+{
+    for (int32 Y = 0; Y <= InventoryGridHeight - H; ++Y)
+    {
+        for (int32 X = 0; X <= InventoryGridWidth - W; ++X)
+        {
+            if (CanPlaceItem(X, Y, W, H))
+            {
+                OutX = X;
+                OutY = Y;
+                return true;
+            }
+        }
+    }
+    if (W != H && (H <= InventoryGridWidth && W <= InventoryGridHeight))
+    {
+        for (int32 Y = 0; Y <= InventoryGridHeight - W; ++Y)
+        {
+            for (int32 X = 0; X <= InventoryGridWidth - H; ++X)
+            {
+                if (CanPlaceItem(X, Y, H, W))
+                {
+                    OutX = X;
+                    OutY = Y;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+const FLZInventoryEntry* ALZCharacter::GetInventoryItemAtCell(int32 X, int32 Y) const
+{
+    for (const FLZInventoryEntry& Entry : InventoryEntries)
+    {
+        if (Entry.CoversCell(X, Y)) return &Entry;
     }
     return nullptr;
+}
+
+FLZInventoryEntry* ALZCharacter::GetInventoryItemAtCellMutable(int32 X, int32 Y)
+{
+    for (FLZInventoryEntry& Entry : InventoryEntries)
+    {
+        if (Entry.CoversCell(X, Y)) return &Entry;
+    }
+    return nullptr;
+}
+
+const FLZInventoryEntry* ALZCharacter::GetInventoryItemAtSlot(int32 Slot) const
+{
+    if (Slot < 0 || Slot >= (InventoryGridWidth * InventoryGridHeight)) return nullptr;
+    const int32 X = Slot % InventoryGridWidth;
+    const int32 Y = Slot / InventoryGridWidth;
+    return GetInventoryItemAtCell(X, Y);
+}
+
+const FLZInventoryEntry* ALZCharacter::GetInventoryItemById(int32 ItemId) const
+{
+    if (ItemId == 0) return nullptr;
+    for (const FLZInventoryEntry& Entry : InventoryEntries)
+    {
+        if (Entry.ItemId == ItemId) return &Entry;
+    }
+    return nullptr;
+}
+
+void ALZCharacter::SetCursorPos(int32 NewX, int32 NewY)
+{
+    CursorX = FMath::Clamp(NewX, 0, InventoryGridWidth - 1);
+    CursorY = FMath::Clamp(NewY, 0, InventoryGridHeight - 1);
+}
+
+void ALZCharacter::SetSelectedInventorySlot(int32 Slot)
+{
+    const int32 Clamped = FMath::Clamp(Slot, 0, (InventoryGridWidth * InventoryGridHeight) - 1);
+    CursorX = Clamped % InventoryGridWidth;
+    CursorY = Clamped / InventoryGridWidth;
 }
 
 bool ALZCharacter::PlanInventoryStorage(TArray<FLZInventoryEntry>& Entries, ELZInventoryItemType Type, int32 Quantity) const
 {
     if (Quantity <= 0) return false;
-    switch (Type)
-    {
-    case ELZInventoryItemType::Ammo:
-    case ELZInventoryItemType::Medical:
-    case ELZInventoryItemType::Scrap:
-    case ELZInventoryItemType::Rare:
-        break;
-    default:
-        return false;
-    }
-    const int32 StackLimit = Type == ELZInventoryItemType::Ammo ? AmmoStackLimit : 1;
-    if (Quantity > InventorySlotCount * StackLimit) return false;
+    int32 DefaultW = 1, DefaultH = 1;
+    GetDefaultItemSize(Type, DefaultW, DefaultH);
 
     int32 Remaining = Quantity;
     if (Type == ELZInventoryItemType::Ammo)
@@ -800,42 +1000,68 @@ bool ALZCharacter::PlanInventoryStorage(TArray<FLZInventoryEntry>& Entries, ELZI
         }
     }
 
-    const int32 RequiredSlots = Type == ELZInventoryItemType::Rare ? 2 : 1;
+    auto CanPlaceInList = [](const TArray<FLZInventoryEntry>& List, int32 TX, int32 TY, int32 W, int32 H) -> bool
+    {
+        if (TX < 0 || TY < 0 || (TX + W) > InventoryGridWidth || (TY + H) > InventoryGridHeight) return false;
+        for (const FLZInventoryEntry& E : List)
+        {
+            const bool bOverlapX = (TX < E.PosX + E.Width) && (TX + W > E.PosX);
+            const bool bOverlapY = (TY < E.PosY + E.Height) && (TY + H > E.PosY);
+            if (bOverlapX && bOverlapY) return false;
+        }
+        return true;
+    };
+
+    auto AutoFindInList = [&](const TArray<FLZInventoryEntry>& List, int32 W, int32 H, int32& OutX, int32& OutY, int32& OutW, int32& OutH) -> bool
+    {
+        for (int32 Y = 0; Y <= InventoryGridHeight - H; ++Y)
+        {
+            for (int32 X = 0; X <= InventoryGridWidth - W; ++X)
+            {
+                if (CanPlaceInList(List, X, Y, W, H))
+                {
+                    OutX = X; OutY = Y; OutW = W; OutH = H;
+                    return true;
+                }
+            }
+        }
+        if (W != H && (H <= InventoryGridWidth && W <= InventoryGridHeight))
+        {
+            for (int32 Y = 0; Y <= InventoryGridHeight - W; ++Y)
+            {
+                for (int32 X = 0; X <= InventoryGridWidth - H; ++X)
+                {
+                    if (CanPlaceInList(List, X, Y, H, W))
+                    {
+                        OutX = X; OutY = Y; OutW = H; OutH = W;
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    };
+
+    const int32 StackLimit = (Type == ELZInventoryItemType::Ammo) ? AmmoStackLimit : 1;
     while (Remaining > 0)
     {
-        bool Occupied[InventorySlotCount] = { false };
-        for (const FLZInventoryEntry& Entry : Entries)
+        int32 PlaceX = INDEX_NONE, PlaceY = INDEX_NONE, PlaceW = DefaultW, PlaceH = DefaultH;
+        if (!AutoFindInList(Entries, DefaultW, DefaultH, PlaceX, PlaceY, PlaceW, PlaceH))
         {
-            for (int32 Offset = 0; Offset < Entry.SlotsPerItem; ++Offset)
-            {
-                const int32 Slot = Entry.StartSlot + Offset;
-                if (Slot >= 0 && Slot < InventorySlotCount) Occupied[Slot] = true;
-            }
+            return false;
         }
-        int32 Placement = INDEX_NONE;
-        for (int32 Slot = 0; Slot <= InventorySlotCount - RequiredSlots; ++Slot)
-        {
-            // A two-cell item cannot straddle the right edge of the three-column grid.
-            if (Slot / InventoryColumnCount != (Slot + RequiredSlots - 1) / InventoryColumnCount) continue;
-            bool bFree = true;
-            for (int32 Offset = 0; Offset < RequiredSlots; ++Offset) bFree &= !Occupied[Slot + Offset];
-            if (bFree)
-            {
-                Placement = Slot;
-                break;
-            }
-        }
-        if (Placement == INDEX_NONE) return false;
-
         FLZInventoryEntry NewEntry;
         NewEntry.Type = Type;
         NewEntry.Quantity = FMath::Min(Remaining, StackLimit);
-        NewEntry.StartSlot = Placement;
-        NewEntry.SlotsPerItem = RequiredSlots;
+        NewEntry.PosX = PlaceX;
+        NewEntry.PosY = PlaceY;
+        NewEntry.Width = PlaceW;
+        NewEntry.Height = PlaceH;
+        NewEntry.ItemId = 0;
+        NewEntry.SyncLegacyFields();
         Entries.Add(NewEntry);
         Remaining -= NewEntry.Quantity;
     }
-    Entries.Sort([](const FLZInventoryEntry& A, const FLZInventoryEntry& B) { return A.StartSlot < B.StartSlot; });
     return true;
 }
 
@@ -851,14 +1077,21 @@ bool ALZCharacter::TryStoreItem(ELZInventoryItemType Type, int32 Quantity)
     TArray<FLZInventoryEntry> PlannedEntries = InventoryEntries;
     if (!PlanInventoryStorage(PlannedEntries, Type, Quantity))
     {
-        InventoryStatusText = Type == ELZInventoryItemType::Rare
-            ? TEXT("背包空间不足：服务器备件需要同一行两个连续空格。按B整理背包。")
-            : TEXT("背包空间不足：物品未拾取，按B使用或丢弃物品后再试。");
+        InventoryStatusText = FString::Printf(TEXT("背包空间不足：无法容纳%s，请按B整理背包。"),
+            LZInventoryItemDisplayName(Type));
         return false;
     }
+    for (FLZInventoryEntry& Entry : PlannedEntries)
+    {
+        if (Entry.ItemId <= 0)
+        {
+            Entry.ItemId = NextItemId++;
+        }
+    }
     InventoryEntries = MoveTemp(PlannedEntries);
-    InventoryStatusText = FString::Printf(TEXT("已收纳%s ×%d · 占用%d/6格"),
-        LZInventoryItemDisplayName(Type), Quantity, GetUsedBagSlots());
+    SyncEquippedGear();
+    InventoryStatusText = FString::Printf(TEXT("已收纳%s ×%d · 背包占用%d/%d格"),
+        LZInventoryItemDisplayName(Type), Quantity, GetUsedBagSlots(), GetMaxBagSlots());
     return true;
 }
 
@@ -883,6 +1116,189 @@ int32 ALZCharacter::ConsumeStoredAmmo(int32 RequestedRounds)
     return Requested - Remaining;
 }
 
+void ALZCharacter::PickUpItemAtCursor()
+{
+    PickUpItemAtCell(CursorX, CursorY);
+}
+
+void ALZCharacter::PickUpItemAtCell(int32 X, int32 Y)
+{
+    if (!bInventoryOpen || IsRunInactive()) return;
+    if (HeldItemId != 0)
+    {
+        PlaceHeldItemAtCell(X, Y);
+        return;
+    }
+    const FLZInventoryEntry* Found = GetInventoryItemAtCell(X, Y);
+    if (!Found)
+    {
+        InventoryStatusText = TEXT("该网格为空");
+        return;
+    }
+    HeldItemId = Found->ItemId;
+    HeldWidth = Found->Width;
+    HeldHeight = Found->Height;
+    HeldOriginalX = Found->PosX;
+    HeldOriginalY = Found->PosY;
+    HeldOriginalWidth = Found->Width;
+    HeldOriginalHeight = Found->Height;
+    InventoryStatusText = FString::Printf(TEXT("已拿起%s [%d×%d] · [R]旋转 [点击/E]放置 [右键]取消 [Del]丢弃"),
+        LZInventoryItemDisplayName(Found->Type), HeldWidth, HeldHeight);
+}
+
+bool ALZCharacter::PlaceHeldItemAtCursor()
+{
+    return PlaceHeldItemAtCell(CursorX, CursorY);
+}
+
+bool ALZCharacter::PlaceHeldItemAtCell(int32 X, int32 Y)
+{
+    if (!bInventoryOpen || IsRunInactive() || HeldItemId == 0) return false;
+    if (!CanPlaceItem(X, Y, HeldWidth, HeldHeight, HeldItemId))
+    {
+        InventoryStatusText = TEXT("无法在此放置：位置受阻或超出背包");
+        return false;
+    }
+    for (FLZInventoryEntry& Entry : InventoryEntries)
+    {
+        if (Entry.ItemId == HeldItemId)
+        {
+            Entry.PosX = X;
+            Entry.PosY = Y;
+            Entry.Width = HeldWidth;
+            Entry.Height = HeldHeight;
+            Entry.SyncLegacyFields();
+            InventoryStatusText = FString::Printf(TEXT("已将%s放置于 (%c%d)"),
+                LZInventoryItemDisplayName(Entry.Type), 'A' + Y, X + 1);
+            break;
+        }
+    }
+    HeldItemId = 0;
+    SyncEquippedGear();
+    return true;
+}
+
+void ALZCharacter::RotateHeldItem()
+{
+    if (!bInventoryOpen || IsRunInactive() || HeldItemId == 0) return;
+    Swap(HeldWidth, HeldHeight);
+    InventoryStatusText = FString::Printf(TEXT("已旋转方向: %d×%d"), HeldWidth, HeldHeight);
+}
+
+void ALZCharacter::CancelHeldItem()
+{
+    if (!bInventoryOpen || IsRunInactive() || HeldItemId == 0) return;
+    for (FLZInventoryEntry& Entry : InventoryEntries)
+    {
+        if (Entry.ItemId == HeldItemId)
+        {
+            Entry.PosX = HeldOriginalX;
+            Entry.PosY = HeldOriginalY;
+            Entry.Width = HeldOriginalWidth;
+            Entry.Height = HeldOriginalHeight;
+            Entry.SyncLegacyFields();
+            break;
+        }
+    }
+    HeldItemId = 0;
+    InventoryStatusText = TEXT("已取消移动，物品放回原位");
+}
+
+bool ALZCharacter::DiscardItemById(int32 ItemId)
+{
+    if (!bInventoryOpen || IsRunInactive() || ItemId == 0) return false;
+    int32 FoundIndex = INDEX_NONE;
+    for (int32 Idx = 0; Idx < InventoryEntries.Num(); ++Idx)
+    {
+        if (InventoryEntries[Idx].ItemId == ItemId)
+        {
+            FoundIndex = Idx;
+            break;
+        }
+    }
+    if (FoundIndex == INDEX_NONE) return false;
+    const FLZInventoryEntry Discarded = InventoryEntries[FoundIndex];
+    InventoryEntries.RemoveAt(FoundIndex);
+    if (HeldItemId == ItemId) HeldItemId = 0;
+    SyncEquippedGear();
+    InventoryStatusText = FString::Printf(TEXT("已丢弃%s ×%d：释放%d格空间"),
+        LZInventoryItemDisplayName(Discarded.Type), Discarded.Quantity, Discarded.Width * Discarded.Height);
+    return true;
+}
+
+bool ALZCharacter::DiscardItemAtCell(int32 X, int32 Y)
+{
+    const FLZInventoryEntry* Item = GetInventoryItemAtCell(X, Y);
+    if (!Item)
+    {
+        InventoryStatusText = TEXT("当前网格没有物品可丢弃");
+        return false;
+    }
+    return DiscardItemById(Item->ItemId);
+}
+
+bool ALZCharacter::DiscardSelectedInventoryItem()
+{
+    if (HeldItemId != 0) return DiscardItemById(HeldItemId);
+    return DiscardItemAtCell(CursorX, CursorY);
+}
+
+bool ALZCharacter::UseSelectedInventoryItem()
+{
+    if (!bInventoryOpen || IsRunInactive()) return false;
+    const FLZInventoryEntry* Selected = (HeldItemId != 0) ? GetInventoryItemById(HeldItemId) : GetInventoryItemAtCell(CursorX, CursorY);
+    if (!Selected)
+    {
+        InventoryStatusText = TEXT("当前格没有物品");
+        return false;
+    }
+    if (Selected->Type != ELZInventoryItemType::Medical)
+    {
+        InventoryStatusText = Selected->Type == ELZInventoryItemType::Ammo
+            ? TEXT("关闭背包后按R：从备用弹药中装填弹匣")
+            : TEXT("该装备无需使用，在背包中即生效");
+        return false;
+    }
+    if (Health >= MaxHealth)
+    {
+        InventoryStatusText = TEXT("生命值已满：医疗包未消耗");
+        return false;
+    }
+    const float RestoredHealth = FMath::Min(35.0f, MaxHealth - Health);
+    const int32 ItemIdToUse = Selected->ItemId;
+    Health += RestoredHealth;
+    DiscardItemById(ItemIdToUse);
+    InventoryStatusText = FString::Printf(TEXT("已使用医疗包：恢复%.0f生命值"), RestoredHealth);
+    return true;
+}
+
+void ALZCharacter::SyncEquippedGear()
+{
+    bHasMeleeWeapon = false;
+    bHasFirearm = false;
+    bHasFlashlight = false;
+    for (const FLZInventoryEntry& Entry : InventoryEntries)
+    {
+        if (Entry.Type == ELZInventoryItemType::Axe) bHasMeleeWeapon = true;
+        else if (Entry.Type == ELZInventoryItemType::Pistol) bHasFirearm = true;
+        else if (Entry.Type == ELZInventoryItemType::Flashlight) bHasFlashlight = true;
+    }
+    if (!bHasMeleeWeapon && SelectedWeapon == EPlayerWeapon::Melee)
+    {
+        SelectedWeapon = bHasFirearm ? EPlayerWeapon::Firearm : EPlayerWeapon::None;
+        UpdateWeaponVisibility();
+    }
+    if (!bHasFirearm && SelectedWeapon == EPlayerWeapon::Firearm)
+    {
+        SelectedWeapon = bHasMeleeWeapon ? EPlayerWeapon::Melee : EPlayerWeapon::None;
+        UpdateWeaponVisibility();
+    }
+    if (!bHasFlashlight && bFlashlightOn)
+    {
+        SetFlashlightEnabled(false);
+    }
+}
+
 void ALZCharacter::SetInventoryOpen(bool bOpen)
 {
     if (bOpen == bInventoryOpen || (bOpen && IsRunInactive())) return;
@@ -893,11 +1309,9 @@ void ALZCharacter::SetInventoryOpen(bool bOpen)
         StopJumping();
         ConsumeMovementInputVector();
         GetCharacterMovement()->StopMovementImmediately();
-        SelectedInventorySlot = FMath::Clamp(SelectedInventorySlot, 0, InventorySlotCount - 1);
-        if (InventoryStatusText.IsEmpty()) InventoryStatusText = TEXT("方向键选格，E使用医疗包");
+        if (InventoryStatusText.IsEmpty()) InventoryStatusText = TEXT("鼠标点击或方向键选格，R旋转，E/空格拿起放置");
         if (APlayerController* PC = Cast<APlayerController>(GetController()))
         {
-            // Ignore-input flags are reference-counted. Own exactly one layer, leaving game-over locks intact.
             InventoryInputController = PC;
             PC->SetIgnoreMoveInput(true);
             PC->SetIgnoreLookInput(true);
@@ -905,18 +1319,24 @@ void ALZCharacter::SetInventoryOpen(bool bOpen)
             PC->bShowMouseCursor = true;
         }
     }
-    else if (bInventoryInputLockApplied)
+    else
     {
-        if (APlayerController* PC = InventoryInputController.Get())
+        if (HeldItemId != 0)
         {
-            PC->SetIgnoreMoveInput(false);
-            PC->SetIgnoreLookInput(false);
-            PC->bShowMouseCursor = false;
+            CancelHeldItem();
         }
-        InventoryInputController.Reset();
-        bInventoryInputLockApplied = false;
+        if (bInventoryInputLockApplied)
+        {
+            if (APlayerController* PC = InventoryInputController.Get())
+            {
+                PC->SetIgnoreMoveInput(false);
+                PC->SetIgnoreLookInput(false);
+                PC->bShowMouseCursor = false;
+            }
+            InventoryInputController.Reset();
+            bInventoryInputLockApplied = false;
+        }
     }
-    // The Canvas inventory stays in GameOnly input: B, E, Delete, F and F5 keep their normal bindings.
 }
 
 void ALZCharacter::ToggleInventory()
@@ -932,58 +1352,28 @@ void ALZCharacter::ToggleInventory()
 void ALZCharacter::MoveInventorySelection(int32 ColumnDelta, int32 RowDelta)
 {
     if (!bInventoryOpen || IsRunInactive()) return;
-    const int32 Column = FMath::Clamp(SelectedInventorySlot % InventoryColumnCount + ColumnDelta, 0, InventoryColumnCount - 1);
-    const int32 Row = FMath::Clamp(SelectedInventorySlot / InventoryColumnCount + RowDelta, 0, InventorySlotCount / InventoryColumnCount - 1);
-    SelectedInventorySlot = Row * InventoryColumnCount + Column;
+    CursorX = FMath::Clamp(CursorX + ColumnDelta, 0, InventoryGridWidth - 1);
+    CursorY = FMath::Clamp(CursorY + RowDelta, 0, InventoryGridHeight - 1);
 }
 
 void ALZCharacter::InventoryLeft() { MoveInventorySelection(-1, 0); }
 void ALZCharacter::InventoryRight() { MoveInventorySelection(1, 0); }
 void ALZCharacter::InventoryUp() { MoveInventorySelection(0, -1); }
 void ALZCharacter::InventoryDown() { MoveInventorySelection(0, 1); }
-void ALZCharacter::InventoryDiscard() { DiscardSelectedInventoryItem(); }
-
-bool ALZCharacter::UseSelectedInventoryItem()
+void ALZCharacter::InventoryRotate() { RotateHeldItem(); }
+void ALZCharacter::InventoryInteract()
 {
-    if (!bInventoryOpen || IsRunInactive()) return false;
-    const FLZInventoryEntry* Selected = GetInventoryItemAtSlot(SelectedInventorySlot);
-    if (!Selected)
-    {
-        InventoryStatusText = TEXT("当前格没有物品");
-        return false;
-    }
-    if (Selected->Type != ELZInventoryItemType::Medical)
-    {
-        InventoryStatusText = Selected->Type == ELZInventoryItemType::Ammo
-            ? TEXT("关闭背包后按R：从弹药堆栈中装填手枪")
-            : TEXT("战利品无需使用，成功撤离后结算价值");
-        return false;
-    }
-    if (Health >= MaxHealth)
-    {
-        InventoryStatusText = TEXT("生命已满：医疗包未消耗");
-        return false;
-    }
-    const float RestoredHealth = FMath::Min(35.0f, MaxHealth - Health);
-    const int32 StartSlot = Selected->StartSlot;
-    Health += RestoredHealth;
-    InventoryEntries.RemoveAll([StartSlot](const FLZInventoryEntry& Entry) { return Entry.StartSlot == StartSlot; });
-    InventoryStatusText = FString::Printf(TEXT("已使用医疗包：恢复%.0f生命，释放1格空间"), RestoredHealth);
-    return true;
+    if (HeldItemId != 0) PlaceHeldItemAtCursor();
+    else PickUpItemAtCursor();
+}
+void ALZCharacter::InventoryCancel()
+{
+    if (HeldItemId != 0) CancelHeldItem();
+    else ToggleInventory();
 }
 
-bool ALZCharacter::DiscardSelectedInventoryItem()
+void ALZCharacter::InventoryDiscard()
 {
-    if (!bInventoryOpen || IsRunInactive()) return false;
-    const FLZInventoryEntry* Selected = GetInventoryItemAtSlot(SelectedInventorySlot);
-    if (!Selected)
-    {
-        InventoryStatusText = TEXT("当前格没有可丢弃的物品");
-        return false;
-    }
-    const FLZInventoryEntry Discarded = *Selected;
-    InventoryEntries.RemoveAll([&Discarded](const FLZInventoryEntry& Entry) { return Entry.StartSlot == Discarded.StartSlot; });
-    InventoryStatusText = FString::Printf(TEXT("已丢弃%s ×%d：释放%d格，当前战利品价值%d（不可找回）"),
-        LZInventoryItemDisplayName(Discarded.Type), Discarded.Quantity, Discarded.SlotsPerItem, GetLootValue());
-    return true;
+    DiscardSelectedInventoryItem();
 }
+

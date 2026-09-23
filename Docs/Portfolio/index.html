@@ -450,12 +450,12 @@
 
       <div class="nav-group-title">核心设计系统</div>
       <a href="#opening-tutorial">开场教学：安全观察与残弹</a>
-      <a href="#inventory-tradeoffs">搜索取舍：微背包与冲突</a>
+      <a href="#inventory-tradeoffs">搜索取舍：6×6网格背包与潜行</a>
       <a href="#blackout-navigation">断电逆转：形体地标与复用</a>
 
       <div class="nav-group-title">设计证据与验证</div>
       <a href="#design-iterations">四项设计迭代对比</a>
-      <a href="#verification-system">257项自动化回归与局限</a>
+      <a href="#verification-system">261项自动化回归与局限</a>
       <a href="#playtest-protocol">下一阶段真人盲测表</a>
 
       <div class="nav-group-title">求职交付物</div>
@@ -466,7 +466,7 @@
     <div class="sidebar-footer">
       <div>版本: 2026.09 Vertical Slice</div>
       <div>引擎: Unreal Engine 5.8</div>
-      <div>回归断言: 257/257 PASS (54.41s)</div>
+      <div>回归断言: 261/261 PASS (54.50s)</div>
     </div>
   </aside>
 
@@ -478,13 +478,13 @@
       <div class="hero-badge-group">
         <span class="badge badge-blue">UE 5.8 垂直切片</span>
         <span class="badge badge-amber">1:500 真实坐标空间</span>
-        <span class="badge badge-green">257/257 自动化回归全绿</span>
+        <span class="badge badge-green">261/261 自动化回归全绿</span>
         <span class="badge badge-purple">单人搜打撤 FPS</span>
       </div>
       <h1 class="hero-title">《封锁区：零号大厦》关卡策划与系统设计案</h1>
       <p class="hero-desc">
         本作品集展示基于 Unreal Engine 5.8 研发的单人搜打撤 FPS 关卡原型（76m×42m 现代办公大楼）。
-        聚焦解决<strong>“无弹窗沉浸教学”</strong>、<strong>“有限背包驱动的高价值物资取舍”</strong>以及<strong>“全场断电后依靠建筑剪影的双向空间复用”</strong>三大核心命题。
+        聚焦解决<strong>“无弹窗沉浸教学”</strong>、<strong>“6×6空间网格背包拼图与Ctrl潜行低掩体遮蔽”</strong>以及<strong>“全场断电后依靠建筑剪影的双向空间复用”</strong>核心设计命题。
       </p>
     </header>
 
@@ -630,15 +630,21 @@
             <tbody>
               <tr>
                 <td><strong>角色物理包络</strong></td>
-                <td>高 180cm, 半径 42cm</td>
-                <td>人体站立尺寸</td>
-                <td>通行净空基准；走廊最小狭道 ≥110cm 杜绝跑动刮蹭。</td>
+                <td>站高 180cm (半高 90) / 蹲高 96cm (半高 48)</td>
+                <td>人体站立与屈膝姿态</td>
+                <td>Ctrl蹲姿半高降至48cm，角色头部完全潜入78cm办公桌与45cm茶几遮蔽线以下。</td>
               </tr>
               <tr>
-                <td><strong>平视视平线</strong></td>
-                <td>高 165cm (站) / 110cm (蹲)</td>
+                <td><strong>运动与潜行速度</strong></td>
+                <td>走 375cm/s / 冲 600cm/s / 潜 180cm/s</td>
+                <td>战术慢步与突击逃脱</td>
+                <td>Ctrl长按/C切换潜行，敌方视觉索敌半径削减 55%，低掩体视线射线阻断隐匿。</td>
+              </tr>
+              <tr>
+                <td><strong>第一人称视平线</strong></td>
+                <td>高 165cm (站) / 105cm (蹲)</td>
                 <td>第一人称相机</td>
-                <td>黄金视线基准面；台面道具与门楣标牌依此高度做仰俯构图。</td>
+                <td>黄金视线基准面；站立平视桌面道具，蹲下平视进入掩体后射击盲区。</td>
               </tr>
               <tr>
                 <td><strong>一级主干干道</strong></td>
@@ -728,13 +734,15 @@
     <section id="inventory-tradeoffs">
       <div class="section-header">
         <div class="section-tag">Phase 4 · Economic Conflict</div>
-        <h2 class="section-title">搜索取舍：微背包与空间冲突博弈 (DP-1 ~ DP-4)</h2>
+        <h2 class="section-title">搜索取舍：6×6 空间网格战术背包与拼图博弈 (DP-1 ~ DP-4)</h2>
       </div>
 
       <div class="card">
         <div class="card-title">非对称探索回报与决策推演矩阵</div>
         <p style="color:var(--text-muted); margin-bottom:14px;">
-          关卡坚决杜绝“把奖励藏在只有开发者知道的地方”。所有偏离主线的探索均建立在<strong>“门洞透视瞥见线索—权衡背包代价—获取高价值物资—安全折返”</strong>之上。
+          关卡坚决杜绝“把奖励藏在只有开发者知道的地方”。参考《三角洲行动》与《背包乱斗》，背包系统升维为 <strong>6×6 (36格) 二维空间网格</strong>。
+          武器与战术装具物理进包（<strong>消防斧 2×6</strong> 贯通两列、<strong>格洛克手枪 2×2</strong>、<strong>战术手电 2×1</strong>），
+          并支持 <strong>R 键悬空旋转</strong>（如 2×1 ↔ 1×2，2×6 ↔ 6×2）与自由拖拽摆放。所有偏离主线的探索均建立在<strong>“门洞透视瞥见线索—权衡网格空间—获取大件战利品—安全折返”</strong>之上。
         </p>
 
         <div class="table-container">
@@ -744,7 +752,7 @@
                 <th>决策点</th>
                 <th>触发位置</th>
                 <th>视觉线索 (看见什么)</th>
-                <th>付出代价 (Cost)</th>
+                <th>网格与战术代价 (Cost)</th>
                 <th>潜在收益 (Reward)</th>
                 <th>折返关系</th>
               </tr>
@@ -755,23 +763,23 @@
                 <td>观察窗前 (-2520, 120)</td>
                 <td>玻璃外两只感染者徘徊，远端地面黄光</td>
                 <td>消耗仅有的 3 发手枪底火</td>
-                <td>占领掩体，拿到首箱 12 发备弹</td>
+                <td>占领掩体，拿到首箱 12 发备弹 (1×1 堆叠)</td>
                 <td>安全切入中央走廊</td>
               </tr>
               <tr>
                 <td><strong>DP-2: 北休憩区 (支线 A)</strong></td>
                 <td>中央走廊十字路 (650, 0)</td>
                 <td>隔断缝隙透视粉色光斑与医疗包</td>
-                <td>绕行 35m，强制占用同行连续 2 格</td>
-                <td><strong>$500 备件 A</strong> + 医疗包 + $120零件</td>
+                <td>绕行 35m，腾出 2×2 矩形空位</td>
+                <td><strong>$500 备件 A</strong> (2×2) + 医疗包 (1×2) + $120零件 (1×1)</td>
                 <td>穿过走廊直达北配电室</td>
               </tr>
               <tr>
                 <td><strong>DP-3: 南机房深搜 (支线 B)</strong></td>
                 <td>机房保险丝台 (1850, -1300)</td>
                 <td>保险丝后方夹道尽头控制台蓝光</td>
-                <td>暗室额外深入 25m，背包满载必须弃物</td>
-                <td><strong>$500 备件 B</strong> (全搜极限 <strong>$1120</strong>)</td>
+                <td>暗室额外深入 25m，背包满载必须弃物或拼图旋转</td>
+                <td><strong>$500 备件 B</strong> (2×2) (全搜极限 <strong>$1120</strong>)</td>
                 <td>原路返回大厅红塔引路</td>
               </tr>
               <tr>
@@ -779,7 +787,7 @@
                 <td>主管办公室与密闭金库门 (-1350, 1650)</td>
                 <td>主管桌发光便签与墙面白板；金库门显示锁闭。SOP-17 时序：动力(04)→冷却(03)→净化(中央)</td>
                 <td>横穿大厦三大区域交互 3 处终端；按错触发跳闸警报并唤醒感染者</td>
-                <td><strong>开启密闭金库</strong>，获得高价值电子废料 ($180) + 战备医疗包 (+35 HP)</td>
+                <td><strong>开启密闭金库</strong>，获得高价值电子废料 ($180) + 战备医疗包 (+35 HP)，达成 36/36 极限满载</td>
                 <td>动线与主线保险丝与合闸高度重合，自然顺路达成</td>
               </tr>
             </tbody>
@@ -797,7 +805,7 @@
         <div class="media-box">
           <img src="Screenshots/Annotated/Annotated_04_InventoryConflict.svg" alt="背包冲突标注图">
           <div class="media-caption">
-            <span><strong>设计标注图 04</strong> · 3×2 网格微背包同行连续双格冲突与丢弃医疗包的极限定位博弈</span>
+            <span><strong>设计标注图 04</strong> · 6×6 空间网格背包拓扑冲突、道具 R 键旋转与高价值大件取舍博弈</span>
             <span>对应实机: SliceQA_07d_InventoryFull.png</span>
           </div>
         </div>
@@ -805,15 +813,15 @@
         <div class="compare-container">
           <div class="compare-item">
             <div class="compare-label">
-              <span>实机画面: 背包整理与堆叠 (SliceQA_07c)</span>
-              <span style="color:var(--accent-green)">正常状态</span>
+              <span>实机画面: 6×6 空间网格背包整理 (SliceQA_07c)</span>
+              <span style="color:var(--accent-green)">23/36格 武器入包/装具矢量绘制</span>
             </div>
             <img src="Screenshots/Raw/SliceQA_07c_InventoryLoot.png" alt="背包整理界面">
           </div>
           <div class="compare-item">
             <div class="compare-label">
-              <span>实机画面: 双格跨度超载拒收 (SliceQA_07d)</span>
-              <span style="color:var(--accent-red)">清晰原因反馈</span>
+              <span>实机画面: 36/36 满载拼图与原子拒收 (SliceQA_07d)</span>
+              <span style="color:var(--accent-red)">100% 满负荷清晰反馈</span>
             </div>
             <img src="Screenshots/Raw/SliceQA_07d_InventoryFull.png" alt="背包超载拒收界面">
           </div>
@@ -979,7 +987,25 @@
           </div>
           <div class="flow-step step-verify">
             <div class="flow-step-label">实机验证 (Verification)</div>
-            新增 2 项系统级断言（总数 257 项 100% 通过），终端逻辑与金库门开闭状态完美契合，空间叙事与探索趣味极大提升。
+      <!-- Iteration 5 -->
+      <div class="iteration-card">
+        <div class="card-title">迭代五：6×6 空间网格背包升维与 Ctrl 潜行低掩体遮蔽系统</div>
+        <div class="iteration-flow">
+          <div class="flow-step step-problem">
+            <div class="flow-step-label">问题现状 (Problem)</div>
+            初版微背包依赖简单容量计数，缺乏高阶空间规划感；玩家缺乏战术潜行身位控制，无法利用 78cm 办公桌规避感染者视线。
+          </div>
+          <div class="flow-step step-hypo">
+            <div class="flow-step-label">设计假设 (Hypothesis)</div>
+            参考《三角洲行动》落地 6×6 (36格) 空间网格，武器装具真实入包（斧2x6/枪2x2/手电2x1）并支持 R 键旋转；结合 Ctrl 潜行（胶囊半高 48cm、敌方侦测-55%），能大幅拓展决策深度。
+          </div>
+          <div class="flow-step step-fix">
+            <div class="flow-step-label">落地修改 (Modification)</div>
+            重构 2D 网格碰撞解算；HUD 矢量绘制武器装具图标与 36 段负荷进度条；Character 绑定 Ctrl/C 潜行并构建低掩体射线遮蔽。
+          </div>
+          <div class="flow-step step-verify">
+            <div class="flow-step-label">实机验证 (Verification)</div>
+            系统断言扩充至 261 项（100% PASS，耗时 54.50s），实机捕获 23/36 整理与 36/36 满载全景，潜行 HUD 掩体遮蔽状态实时可见。
           </div>
         </div>
       </div>
@@ -993,7 +1019,7 @@
       </div>
 
       <div class="card">
-        <div class="card-title">257 项系统级断言矩阵覆盖明细</div>
+        <div class="card-title">261 项系统级断言矩阵覆盖明细</div>
         <div class="table-container">
           <table>
             <thead>
@@ -1006,10 +1032,10 @@
             </thead>
             <tbody>
               <tr>
-                <td><strong>开场教学与武装保护</strong></td>
-                <td>28 项</td>
-                <td>未武装敌人冻结、手电/手枪/消防斧场景交互、手电光锥随相机俯仰</td>
-                <td><span class="badge badge-green">PASS (28/28)</span></td>
+                <td><strong>开场教学与潜行武装</strong></td>
+                <td>32 项</td>
+                <td>未武装敌人冻结、手电/手枪/消防斧场景交互、<strong>Ctrl潜行半高48cm与敌方侦测-55%遮蔽</strong></td>
+                <td><span class="badge badge-green">PASS (32/32)</span></td>
               </tr>
               <tr>
                 <td><strong>武器手感与射击后坐力</strong></td>
@@ -1024,9 +1050,9 @@
                 <td><span class="badge badge-green">PASS (32/32)</span></td>
               </tr>
               <tr>
-                <td><strong>微背包容量与原子操作</strong></td>
+                <td><strong>6×6 空间网格背包与原子操作</strong></td>
                 <td>68 项</td>
-                <td>3×2 背包开闭、9mm 弹药自动堆叠、医疗包 +35 HP 且满血拒用、<strong>同行连续双格拒收与原子保留</strong></td>
+                <td>6×6网格开闭、<strong>武器装具物理占格(斧2x6/枪2x2/手电2x1)</strong>、R键旋转、9mm堆叠、<strong>2×2矩形连续拒收与原子保留</strong></td>
                 <td><span class="badge badge-green">PASS (68/68)</span></td>
               </tr>
               <tr>
@@ -1044,14 +1070,14 @@
               <tr>
                 <td><strong>撤离结算与防掉落重开</strong></td>
                 <td>46 项</td>
-                <td>撤离气闸防跌落实体碰撞、战利品金币核算 ($0~$1120)、<strong>F5 一键重开新局重置</strong></td>
+                <td>撤离气闸防跌落实体碰撞、战利品金币核算 ($0~$1300)、<strong>F5 一键重开新局重置</strong></td>
                 <td><span class="badge badge-green">PASS (46/46)</span></td>
               </tr>
               <tr style="font-weight:700;">
                 <td><strong>总计</strong></td>
-                <td><strong>257 项</strong></td>
+                <td><strong>261 项</strong></td>
                 <td><strong>单人搜打撤全流程垂直切片闭环</strong></td>
-                <td><span class="badge badge-green">100% PASS (54.41s)</span></td>
+                <td><span class="badge badge-green">100% PASS (54.50s)</span></td>
               </tr>
             </tbody>
           </table>
@@ -1079,17 +1105,17 @@
           <p style="font-size:13px; color:var(--text-muted); line-height:1.7;">
             <strong>封锁区：零号大厦 · UE5 单人搜打撤关卡原型</strong>（独立策划 / AI 辅助开发，2026.09）<br>
             • 围绕“安全观察威胁—获取工具—有限弹药战斗—断电逆转—寻保险丝—通电撤离”设计闭环，以 C++ 程序化搭建 76m×42m 现代办公楼，组织双向视线与心流节拍；<br>
-            • 落地 3×2 有限微背包系统与资源竞争（9mm 自动堆叠 / 医疗包占 1 格 / 双格战利品竞争），任务关键道具解耦不占格；设计非对称高价值支线（最高带出 $1300），通过框架视线与 SOP-17 辅机运维解谜引导主动取舍；<br>
-            • 针对断电空间辨识难题，设计机房散热百叶窗剪影、配电间红色应急灯塔及十字反光路标；搭建 257 项自动化 QA 回归管线，保障后坐力、交互射线与重开逻辑零退化。
+            • 落地 6×6 (36格) 空间网格战术背包与 Ctrl 潜行掩体遮蔽系统（敌方侦测-55% / 胶囊半高 48cm / 武器装具物理占格 / R 键旋转），任务关键道具解耦不占格；设计非对称高价值支线（最高带出 $1300），通过框架视线与 SOP-17 辅机运维解谜引导主动取舍；<br>
+            • 针对断电空间辨识难题，设计机房散热百叶窗剪影、配电间红色应急灯塔及十字反光路标；搭建 261 项自动化 QA 回归管线，保障后坐力、交互射线与重开逻辑零退化。
           </p>
         </div>
 
         <div class="card">
           <div class="card-title" style="color:var(--accent-amber);">简历条目 B：系统 / 数值策划向</div>
           <p style="font-size:13px; color:var(--text-muted); line-height:1.7;">
-            <strong>封锁区：零号大厦 · FPS 战斗与微背包搜打撤原型</strong>（独立策划 / AI 辅助开发，2026.09）<br>
+            <strong>封锁区：零号大厦 · FPS 战斗与空间背包搜打撤原型</strong>（独立策划 / AI 辅助开发，2026.09）<br>
             • 制定并实现第一人称武器机制规格：手枪开场 3 发底火 / 备用 0 发、弹匣上限 17 发、开火镜头平滑上抬与后坐复位；结合场景手电与应急灯，营造极度缺弹的高压资源管理氛围；<br>
-            • 设计同行连续 2 格大件战利品（服务器备件 $500）与基础生存物资的排他性容量冲突，构建“为带走高额财富必须主动丢弃医疗包”的极限定位博弈，主线道具解耦保障通关主径；<br>
+            • 参考《三角洲行动》与《背包乱斗》设计 6×6 空间网格拼图背包，消防斧(2×6)、手枪(2×2)、手电(2×1)及备件(2×2)真实物理占格与 R 键旋转，构建高价值大件战利品与生存耗材的排他性容量冲突；<br>
             • 完成 1:500 关卡平面规划（LevelPlan.svg），撰写涵盖设计假设、实机对比与局限反思的完整策划作品集案。
           </p>
         </div>
@@ -1100,10 +1126,10 @@
         <div class="callout callout-green" style="font-size:13.5px; line-height:1.8;">
           “面试官好，我向您分享我最近在 UE5 中主导策划的单人 FPS 搜打撤作品——《封锁区：零号大厦》。这个项目的核心目标是验证<strong>‘空间叙事、资源压力与断电后的空间复用’</strong>。<br><br>
           在设计上我着重解决了三个关卡痛点：<br>
-          <strong>第一是开场的直观教学</strong>：玩家在苏醒室内，我通过 15° 偏角的视线构图，让玩家先在防弹玻璃后安全观察晃动的感染者建立威胁认知；接着利用工位台灯引导玩家发现仅剩 3 发底火的格洛克 17 和手电。玩家不需看弹窗，就能本能理解必须谨慎开火的底层规则。<br>
-          <strong>第二是有限背包驱动的搜索取舍与解谜</strong>：我设计了 3×2 共 6 格背包，并引入占连续两格的高价值服务器备件与 SOP-17 辅机重启时序解谜。在主走廊行进时，玩家能透过办公隔断瞥见深处粉色光圈。要想带走高额战利品，就必须在安全医疗包和贪婪收益之间二选一。同时主线保险丝独立显示，杜绝了背包满导致的卡关。<br>
+          <strong>第一是开场的直观教学与潜行</strong>：玩家在苏醒室内，我通过 15° 偏角的视线构图，让玩家先在防弹玻璃后安全观察晃动的感染者建立威胁认知；接着利用工位台灯引导玩家发现仅剩 3 发底火的格洛克 17 和手电。同时引入 Ctrl 战术蹲姿潜行，将胶囊半高降至 48cm 并削减 55% 敌方索敌，支持利用 78cm 办公桌低掩体射线遮蔽，实现沉浸式潜行周旋。<br>
+          <strong>第二是 6×6 空间网格背包驱动的取舍与解谜</strong>：参考《三角洲行动》，设计了 6×6 共 36 格的空间网格背包，武器（斧2x6/枪2x2）与手电(2x1)物理占用空间，支持 R 键旋转与拼图摆放。配合 SOP-17 辅机运维时序解谜开启行政金库，引导玩家在携带高额战利品与保留急救包之间进行极限定位博弈。主线保险丝独立显示，杜绝了背包满导致的卡关。<br>
           <strong>第三是断电逆转与地标导航</strong>：第 4 次击杀会触发办公楼全面断电。为了防止迷路，我给南机房设计了散热格栅剪影，给北配电室配置了应急红色频闪灯塔，并在十字路口架设物理路标。玩家开启手电后，能精准调动白天的空间记忆完成‘搜保险丝—回配电室通电—气闸撤离’的返程闭环。<br><br>
-          项目逻辑由我制定系统与关卡规格后在 AI 辅助下实现轻量 C++ 生成，搭建了 257 项断言的回归验证管线保障核心机制零退化。期待您的交流与指正！”
+          项目逻辑由我制定系统与关卡规格后在 AI 辅助下实现轻量 C++ 生成，搭建了 261 项断言的回归验证管线保障核心机制零退化。期待您的交流与指正！”
         </div>
       </div>
     </section>
@@ -1122,9 +1148,9 @@
             <ul style="padding-left:18px; color:var(--text-muted); font-size:13px; line-height:1.7;">
               <li>关卡整体体验节拍设计与 1:500 平面拓扑规划；</li>
               <li>开场安全教学、未武装保护与残弹压迫机制；</li>
-              <li>微背包 3×2 网格规则、双格空间冲突与路线决策矩阵；</li>
+              <li>6×6 空间网格背包拼图规则、Ctrl 潜行低掩体遮蔽与路线决策矩阵；</li>
               <li>断电反转形体剪影地标与双向动线组织；</li>
-              <li>257 项系统回归测试用例设计与自动化断言验证；</li>
+              <li>261 项系统回归测试用例设计与自动化断言验证；</li>
               <li>全套设计简报、矢量平面图、标注图与作品集页面搭建。</li>
             </ul>
           </div>

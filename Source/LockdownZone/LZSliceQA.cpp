@@ -225,6 +225,13 @@ void ALZSliceQA::Tick(float DeltaSeconds)
                 Check(bBlocked, FString::Printf(TEXT("opening window pier at Y=%.0f blocks a bypass sightline"), Y));
             }
         }
+        // Verify Ctrl crouch & sneak mechanics
+        Player->StartCrouch();
+        Check(Player->bIsCrouched && Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() <= 50.0f &&
+            Player->GetCharacterMovement()->MaxWalkSpeedCrouched <= 200.0f,
+            TEXT("Ctrl crouch lowers capsule half-height to crouched envelope and enables 180cm/s sneak speed"));
+        Player->StopCrouch();
+        Check(!Player->bIsCrouched, TEXT("releasing crouch restores standing posture"));
         Capture(TEXT("01_Opening"));
         Advance(EStep::InventoryEmptyOpen, 0.2f);
         break;
@@ -233,8 +240,8 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         Advance(EStep::InventoryEmptyView, 0.2f);
         break;
     case EStep::InventoryEmptyView:
-        Check(Player->IsInventoryOpen() && Player->GetMaxBagSlots() == 6 && Player->GetInventoryEntries().IsEmpty(),
-            TEXT("real B input opens a six-slot empty inventory"));
+        Check(Player->IsInventoryOpen() && Player->GetMaxBagSlots() == 36 && Player->GetInventoryEntries().IsEmpty(),
+            TEXT("real B input opens a 36-slot empty 6x6 spatial inventory"));
         Capture(TEXT("01c_InventoryEmpty"));
         Advance(EStep::InventoryEmptyRight, 0.2f);
         break;
@@ -243,7 +250,7 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         Advance(EStep::InventoryEmptyClose, 0.2f);
         break;
     case EStep::InventoryEmptyClose:
-        Check(Player->GetSelectedInventorySlot() == 1, TEXT("right-arrow input selects empty slot two in the three-column grid"));
+        Check(Player->GetSelectedInventorySlot() == 1, TEXT("right-arrow input selects empty slot two in the grid"));
         PressInputKey(EKeys::B, TEXT("B closes the initial backpack"));
         Advance(EStep::UnownedFlashlightInput, 0.2f);
         break;
@@ -273,8 +280,8 @@ void ALZSliceQA::Tick(float DeltaSeconds)
     case EStep::PickupFlashlight:
         Check(Player->HasFlashlight() && !FlashlightPickup.IsValid(), TEXT("real E input acquires and removes flashlight pickup"));
         CheckFlashlightState(true, TEXT("acquired flashlight switches on automatically"));
-        Check(Player->GetUsedBagSlots() == 0 && Player->GetLootValue() == 0,
-            TEXT("flashlight equipment consumes no loot slots and adds no loot value"));
+        Check(Player->GetUsedBagSlots() == 2 && Player->GetLootValue() == 0,
+            TEXT("flashlight equipment occupies 2x1 cells (2 slots) and adds no loot value"));
         Check(!Player->HasMeleeWeapon() && !Player->HasFirearm() && Player->GetSelectedWeapon() == EPlayerWeapon::None,
             TEXT("flashlight alone leaves the player unarmed"));
         Check(!GameMode->IsObjectiveComplete() && !GameMode->IsOfficePowerRestored() && !GameMode->HasFuse(),
@@ -307,7 +314,8 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         break;
     case EStep::PickupMelee:
         if (Approach(MeleePickup.Get(), TEXT("axe pickup"))) InteractWithAimed(MeleePickup.Get(), TEXT("axe pickup"));
-        Check(Player->HasMeleeWeapon() && !Player->HasFirearm(), TEXT("only axe acquired through Interact"));
+        Check(Player->HasMeleeWeapon() && !Player->HasFirearm() && Player->GetUsedBagSlots() == 14,
+            TEXT("only axe acquired through Interact, occupying 2x6 cells (total 14 slots)"));
         SaveEnemySnapshot();
         Advance(EStep::MeleeIdle, 3.25f);
         break;
@@ -318,7 +326,8 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         break;
     case EStep::PickupPistol:
         if (Approach(PistolPickup.Get(), TEXT("pistol pickup"))) InteractWithAimed(PistolPickup.Get(), TEXT("pistol pickup"));
-        Check(Player->HasMeleeWeapon() && Player->HasFirearm(), TEXT("both weapons acquired through Interact"));
+        Check(Player->HasMeleeWeapon() && Player->HasFirearm() && Player->GetUsedBagSlots() == 18,
+            TEXT("both weapons acquired through Interact, pistol occupying 2x2 cells (total 18 slots)"));
         Check(Player->GetAmmoInMagazine() == 3 && Player->GetReserveAmmo() == 0, TEXT("pistol starts with 3 rounds and zero reserve"));
         Player->QAFire();
         Check(Player->GetAmmoInMagazine() == 3 && FMath::IsNearlyZero(Player->GetRecoilPitch(), 0.01f),
@@ -341,8 +350,8 @@ void ALZSliceQA::Tick(float DeltaSeconds)
                 InteractWithAimed(Ammo, FString::Printf(TEXT("ammo box %d"), Index + 1));
         }
         Check(Player->GetAmmoInMagazine() == 3 && Player->GetReserveAmmo() == 24 &&
-            Player->GetUsedBagSlots() == 1 && CountInventoryItems(ELZInventoryItemType::Ammo) == 24,
-            TEXT("two ammo boxes stack 24 reserve rounds in one real backpack slot"));
+            Player->GetUsedBagSlots() == 19 && CountInventoryItems(ELZInventoryItemType::Ammo) == 24,
+            TEXT("two ammo boxes stack 24 reserve rounds in one real 1x1 backpack slot (total 19 slots)"));
         Player->QAReload();
         Check(Player->GetAmmoInMagazine() == 3, TEXT("reload does not transfer ammo instantly"));
         Player->QAFire();
@@ -351,8 +360,8 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         Advance(EStep::ReloadFinished, 1.65f);
         break;
     case EStep::ReloadFinished:
-        Check(Player->GetAmmoInMagazine() == 17 && Player->GetReserveAmmo() == 10 && Player->GetUsedBagSlots() == 1,
-            TEXT("normal reload finishes at 17/10 and retains the partial ammunition stack"));
+        Check(Player->GetAmmoInMagazine() == 17 && Player->GetReserveAmmo() == 10 && Player->GetUsedBagSlots() == 19,
+            TEXT("normal reload finishes at 17/10 and retains the partial ammunition stack (total 19 slots)"));
         Capture(TEXT("04_Reloaded"));
         Advance(EStep::AimGlass);
         break;
@@ -498,19 +507,20 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         break;
     case EStep::CollectRareLoot:
         InteractWithAimed(RarePickup.Get(), TEXT("optional server parts"));
-        Check(Player->GetUsedBagSlots() == 3 && Player->GetLootValue() == 500 && Player->GetReserveAmmo() == 10,
-            TEXT("server parts occupy two slots beside the one-slot ammunition stack, total three slots"));
+        Check(Player->GetUsedBagSlots() == 23 && Player->GetLootValue() == 500 && Player->GetReserveAmmo() == 10,
+            TEXT("server parts occupy four 2x2 slots beside weapons and ammunition, total 23 slots"));
         for (const FLZInventoryEntry& Entry : Player->GetInventoryEntries())
         {
             if (Entry.Type == ELZInventoryItemType::Rare)
             {
-                Check(Entry.SlotsPerItem == 2 && Entry.StartSlot / 3 == (Entry.StartSlot + 1) / 3 &&
-                    Player->GetInventoryItemAtSlot(Entry.StartSlot + 1) == &Entry,
-                    TEXT("both adjacent same-row rare-part cells resolve to one inventory entry"));
+                Check(Entry.Width == 2 && Entry.Height == 2 && Entry.SlotsPerItem == 4 &&
+                    Player->GetInventoryItemAtCell(Entry.PosX, Entry.PosY) == &Entry &&
+                    Player->GetInventoryItemAtCell(Entry.PosX + 1, Entry.PosY + 1) == &Entry,
+                    TEXT("all cells of 2x2 rare parts resolve to the same inventory entry"));
             }
         }
         Check(!RarePickup.IsValid(), TEXT("collected server-parts pickup is removed"));
-        PressInputKey(EKeys::B, TEXT("B opens the backpack containing ammunition and server parts"));
+        PressInputKey(EKeys::B, TEXT("B opens the backpack containing weapons, ammunition and server parts"));
         Advance(EStep::InventoryLootView, 0.2f);
         break;
     case EStep::InventoryLootView:
@@ -569,8 +579,9 @@ void ALZSliceQA::Tick(float DeltaSeconds)
     case EStep::InventorySupplyResult:
         {
             const bool bPickupRemoved = InventorySupplyIndex < 2 ? !MedicalPickups[InventorySupplyIndex].IsValid() : !ScrapPickup.IsValid();
-            if (!Check(bPickupRemoved && Player->GetUsedBagSlots() == 4 + InventorySupplyIndex,
-                FString::Printf(TEXT("world supply %d enters a real slot and its pickup is removed"), InventorySupplyIndex + 1)))
+            const int32 ExpectedSlots = (InventorySupplyIndex == 0) ? 25 : ((InventorySupplyIndex == 1) ? 27 : 28);
+            if (!Check(bPickupRemoved && Player->GetUsedBagSlots() == ExpectedSlots,
+                FString::Printf(TEXT("world supply %d enters the spatial backpack and its pickup is removed"), InventorySupplyIndex + 1)))
             {
                 Advance(EStep::Finish);
                 break;
@@ -583,30 +594,46 @@ void ALZSliceQA::Tick(float DeltaSeconds)
             Check(CountInventoryItems(ELZInventoryItemType::Medical) == 2 &&
                 CountInventoryItems(ELZInventoryItemType::Scrap) == 1 && Player->GetLootValue() == 620 &&
                 FMath::IsNearlyEqual(Player->GetHealth(), 100.0f),
-                TEXT("two medical kits remain stored beside the 120-value scrap in the six-slot backpack"));
+                TEXT("two medical kits remain stored beside the 120-value scrap in the spatial backpack"));
+            // Fill remaining 8 slots with QA filler scrap to test rejection when 36/36 capacity is reached
+            QAFillerItemIds.Reset();
+            while (Player->GetUsedBagSlots() < 36)
+            {
+                if (Player->TryStoreItem(ELZInventoryItemType::Scrap, 1))
+                {
+                    const FLZInventoryEntry& LastEntry = Player->GetInventoryEntries().Last();
+                    QAFillerItemIds.Add(LastEntry.ItemId);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            Check(Player->GetUsedBagSlots() == 36 && QAFillerItemIds.Num() == 8,
+                TEXT("36-slot backpack is fully occupied for capacity boundary regression"));
             if (!Approach(OtherRarePickup.Get(), TEXT("rare parts rejected by the full backpack")))
             {
                 Advance(EStep::Finish);
                 break;
             }
-            PressInputKey(EKeys::E, TEXT("real E attempts to collect rare parts with all six slots occupied"));
+            PressInputKey(EKeys::E, TEXT("real E attempts to collect rare parts with all 36 slots occupied"));
             Advance(EStep::InventoryFullRejected, 0.2f);
         }
         break;
     case EStep::InventoryFullRejected:
-        Check(OtherRarePickup.IsValid() && Player->GetUsedBagSlots() == 6 && Player->GetLootValue() == 620 &&
+        Check(OtherRarePickup.IsValid() && Player->GetUsedBagSlots() == 36 && Player->GetLootValue() == 1580 &&
             !Player->CanStoreItem(ELZInventoryItemType::Rare),
             TEXT("full backpack refuses the world pickup without destroying it or adding its value"));
         Check(Player->GetInventoryStatusText().Contains(TEXT("不足")) || Player->GetInventoryStatusText().Contains(TEXT("满")),
             TEXT("failed world pickup records visible backpack-capacity feedback"));
         Check(!Player->TryStoreItem(ELZInventoryItemType::Ammo, 21) && Player->GetReserveAmmo() == 10 &&
-            Player->GetUsedBagSlots() == 6,
+            Player->GetUsedBagSlots() == 36,
             TEXT("rejected 21-round addition is atomic: full bag keeps the existing ten-round stack unchanged"));
         PressInputKey(EKeys::B, TEXT("B opens the full backpack with pickup-failure feedback"));
         Advance(EStep::InventoryFullView, 0.2f);
         break;
     case EStep::InventoryFullView:
-        Check(Player->IsInventoryOpen() && Player->GetUsedBagSlots() == 6, TEXT("full six-slot backpack remains open"));
+        Check(Player->IsInventoryOpen() && Player->GetUsedBagSlots() == 36, TEXT("full 36-slot backpack remains open"));
         Capture(TEXT("07d_InventoryFull"));
         Advance(EStep::InventoryMedicalFullHealth, 0.2f);
         break;
@@ -620,7 +647,7 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         Advance(EStep::InventoryMedicalNoUse, 0.2f);
         break;
     case EStep::InventoryMedicalNoUse:
-        Check(CountInventoryItems(ELZInventoryItemType::Medical) == 2 && Player->GetUsedBagSlots() == 6 &&
+        Check(CountInventoryItems(ELZInventoryItemType::Medical) == 2 && Player->GetUsedBagSlots() == 36 &&
             FMath::IsNearlyEqual(Player->GetHealth(), 100.0f),
             TEXT("full-health medical use does not consume a stored kit"));
         UE_LOG(LogTemp, Display, TEXT("LZ_QA INFO applying ordinary 35 damage to verify medical use while the open backpack does not pause gameplay"));
@@ -631,8 +658,8 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         break;
     case EStep::InventoryMedicalUsed:
         Check(FMath::IsNearlyEqual(Player->GetHealth(), 100.0f) && CountInventoryItems(ELZInventoryItemType::Medical) == 1 &&
-            Player->GetUsedBagSlots() == 5,
-            TEXT("real inventory E restores 35 health, consumes one kit and releases its slot"));
+            Player->GetUsedBagSlots() == 34,
+            TEXT("real inventory E restores 35 health, consumes one kit and releases its 1x2 slots"));
         if (!SelectInventoryItem(ELZInventoryItemType::Medical))
         {
             Advance(EStep::Finish);
@@ -643,9 +670,17 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         Advance(EStep::InventoryMedicalDiscarded, 0.2f);
         break;
     case EStep::InventoryMedicalDiscarded:
-        Check(CountInventoryItems(ELZInventoryItemType::Medical) == 0 && Player->GetUsedBagSlots() == 4 &&
+        Check(CountInventoryItems(ELZInventoryItemType::Medical) == 0 && Player->GetUsedBagSlots() == 32 &&
             CountWorldLoot() == InventoryWorldLootCount,
             TEXT("Delete removes the entire medical entry and creates no recoverable world pickup"));
+        // Remove QA capacity test filler items
+        for (int32 FillerId : QAFillerItemIds)
+        {
+            Player->DiscardItemById(FillerId);
+        }
+        QAFillerItemIds.Reset();
+        Check(Player->GetUsedBagSlots() == 24 && Player->GetLootValue() == 620,
+            TEXT("clearing capacity test filler items restores normal progression state (24 slots, 620 loot value)"));
         Check(OtherRarePickup.IsValid() && Player->CanStoreItem(ELZInventoryItemType::Rare),
             TEXT("discarded medical slots leave room for the still-aimed world rare parts"));
         if (!SelectInventoryItem(ELZInventoryItemType::Ammo))
@@ -657,7 +692,7 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         Advance(EStep::InventoryWorldBlocked, 0.2f);
         break;
     case EStep::InventoryWorldBlocked:
-        Check(OtherRarePickup.IsValid() && Player->GetUsedBagSlots() == 4 && Player->GetLootValue() == 620 &&
+        Check(OtherRarePickup.IsValid() && Player->GetUsedBagSlots() == 24 && Player->GetLootValue() == 620 &&
             Player->GetReserveAmmo() == 10,
             TEXT("inventory E does not collect the aimed world pickup even when capacity is now available"));
         if (!SelectInventoryItem(ELZInventoryItemType::Scrap))
@@ -669,7 +704,7 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         Advance(EStep::InventoryScrapDiscarded, 0.2f);
         break;
     case EStep::InventoryScrapDiscarded:
-        Check(CountInventoryItems(ELZInventoryItemType::Scrap) == 0 && Player->GetUsedBagSlots() == 3 &&
+        Check(CountInventoryItems(ELZInventoryItemType::Scrap) == 0 && Player->GetUsedBagSlots() == 23 &&
             Player->GetLootValue() == 500 && Player->GetReserveAmmo() == 10 && CountWorldLoot() == InventoryWorldLootCount,
             TEXT("discarding scrap removes its 120 value and preserves only ammunition plus the original 500-value parts"));
         PressInputKey(EKeys::B, TEXT("B closes inventory before normal reload slot-release checks"));
@@ -684,8 +719,8 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         Advance(EStep::InventoryReloadFirst, 1.65f);
         break;
     case EStep::InventoryReloadFirst:
-        Check(Player->GetAmmoInMagazine() == 17 && Player->GetReserveAmmo() == 1 && Player->GetUsedBagSlots() == 3,
-            TEXT("reload from 8/10 leaves a real one-round partial stack at 17/1"));
+        Check(Player->GetAmmoInMagazine() == 17 && Player->GetReserveAmmo() == 1 && Player->GetUsedBagSlots() == 23,
+            TEXT("reload from 8/10 leaves a real one-round partial stack at 17/1 (23 slots)"));
         PressInputKey(EKeys::LeftMouseButton, TEXT("normal floor-directed shot leaves room for the last inventory round"));
         Advance(EStep::InventoryReloadShot, 0.7f);
         break;
@@ -697,9 +732,9 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         break;
     case EStep::InventoryReloadReleased:
         Check(Player->GetAmmoInMagazine() == 17 && Player->GetReserveAmmo() == 0 &&
-            CountInventoryItems(ELZInventoryItemType::Ammo) == 0 && Player->GetUsedBagSlots() == 2 &&
+            CountInventoryItems(ELZInventoryItemType::Ammo) == 0 && Player->GetUsedBagSlots() == 22 &&
             Player->GetLootValue() == 500,
-            TEXT("consuming the final reserve round deletes the empty stack and releases its backpack slot"));
+            TEXT("consuming the final reserve round deletes the empty stack and releases its backpack slot (22 slots)"));
         Check(Player->HasMeleeWeapon() && Player->HasFirearm() && Player->HasFlashlight() && GameMode->HasFuse(),
             TEXT("inventory operations preserve separately carried weapons, flashlight and quest fuse"));
         Advance(EStep::AimBreaker, 0.2f);
@@ -735,8 +770,8 @@ void ALZSliceQA::Tick(float DeltaSeconds)
     case EStep::Extract:
         InteractWithAimed(Extraction.Get(), TEXT("powered exit"));
         Check(GameMode->IsRunOver() && GameMode->WasExtractionSuccessful(), TEXT("restored exit completes successful extraction"));
-        Check(Player->GetUsedBagSlots() == 2 && Player->GetLootValue() == 500,
-            TEXT("successful extraction retains the 500-value two-slot parts after reserve ammunition was consumed"));
+        Check(Player->GetUsedBagSlots() == 22 && Player->GetLootValue() == 500,
+            TEXT("successful extraction retains the 500-value four-slot parts and weapons after reserve ammunition was consumed (22 slots)"));
         RestoreEnemies();
         SaveEnemySnapshot();
         Advance(EStep::SettlementIdle, 3.25f);
@@ -929,29 +964,28 @@ int32 ALZSliceQA::CountInventoryItems(ELZInventoryItemType Type) const
 
 bool ALZSliceQA::SelectInventoryItem(ELZInventoryItemType Type)
 {
-    int32 TargetSlot = INDEX_NONE;
+    int32 TargetX = INDEX_NONE;
+    int32 TargetY = INDEX_NONE;
     for (const FLZInventoryEntry& Entry : Player->GetInventoryEntries())
     {
         if (Entry.Type == Type)
         {
-            TargetSlot = Entry.StartSlot;
+            TargetX = Entry.PosX;
+            TargetY = Entry.PosY;
             break;
         }
     }
-    if (!Check(Player->IsInventoryOpen() && TargetSlot >= 0 && TargetSlot < 6,
+    if (!Check(Player->IsInventoryOpen() && TargetX >= 0 && TargetY >= 0,
         TEXT("requested inventory item exists in an open backpack"))) return false;
-    // Exercise the production grid-selection operations, never overwrite the selected-slot field.
-    // A separate empty-bag step covers the real arrow-key binding; this bounded path avoids input races.
-    for (int32 Attempt = 0; Attempt < 6 && Player->GetSelectedInventorySlot() != TargetSlot; ++Attempt)
+    for (int32 Attempt = 0; Attempt < 20 && (Player->GetCursorX() != TargetX || Player->GetCursorY() != TargetY); ++Attempt)
     {
-        const int32 Selected = Player->GetSelectedInventorySlot();
-        if (Selected / 3 < TargetSlot / 3) Player->InventoryDown();
-        else if (Selected / 3 > TargetSlot / 3) Player->InventoryUp();
-        else if (Selected % 3 < TargetSlot % 3) Player->InventoryRight();
-        else Player->InventoryLeft();
+        if (Player->GetCursorY() < TargetY) Player->InventoryDown();
+        else if (Player->GetCursorY() > TargetY) Player->InventoryUp();
+        else if (Player->GetCursorX() < TargetX) Player->InventoryRight();
+        else if (Player->GetCursorX() > TargetX) Player->InventoryLeft();
     }
-    return Check(Player->GetSelectedInventorySlot() == TargetSlot,
-        TEXT("inventory grid navigation selects the requested item's slot"));
+    return Check(Player->GetCursorX() == TargetX && Player->GetCursorY() == TargetY,
+        TEXT("inventory grid navigation selects the requested item's cell"));
 }
 
 int32 ALZSliceQA::CountWorldLoot() const
