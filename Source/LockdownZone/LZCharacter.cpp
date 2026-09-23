@@ -982,6 +982,66 @@ const FLZInventoryEntry* ALZCharacter::GetInventoryItemById(int32 ItemId) const
     return nullptr;
 }
 
+FLZInventoryEntry* ALZCharacter::GetInventoryItemByIdMutable(int32 ItemId)
+{
+    if (ItemId == 0) return nullptr;
+    for (FLZInventoryEntry& Entry : InventoryEntries)
+    {
+        if (Entry.ItemId == ItemId) return &Entry;
+    }
+    return nullptr;
+}
+
+bool ALZCharacter::CanCleanSwapWith(int32 TargetX, int32 TargetY, int32 OtherItemId) const
+{
+    if (HeldItemId == 0 || OtherItemId == 0) return false;
+    const FLZInventoryEntry* OtherEntry = GetInventoryItemById(OtherItemId);
+    const FLZInventoryEntry* HeldEntry = GetInventoryItemById(HeldItemId);
+    if (!OtherEntry || !HeldEntry) return false;
+
+    // 1. Target bounds check for HeldEntry
+    if (TargetX < 0 || TargetY < 0 ||
+        TargetX + HeldWidth > InventoryGridWidth ||
+        TargetY + HeldHeight > InventoryGridHeight)
+    {
+        return false;
+    }
+
+    // 2. Original bounds check for OtherEntry
+    if (HeldOriginalX < 0 || HeldOriginalY < 0 ||
+        HeldOriginalX + OtherEntry->Width > InventoryGridWidth ||
+        HeldOriginalY + OtherEntry->Height > InventoryGridHeight)
+    {
+        return false;
+    }
+
+    // 3. Check if OtherEntry at HeldOriginal position collides with any third item
+    for (const FLZInventoryEntry& E : InventoryEntries)
+    {
+        if (E.ItemId == HeldItemId || E.ItemId == OtherItemId) continue;
+        const bool bOverlapX = (HeldOriginalX < E.PosX + E.Width) && (HeldOriginalX + OtherEntry->Width > E.PosX);
+        const bool bOverlapY = (HeldOriginalY < E.PosY + E.Height) && (HeldOriginalY + OtherEntry->Height > E.PosY);
+        if (bOverlapX && bOverlapY)
+        {
+            return false;
+        }
+    }
+
+    // 4. Check if HeldEntry at Target position collides with any third item
+    for (const FLZInventoryEntry& E : InventoryEntries)
+    {
+        if (E.ItemId == HeldItemId || E.ItemId == OtherItemId) continue;
+        const bool bOverlapX = (TargetX < E.PosX + E.Width) && (TargetX + HeldWidth > E.PosX);
+        const bool bOverlapY = (TargetY < E.PosY + E.Height) && (TargetY + HeldHeight > E.PosY);
+        if (bOverlapX && bOverlapY)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void ALZCharacter::SetCursorPos(int32 NewX, int32 NewY)
 {
     CursorX = FMath::Clamp(NewX, 0, InventoryGridWidth - 1);
@@ -1255,19 +1315,8 @@ bool ALZCharacter::PlaceHeldItemAtCell(int32 X, int32 Y)
                 }
             }
 
-            // Case 1B: Swapping with Other
-            bool bOtherFitsAtOrigin = false;
-            if (HeldOriginalX >= 0 && HeldOriginalY >= 0 &&
-                HeldOriginalX + OtherEntry->Width <= InventoryGridWidth &&
-                HeldOriginalY + OtherEntry->Height <= InventoryGridHeight)
-            {
-                TArray<int32> OriginOverlaps = GetOverlappingItemIds(HeldOriginalX, HeldOriginalY,
-                    OtherEntry->Width, OtherEntry->Height, OtherEntry->ItemId);
-                OriginOverlaps.Remove(HeldItemId);
-                bOtherFitsAtOrigin = OriginOverlaps.IsEmpty();
-            }
-
-            if (bOtherFitsAtOrigin)
+            // Case 1B: Clean Swap
+            if (CanCleanSwapWith(TargetX, TargetY, OtherEntry->ItemId))
             {
                 OtherEntry->PosX = HeldOriginalX;
                 OtherEntry->PosY = HeldOriginalY;
@@ -1288,41 +1337,10 @@ bool ALZCharacter::PlaceHeldItemAtCell(int32 X, int32 Y)
                 SyncEquippedGear();
                 return true;
             }
-            else
-            {
-                // Place held item down, pick up other item into hand
-                const int32 OldOtherId = OtherEntry->ItemId;
-                const int32 OldOtherW = OtherEntry->Width;
-                const int32 OldOtherH = OtherEntry->Height;
-                const int32 OldOtherX = OtherEntry->PosX;
-                const int32 OldOtherY = OtherEntry->PosY;
-
-                HeldEntry->PosX = TargetX;
-                HeldEntry->PosY = TargetY;
-                HeldEntry->Width = HeldWidth;
-                HeldEntry->Height = HeldHeight;
-                HeldEntry->SyncLegacyFields();
-
-                HeldItemId = OldOtherId;
-                HeldWidth = OldOtherW;
-                HeldHeight = OldOtherH;
-                HeldOriginalX = OldOtherX;
-                HeldOriginalY = OldOtherY;
-                HeldOriginalWidth = OldOtherW;
-                HeldOriginalHeight = OldOtherH;
-                HeldGrabOffsetX = 0;
-                HeldGrabOffsetY = 0;
-
-                InventoryStatusText = FString::Printf(TEXT("已放置%s，换起%s [%d×%d]"),
-                    LZInventoryItemDisplayName(HeldEntry->Type), LZInventoryItemDisplayName(OtherEntry->Type), HeldWidth, HeldHeight);
-
-                SyncEquippedGear();
-                return true;
-            }
         }
     }
 
-    InventoryStatusText = TEXT("无法在此放置：该区域已被多个物品阻挡");
+    InventoryStatusText = TEXT("无法在此放置：位置受阻");
     return false;
 }
 

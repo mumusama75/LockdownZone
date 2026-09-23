@@ -53,6 +53,7 @@ public:
     FLZInventoryEntry* GetInventoryItemAtCellMutable(int32 X, int32 Y);
     const FLZInventoryEntry* GetInventoryItemAtSlot(int32 Slot) const;
     const FLZInventoryEntry* GetInventoryItemById(int32 ItemId) const;
+    FLZInventoryEntry* GetInventoryItemByIdMutable(int32 ItemId);
 
     UFUNCTION(BlueprintPure, Category="Inventory") int32 GetInventoryGridWidth() const { return InventoryGridWidth; }
     UFUNCTION(BlueprintPure, Category="Inventory") int32 GetInventoryGridHeight() const { return InventoryGridHeight; }
@@ -73,6 +74,8 @@ public:
     void GetHeldTargetPos(int32 HoverX, int32 HoverY, int32& OutTargetX, int32& OutTargetY) const;
     UFUNCTION(BlueprintPure, Category="Inventory")
     TArray<int32> GetOverlappingItemIds(int32 TargetX, int32 TargetY, int32 W, int32 H, int32 IgnoreItemId = 0) const;
+    UFUNCTION(BlueprintPure, Category="Inventory")
+    bool CanCleanSwapWith(int32 TargetX, int32 TargetY, int32 OtherItemId) const;
 
     UFUNCTION(BlueprintCallable, Category="Inventory") void PickUpItemAtCursor();
     UFUNCTION(BlueprintCallable, Category="Inventory") void PickUpItemAtCell(int32 X, int32 Y);

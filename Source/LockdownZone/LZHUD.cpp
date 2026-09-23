@@ -332,6 +332,7 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
             const bool bLMBJustPressed = PC->WasInputKeyJustPressed(EKeys::LeftMouseButton);
             const bool bLMBJustReleased = PC->WasInputKeyJustReleased(EKeys::LeftMouseButton);
             const bool bRMBJustPressed = PC->WasInputKeyJustPressed(EKeys::RightMouseButton);
+            const bool bLMBIsDown = PC->IsInputKeyDown(EKeys::LeftMouseButton);
 
             // Right-click anywhere cancels held item
             if (bRMBJustPressed && Character->HasHeldItem())
@@ -343,14 +344,32 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
             // Left Mouse Button Pressed:
             if (bLMBJustPressed)
             {
-                if (bInGrid)
+                if (Character->HasHeldItem())
                 {
-                    if (Character->HasHeldItem())
+                    if (bInGrid)
                     {
-                        MutableChar->PlaceHeldItemAtCell(HoverCol, HoverRow);
-                        bMouseDragging = false;
+                        const bool bPlaced = MutableChar->PlaceHeldItemAtCell(HoverCol, HoverRow);
+                        if (bPlaced)
+                        {
+                            bMouseDragging = false;
+                        }
+                        else
+                        {
+                            // In click-to-place mode, if clicked an invalid spot, initialize drag in case they hold and drag
+                            bMouseDragging = true;
+                            DragStartMousePos = FVector2D(MouseX, MouseY);
+                        }
                     }
                     else
+                    {
+                        // Clicked outside grid while holding: cancel back to origin
+                        MutableChar->CancelHeldItem();
+                        bMouseDragging = false;
+                    }
+                }
+                else
+                {
+                    if (bInGrid)
                     {
                         MutableChar->PickUpItemAtCell(HoverCol, HoverRow);
                         if (Character->HasHeldItem())
@@ -378,9 +397,21 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
                             DropCol = FMath::Clamp(FMath::FloorToInt32((ClampedX - GridStartX) / (CellSize + CellGap)), 0, 5);
                             DropRow = FMath::Clamp(FMath::FloorToInt32((ClampedY - GridStartY) / (CellSize + CellGap)), 0, 5);
                         }
-                        MutableChar->PlaceHeldItemAtCell(DropCol, DropRow);
+                        const bool bPlaced = MutableChar->PlaceHeldItemAtCell(DropCol, DropRow);
+                        if (!bPlaced)
+                        {
+                            // If placement / swap failed on drag release:
+                            // SNAP BACK TO ORIGINAL POSITION! Never get stuck!
+                            MutableChar->CancelHeldItem();
+                            MutableChar->SetInventoryStatusText(TEXT("位置受阻，物品已放回原位"));
+                        }
                     }
                 }
+                bMouseDragging = false;
+            }
+
+            if (!bLMBIsDown && bMouseDragging)
+            {
                 bMouseDragging = false;
             }
         }
@@ -607,11 +638,17 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
                 PreviewFill = FLinearColor(0.15f, 0.55f, 0.95f, 0.38f);
                 PlacementHint = TEXT("◆ 合并备弹 [点击/松开]");
             }
-            else
+            else if (Character->CanCleanSwapWith(TargetX, TargetY, Overlaps[0]))
             {
                 PreviewBorder = Amber;
                 PreviewFill = FLinearColor(0.95f, 0.65f, 0.15f, 0.38f);
                 PlacementHint = TEXT("⇄ 交换物品 [点击/松开]");
+            }
+            else
+            {
+                PreviewBorder = Red;
+                PreviewFill = FLinearColor(0.95f, 0.20f, 0.18f, 0.42f);
+                PlacementHint = TEXT("✗ 位置受阻 [空间无法交换]");
             }
         }
         else
