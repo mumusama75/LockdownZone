@@ -22,4 +22,7 @@ private:
     void DrawInventoryIcon(ELZInventoryItemType Type, float X, float Y, float Scale, const FLinearColor& Color);
     void DrawShadowedText(const FString& Text, float X, float Y, const FLinearColor& Color,
         float Scale = 1.0f, bool bCentered = false);
+
+    bool bMouseDragging = false;
+    FVector2D DragStartMousePos = FVector2D::ZeroVector;
 };

@@ -65,8 +65,14 @@ public:
     UFUNCTION(BlueprintPure, Category="Inventory") int32 GetHeldItemId() const { return HeldItemId; }
     UFUNCTION(BlueprintPure, Category="Inventory") int32 GetHeldWidth() const { return HeldWidth; }
     UFUNCTION(BlueprintPure, Category="Inventory") int32 GetHeldHeight() const { return HeldHeight; }
+    UFUNCTION(BlueprintPure, Category="Inventory") int32 GetHeldGrabOffsetX() const { return HeldGrabOffsetX; }
+    UFUNCTION(BlueprintPure, Category="Inventory") int32 GetHeldGrabOffsetY() const { return HeldGrabOffsetY; }
     UFUNCTION(BlueprintPure, Category="Inventory") bool HasHeldItem() const { return HeldItemId != 0; }
     const FLZInventoryEntry* GetHeldItem() const { return GetInventoryItemById(HeldItemId); }
+    UFUNCTION(BlueprintPure, Category="Inventory")
+    void GetHeldTargetPos(int32 HoverX, int32 HoverY, int32& OutTargetX, int32& OutTargetY) const;
+    UFUNCTION(BlueprintPure, Category="Inventory")
+    TArray<int32> GetOverlappingItemIds(int32 TargetX, int32 TargetY, int32 W, int32 H, int32 IgnoreItemId = 0) const;
 
     UFUNCTION(BlueprintCallable, Category="Inventory") void PickUpItemAtCursor();
     UFUNCTION(BlueprintCallable, Category="Inventory") void PickUpItemAtCell(int32 X, int32 Y);
@@ -188,6 +194,8 @@ private:
     int32 HeldOriginalY = 0;
     int32 HeldOriginalWidth = 1;
     int32 HeldOriginalHeight = 1;
+    int32 HeldGrabOffsetX = 0;
+    int32 HeldGrabOffsetY = 0;
     FString InventoryStatusText;
     float CrouchPressTime = 0.0f;
     bool bCrouchToggled = false;

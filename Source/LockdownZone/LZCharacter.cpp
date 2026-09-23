@@ -878,12 +878,9 @@ void ALZCharacter::GetDefaultItemSize(ELZInventoryItemType Type, int32& OutW, in
     }
 }
 
-bool ALZCharacter::CanPlaceItem(int32 TargetX, int32 TargetY, int32 W, int32 H, int32 IgnoreItemId) const
+TArray<int32> ALZCharacter::GetOverlappingItemIds(int32 TargetX, int32 TargetY, int32 W, int32 H, int32 IgnoreItemId) const
 {
-    if (TargetX < 0 || TargetY < 0 || (TargetX + W) > InventoryGridWidth || (TargetY + H) > InventoryGridHeight)
-    {
-        return false;
-    }
+    TArray<int32> Overlaps;
     for (const FLZInventoryEntry& Entry : InventoryEntries)
     {
         if (Entry.ItemId == IgnoreItemId && IgnoreItemId != 0)
@@ -894,10 +891,27 @@ bool ALZCharacter::CanPlaceItem(int32 TargetX, int32 TargetY, int32 W, int32 H, 
         const bool bOverlapY = (TargetY < Entry.PosY + Entry.Height) && (TargetY + H > Entry.PosY);
         if (bOverlapX && bOverlapY)
         {
-            return false;
+            Overlaps.Add(Entry.ItemId);
         }
     }
-    return true;
+    return Overlaps;
+}
+
+void ALZCharacter::GetHeldTargetPos(int32 HoverX, int32 HoverY, int32& OutTargetX, int32& OutTargetY) const
+{
+    const int32 SafeHoverX = FMath::Clamp(HoverX, 0, InventoryGridWidth - 1);
+    const int32 SafeHoverY = FMath::Clamp(HoverY, 0, InventoryGridHeight - 1);
+    OutTargetX = FMath::Clamp(SafeHoverX - HeldGrabOffsetX, 0, FMath::Max(0, InventoryGridWidth - HeldWidth));
+    OutTargetY = FMath::Clamp(SafeHoverY - HeldGrabOffsetY, 0, FMath::Max(0, InventoryGridHeight - HeldHeight));
+}
+
+bool ALZCharacter::CanPlaceItem(int32 TargetX, int32 TargetY, int32 W, int32 H, int32 IgnoreItemId) const
+{
+    if (TargetX < 0 || TargetY < 0 || (TargetX + W) > InventoryGridWidth || (TargetY + H) > InventoryGridHeight)
+    {
+        return false;
+    }
+    return GetOverlappingItemIds(TargetX, TargetY, W, H, IgnoreItemId).IsEmpty();
 }
 
 bool ALZCharacter::AutoFindPlacement(int32 W, int32 H, int32& OutX, int32& OutY) const
@@ -1142,7 +1156,9 @@ void ALZCharacter::PickUpItemAtCell(int32 X, int32 Y)
     HeldOriginalY = Found->PosY;
     HeldOriginalWidth = Found->Width;
     HeldOriginalHeight = Found->Height;
-    InventoryStatusText = FString::Printf(TEXT("已拿起%s [%d×%d] · [R]旋转 [点击/E]放置 [右键]取消 [Del]丢弃"),
+    HeldGrabOffsetX = FMath::Clamp(X - Found->PosX, 0, HeldWidth - 1);
+    HeldGrabOffsetY = FMath::Clamp(Y - Found->PosY, 0, HeldHeight - 1);
+    InventoryStatusText = FString::Printf(TEXT("已拿起%s [%d×%d] · [R]旋转 [点击/松开]放置 [右键]取消 [Del]丢弃"),
         LZInventoryItemDisplayName(Found->Type), HeldWidth, HeldHeight);
 }
 
@@ -1154,34 +1170,169 @@ bool ALZCharacter::PlaceHeldItemAtCursor()
 bool ALZCharacter::PlaceHeldItemAtCell(int32 X, int32 Y)
 {
     if (!bInventoryOpen || IsRunInactive() || HeldItemId == 0) return false;
-    if (!CanPlaceItem(X, Y, HeldWidth, HeldHeight, HeldItemId))
-    {
-        InventoryStatusText = TEXT("无法在此放置：位置受阻或超出背包");
-        return false;
-    }
+
+    FLZInventoryEntry* HeldEntry = nullptr;
     for (FLZInventoryEntry& Entry : InventoryEntries)
     {
         if (Entry.ItemId == HeldItemId)
         {
-            Entry.PosX = X;
-            Entry.PosY = Y;
-            Entry.Width = HeldWidth;
-            Entry.Height = HeldHeight;
-            Entry.SyncLegacyFields();
-            InventoryStatusText = FString::Printf(TEXT("已将%s放置于 (%c%d)"),
-                LZInventoryItemDisplayName(Entry.Type), 'A' + Y, X + 1);
+            HeldEntry = &Entry;
             break;
         }
     }
-    HeldItemId = 0;
-    SyncEquippedGear();
-    return true;
+    if (!HeldEntry)
+    {
+        HeldItemId = 0;
+        HeldGrabOffsetX = 0;
+        HeldGrabOffsetY = 0;
+        return false;
+    }
+
+    int32 TargetX = 0, TargetY = 0;
+    GetHeldTargetPos(X, Y, TargetX, TargetY);
+
+    TArray<int32> OverlapIds = GetOverlappingItemIds(TargetX, TargetY, HeldWidth, HeldHeight, HeldItemId);
+
+    if (OverlapIds.IsEmpty())
+    {
+        HeldEntry->PosX = TargetX;
+        HeldEntry->PosY = TargetY;
+        HeldEntry->Width = HeldWidth;
+        HeldEntry->Height = HeldHeight;
+        HeldEntry->SyncLegacyFields();
+
+        InventoryStatusText = FString::Printf(TEXT("已将%s放置于 (%c%d)"),
+            LZInventoryItemDisplayName(HeldEntry->Type), 'A' + TargetY, TargetX + 1);
+
+        HeldItemId = 0;
+        HeldGrabOffsetX = 0;
+        HeldGrabOffsetY = 0;
+        SyncEquippedGear();
+        return true;
+    }
+
+    if (OverlapIds.Num() == 1)
+    {
+        FLZInventoryEntry* OtherEntry = nullptr;
+        for (FLZInventoryEntry& Entry : InventoryEntries)
+        {
+            if (Entry.ItemId == OverlapIds[0])
+            {
+                OtherEntry = &Entry;
+                break;
+            }
+        }
+
+        if (OtherEntry)
+        {
+            // Case 1A: Ammo Stacking
+            if (HeldEntry->Type == ELZInventoryItemType::Ammo && OtherEntry->Type == ELZInventoryItemType::Ammo)
+            {
+                const int32 SpaceAvailable = AmmoStackLimit - OtherEntry->Quantity;
+                if (SpaceAvailable > 0)
+                {
+                    const int32 Transfer = FMath::Min(SpaceAvailable, HeldEntry->Quantity);
+                    OtherEntry->Quantity += Transfer;
+                    OtherEntry->SyncLegacyFields();
+                    HeldEntry->Quantity -= Transfer;
+                    HeldEntry->SyncLegacyFields();
+
+                    if (HeldEntry->Quantity <= 0)
+                    {
+                        const int32 DeadId = HeldEntry->ItemId;
+                        InventoryEntries.RemoveAll([DeadId](const FLZInventoryEntry& E) { return E.ItemId == DeadId; });
+                        HeldItemId = 0;
+                        HeldGrabOffsetX = 0;
+                        HeldGrabOffsetY = 0;
+                        InventoryStatusText = FString::Printf(TEXT("已合并弹药：当前堆叠 %d 发"), OtherEntry->Quantity);
+                    }
+                    else
+                    {
+                        InventoryStatusText = FString::Printf(TEXT("已装入 %d 发弹药，手中剩余 %d 发"), Transfer, HeldEntry->Quantity);
+                    }
+                    SyncEquippedGear();
+                    return true;
+                }
+            }
+
+            // Case 1B: Swapping with Other
+            bool bOtherFitsAtOrigin = false;
+            if (HeldOriginalX >= 0 && HeldOriginalY >= 0 &&
+                HeldOriginalX + OtherEntry->Width <= InventoryGridWidth &&
+                HeldOriginalY + OtherEntry->Height <= InventoryGridHeight)
+            {
+                TArray<int32> OriginOverlaps = GetOverlappingItemIds(HeldOriginalX, HeldOriginalY,
+                    OtherEntry->Width, OtherEntry->Height, OtherEntry->ItemId);
+                OriginOverlaps.Remove(HeldItemId);
+                bOtherFitsAtOrigin = OriginOverlaps.IsEmpty();
+            }
+
+            if (bOtherFitsAtOrigin)
+            {
+                OtherEntry->PosX = HeldOriginalX;
+                OtherEntry->PosY = HeldOriginalY;
+                OtherEntry->SyncLegacyFields();
+
+                HeldEntry->PosX = TargetX;
+                HeldEntry->PosY = TargetY;
+                HeldEntry->Width = HeldWidth;
+                HeldEntry->Height = HeldHeight;
+                HeldEntry->SyncLegacyFields();
+
+                InventoryStatusText = FString::Printf(TEXT("已交换 %s 与 %s 的位置"),
+                    LZInventoryItemDisplayName(HeldEntry->Type), LZInventoryItemDisplayName(OtherEntry->Type));
+
+                HeldItemId = 0;
+                HeldGrabOffsetX = 0;
+                HeldGrabOffsetY = 0;
+                SyncEquippedGear();
+                return true;
+            }
+            else
+            {
+                // Place held item down, pick up other item into hand
+                const int32 OldOtherId = OtherEntry->ItemId;
+                const int32 OldOtherW = OtherEntry->Width;
+                const int32 OldOtherH = OtherEntry->Height;
+                const int32 OldOtherX = OtherEntry->PosX;
+                const int32 OldOtherY = OtherEntry->PosY;
+
+                HeldEntry->PosX = TargetX;
+                HeldEntry->PosY = TargetY;
+                HeldEntry->Width = HeldWidth;
+                HeldEntry->Height = HeldHeight;
+                HeldEntry->SyncLegacyFields();
+
+                HeldItemId = OldOtherId;
+                HeldWidth = OldOtherW;
+                HeldHeight = OldOtherH;
+                HeldOriginalX = OldOtherX;
+                HeldOriginalY = OldOtherY;
+                HeldOriginalWidth = OldOtherW;
+                HeldOriginalHeight = OldOtherH;
+                HeldGrabOffsetX = 0;
+                HeldGrabOffsetY = 0;
+
+                InventoryStatusText = FString::Printf(TEXT("已放置%s，换起%s [%d×%d]"),
+                    LZInventoryItemDisplayName(HeldEntry->Type), LZInventoryItemDisplayName(OtherEntry->Type), HeldWidth, HeldHeight);
+
+                SyncEquippedGear();
+                return true;
+            }
+        }
+    }
+
+    InventoryStatusText = TEXT("无法在此放置：该区域已被多个物品阻挡");
+    return false;
 }
 
 void ALZCharacter::RotateHeldItem()
 {
     if (!bInventoryOpen || IsRunInactive() || HeldItemId == 0) return;
     Swap(HeldWidth, HeldHeight);
+    Swap(HeldGrabOffsetX, HeldGrabOffsetY);
+    HeldGrabOffsetX = FMath::Clamp(HeldGrabOffsetX, 0, HeldWidth - 1);
+    HeldGrabOffsetY = FMath::Clamp(HeldGrabOffsetY, 0, HeldHeight - 1);
     InventoryStatusText = FString::Printf(TEXT("已旋转方向: %d×%d"), HeldWidth, HeldHeight);
 }
 
@@ -1201,6 +1352,8 @@ void ALZCharacter::CancelHeldItem()
         }
     }
     HeldItemId = 0;
+    HeldGrabOffsetX = 0;
+    HeldGrabOffsetY = 0;
     InventoryStatusText = TEXT("已取消移动，物品放回原位");
 }
 
@@ -1219,7 +1372,12 @@ bool ALZCharacter::DiscardItemById(int32 ItemId)
     if (FoundIndex == INDEX_NONE) return false;
     const FLZInventoryEntry Discarded = InventoryEntries[FoundIndex];
     InventoryEntries.RemoveAt(FoundIndex);
-    if (HeldItemId == ItemId) HeldItemId = 0;
+    if (HeldItemId == ItemId)
+    {
+        HeldItemId = 0;
+        HeldGrabOffsetX = 0;
+        HeldGrabOffsetY = 0;
+    }
     SyncEquippedGear();
     InventoryStatusText = FString::Printf(TEXT("已丢弃%s ×%d：释放%d格空间"),
         LZInventoryItemDisplayName(Discarded.Type), Discarded.Quantity, Discarded.Width * Discarded.Height);

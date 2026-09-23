@@ -297,10 +297,10 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
     const FLinearColor White(0.92f, 0.95f, 0.96f);
     const FLinearColor Muted(0.55f, 0.64f, 0.68f);
 
-    constexpr float CellSize = 68.0f;
-    constexpr float CellGap = 6.0f;
+    constexpr float CellSize = 72.0f;
+    constexpr float CellGap = 2.0f;
     constexpr float GridStartX = 72.0f;
-    constexpr float GridStartY = 158.0f;
+    constexpr float GridStartY = 152.0f;
 
     APlayerController* PC = GetOwningPlayerController();
     ALZCharacter* MutableChar = const_cast<ALZCharacter*>(Character);
@@ -311,37 +311,80 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
     if (PC)
     {
         float MouseX = 0.0f, MouseY = 0.0f;
-        if (PC->GetMousePosition(MouseX, MouseY) && MouseX > 0.0f && MouseY > 0.0f)
+        const bool bHasMousePos = PC->GetMousePosition(MouseX, MouseY) && (MouseX > 0.0f || MouseY > 0.0f);
+        if (bHasMousePos)
         {
             const float CanvasMouseX = (MouseX - OriginX) / Scale;
             const float CanvasMouseY = (MouseY - OriginY) / Scale;
-            if (CanvasMouseX >= GridStartX && CanvasMouseX < (GridStartX + 6 * (CellSize + CellGap)) &&
-                CanvasMouseY >= GridStartY && CanvasMouseY < (GridStartY + 6 * (CellSize + CellGap)))
+            const float TotalGridW = 6 * CellSize + 5 * CellGap;
+            const float TotalGridH = 6 * CellSize + 5 * CellGap;
+
+            const bool bInGrid = (CanvasMouseX >= GridStartX && CanvasMouseX < (GridStartX + TotalGridW) &&
+                                  CanvasMouseY >= GridStartY && CanvasMouseY < (GridStartY + TotalGridH));
+
+            if (bInGrid)
             {
                 HoverCol = FMath::Clamp(FMath::FloorToInt32((CanvasMouseX - GridStartX) / (CellSize + CellGap)), 0, 5);
                 HoverRow = FMath::Clamp(FMath::FloorToInt32((CanvasMouseY - GridStartY) / (CellSize + CellGap)), 0, 5);
                 MutableChar->SetCursorPos(HoverCol, HoverRow);
+            }
 
-                if (PC->WasInputKeyJustPressed(EKeys::LeftMouseButton))
+            const bool bLMBJustPressed = PC->WasInputKeyJustPressed(EKeys::LeftMouseButton);
+            const bool bLMBJustReleased = PC->WasInputKeyJustReleased(EKeys::LeftMouseButton);
+            const bool bRMBJustPressed = PC->WasInputKeyJustPressed(EKeys::RightMouseButton);
+
+            // Right-click anywhere cancels held item
+            if (bRMBJustPressed && Character->HasHeldItem())
+            {
+                MutableChar->CancelHeldItem();
+                bMouseDragging = false;
+            }
+
+            // Left Mouse Button Pressed:
+            if (bLMBJustPressed)
+            {
+                if (bInGrid)
                 {
                     if (Character->HasHeldItem())
                     {
                         MutableChar->PlaceHeldItemAtCell(HoverCol, HoverRow);
+                        bMouseDragging = false;
                     }
                     else
                     {
                         MutableChar->PickUpItemAtCell(HoverCol, HoverRow);
-                    }
-                }
-                else if (PC->WasInputKeyJustPressed(EKeys::RightMouseButton))
-                {
-                    if (Character->HasHeldItem())
-                    {
-                        MutableChar->CancelHeldItem();
+                        if (Character->HasHeldItem())
+                        {
+                            bMouseDragging = true;
+                            DragStartMousePos = FVector2D(MouseX, MouseY);
+                        }
                     }
                 }
             }
+            // Left Mouse Button Released (Drag-and-Drop Drop support):
+            else if (bLMBJustReleased)
+            {
+                if (bMouseDragging && Character->HasHeldItem())
+                {
+                    const float DragDist = FVector2D::Distance(DragStartMousePos, FVector2D(MouseX, MouseY));
+                    if (DragDist >= 8.0f)
+                    {
+                        int32 DropCol = HoverCol;
+                        int32 DropRow = HoverRow;
+                        if (DropCol == INDEX_NONE || DropRow == INDEX_NONE)
+                        {
+                            const float ClampedX = FMath::Clamp(CanvasMouseX, GridStartX, GridStartX + TotalGridW - 1.0f);
+                            const float ClampedY = FMath::Clamp(CanvasMouseY, GridStartY, GridStartY + TotalGridH - 1.0f);
+                            DropCol = FMath::Clamp(FMath::FloorToInt32((ClampedX - GridStartX) / (CellSize + CellGap)), 0, 5);
+                            DropRow = FMath::Clamp(FMath::FloorToInt32((ClampedY - GridStartY) / (CellSize + CellGap)), 0, 5);
+                        }
+                        MutableChar->PlaceHeldItemAtCell(DropCol, DropRow);
+                    }
+                }
+                bMouseDragging = false;
+            }
         }
+
         if (PC->WasInputKeyJustPressed(EKeys::R))
         {
             MutableChar->RotateHeldItem();
@@ -440,13 +483,13 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
     for (int32 Col = 0; Col < 6; ++Col)
     {
         const float MarkerX = GridStartX + Col * (CellSize + CellGap) + CellSize * 0.5f - 4;
-        Text(FString::Printf(TEXT("%d"), Col + 1), MarkerX, 140, Col == CursorCol ? Cyan : FLinearColor(0.35f, 0.45f, 0.50f), 0.70f);
+        Text(FString::Printf(TEXT("%d"), Col + 1), MarkerX, GridStartY - 18.0f, Col == CursorCol ? Cyan : FLinearColor(0.35f, 0.45f, 0.50f), 0.70f);
     }
     // Row markers (A..F)
     for (int32 Row = 0; Row < 6; ++Row)
     {
         const float MarkerY = GridStartY + Row * (CellSize + CellGap) + CellSize * 0.5f - 8;
-        Text(FString::Printf(TEXT("%c"), 'A' + Row), 52, MarkerY, Row == CursorRow ? Cyan : FLinearColor(0.35f, 0.45f, 0.50f), 0.70f);
+        Text(FString::Printf(TEXT("%c"), 'A' + Row), GridStartX - 20.0f, MarkerY, Row == CursorRow ? Cyan : FLinearColor(0.35f, 0.45f, 0.50f), 0.70f);
     }
 
     // 1. Draw 36 empty background cells
@@ -463,7 +506,7 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
 
             // Subtle coordinate watermark in cell
             const FString Coord = FString::Printf(TEXT("%c%d"), 'A' + Row, Col + 1);
-            Text(Coord, X + 6, Y + 6, bIsCursor ? Cyan : FLinearColor(0.18f, 0.26f, 0.30f), 0.55f);
+            Text(Coord, X + 5, Y + 5, bIsCursor ? Cyan : FLinearColor(0.18f, 0.26f, 0.30f), 0.52f);
 
             // Center subtle crosshair
             Rect(X + CellSize * 0.5f - 4, Y + CellSize * 0.5f - 1, 8, 2, FLinearColor(0.08f, 0.14f, 0.18f));
@@ -539,21 +582,55 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
     {
         const int32 HeldW = Character->GetHeldWidth();
         const int32 HeldH = Character->GetHeldHeight();
-        const bool bCanPlace = Character->CanPlaceItem(CursorCol, CursorRow, HeldW, HeldH, HeldItemId);
-        const float FPX = GridStartX + CursorCol * (CellSize + CellGap);
-        const float FPY = GridStartY + CursorRow * (CellSize + CellGap);
+        int32 TargetX = 0, TargetY = 0;
+        Character->GetHeldTargetPos(CursorCol, CursorRow, TargetX, TargetY);
+
+        const TArray<int32> Overlaps = Character->GetOverlappingItemIds(TargetX, TargetY, HeldW, HeldH, HeldItemId);
+        const FLZInventoryEntry* HeldEntry = Character->GetHeldItem();
+
+        FLinearColor PreviewBorder = Emerald;
+        FLinearColor PreviewFill = FLinearColor(0.15f, 0.85f, 0.45f, 0.38f);
+        FString PlacementHint = TEXT("✓ 可放置 [点击/松开]");
+
+        if (Overlaps.IsEmpty())
+        {
+            PreviewBorder = Emerald;
+            PreviewFill = FLinearColor(0.15f, 0.85f, 0.45f, 0.38f);
+            PlacementHint = TEXT("✓ 可放置 [点击/松开]");
+        }
+        else if (Overlaps.Num() == 1)
+        {
+            const FLZInventoryEntry* OtherEntry = Character->GetInventoryItemById(Overlaps[0]);
+            if (HeldEntry && OtherEntry && HeldEntry->Type == ELZInventoryItemType::Ammo && OtherEntry->Type == ELZInventoryItemType::Ammo)
+            {
+                PreviewBorder = TechBlue;
+                PreviewFill = FLinearColor(0.15f, 0.55f, 0.95f, 0.38f);
+                PlacementHint = TEXT("◆ 合并备弹 [点击/松开]");
+            }
+            else
+            {
+                PreviewBorder = Amber;
+                PreviewFill = FLinearColor(0.95f, 0.65f, 0.15f, 0.38f);
+                PlacementHint = TEXT("⇄ 交换物品 [点击/松开]");
+            }
+        }
+        else
+        {
+            PreviewBorder = Red;
+            PreviewFill = FLinearColor(0.95f, 0.20f, 0.18f, 0.42f);
+            PlacementHint = TEXT("✗ 位置受阻 [多项阻挡]");
+        }
+
+        const float FPX = GridStartX + TargetX * (CellSize + CellGap);
+        const float FPY = GridStartY + TargetY * (CellSize + CellGap);
         const float FPW = HeldW * CellSize + (HeldW - 1) * CellGap;
         const float FPH = HeldH * CellSize + (HeldH - 1) * CellGap;
-        const FLinearColor PreviewFill = bCanPlace ? FLinearColor(0.15f, 0.85f, 0.45f, 0.38f) : FLinearColor(0.95f, 0.20f, 0.18f, 0.42f);
-        const FLinearColor PreviewBorder = bCanPlace ? Emerald : Red;
 
         Frame(FPX, FPY, FPW, FPH, PreviewBorder, PreviewFill, 2.5f);
-        const FString PlacementHint = bCanPlace ? TEXT("✓ 可放置 [点击/E]") : TEXT("✗ 位置受阻 [不可放置]");
         Text(PlacementHint, FPX + 6, FPY + 6, PreviewBorder, 0.75f, FPW - 12);
         Text(FString::Printf(TEXT("规格: %d×%d [按R旋转]"), HeldW, HeldH), FPX + 6, FPY + FPH - 22, White, 0.70f);
 
         // Preview icon in floating footprint
-        const FLZInventoryEntry* HeldEntry = Character->GetHeldItem();
         if (HeldEntry)
         {
             DrawInventoryIcon(HeldEntry->Type, OriginX + (FPX + FPW * 0.5f - 30) * Scale,
@@ -645,7 +722,7 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
 
         // Control Buttons Box
         Frame(PanelX + 20, PanelY + 296, PanelWidth - 40, 56, GridBorder, FLinearColor(0.012f, 0.02f, 0.026f, 0.95f));
-        Text(TEXT("[ 鼠标左键 / E ] 拿起 / 放置装备到当前网格"), PanelX + 32, PanelY + 306, Cyan, 0.75f);
+        Text(TEXT("[ 鼠标左键点击 / 拖拽释放 / E ] 拿起 / 放置装备到目标网格"), PanelX + 32, PanelY + 306, Cyan, 0.75f);
         Text(TEXT("[ R 键 ] 旋转装备方向 (宽×高切换)   [ 右键 ] 取消移动   [ Delete ] 战区丢弃整组"),
             PanelX + 32, PanelY + 328, Gold, 0.72f);
     }
@@ -660,7 +737,7 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
         Text(TEXT("• 战术强光手电筒: 占用 2×1 (或 1×2) 格"), PanelX + 32, PanelY + 224, Gold, 0.78f);
         Text(TEXT("• 战地医疗急救包: 占用 1×2 格 (可按E使用)"), PanelX + 32, PanelY + 248, Emerald, 0.78f);
         Text(TEXT("• 9mm备弹 / 电子零件: 占用 1×1 单格"), PanelX + 32, PanelY + 272, TechBlue, 0.78f);
-        Text(TEXT("• 按 [R] 自由旋转物品方向，合理规划36格收纳空间。"), PanelX + 20, PanelY + 310, Cyan, 0.80f);
+        Text(TEXT("• 按 [R] 自由旋转物品方向，支持鼠标点击或拖拽自由排布。"), PanelX + 20, PanelY + 310, Cyan, 0.80f);
     }
 
     // Secure Container Status Chip (Right Bottom)
@@ -690,8 +767,8 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
     // FOOTER COMMAND BAR
     Rect(72, 622, 1140, 1, GridBorder);
     const FString Feedback = Character->GetInventoryStatusText();
-    Text(Feedback.IsEmpty() ? TEXT("战区提示: 三角洲空间收纳背包。按 R 旋转装备，自由分配物品位置。世界不会暂停。") : Feedback,
+    Text(Feedback.IsEmpty() ? TEXT("战区提示: 三角洲空间收纳背包。支持点击与拖拽放置，按 R 旋转装备，世界不会暂停。") : Feedback,
         74, 630, Feedback.IsEmpty() ? Muted : Amber, 0.76f, 1136);
-    Text(TEXT("[B / ESC] 关闭背包   [鼠标点击 / 方向键] 选择网格   [E / 空格] 拿起/放置   [R] 旋转方向   [Delete] 丢弃装备"),
+    Text(TEXT("[B / ESC] 关闭背包   [鼠标点击/拖拽/方向键] 选择网格   [左键/松开/E] 拿起/放下   [R] 旋转方向   [右键] 取消   [Delete] 丢弃装备"),
         74, 654, White, 0.78f, 1136);
 }
