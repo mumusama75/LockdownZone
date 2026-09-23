@@ -82,6 +82,7 @@ public:
     UFUNCTION(BlueprintCallable, Category="Inventory") bool PlaceHeldItemAtCursor();
     UFUNCTION(BlueprintCallable, Category="Inventory") bool PlaceHeldItemAtCell(int32 X, int32 Y);
     UFUNCTION(BlueprintCallable, Category="Inventory") void RotateHeldItem();
+    UFUNCTION(BlueprintCallable, Category="Inventory") void RotateInventoryItem();
     UFUNCTION(BlueprintCallable, Category="Inventory") void CancelHeldItem();
 
     UFUNCTION(BlueprintPure, Category="Inventory")

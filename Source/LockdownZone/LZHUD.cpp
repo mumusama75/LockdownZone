@@ -344,7 +344,22 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
             // Left Mouse Button Pressed:
             if (bLMBJustPressed)
             {
-                if (Character->HasHeldItem())
+                const bool bClickRotateBtn = (CanvasMouseX >= 558.0f && CanvasMouseX <= 738.0f &&
+                                              CanvasMouseY >= 426.0f && CanvasMouseY <= 460.0f);
+                const bool bClickDiscardBtn = (CanvasMouseX >= 753.0f && CanvasMouseX <= 933.0f &&
+                                               CanvasMouseY >= 426.0f && CanvasMouseY <= 460.0f);
+
+                if (bClickRotateBtn)
+                {
+                    MutableChar->RotateInventoryItem();
+                    bMouseDragging = false;
+                }
+                else if (bClickDiscardBtn)
+                {
+                    MutableChar->DiscardSelectedInventoryItem();
+                    bMouseDragging = false;
+                }
+                else if (Character->HasHeldItem())
                 {
                     if (bInGrid)
                     {
@@ -416,13 +431,9 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
             }
         }
 
-        if (PC->WasInputKeyJustPressed(EKeys::R))
+        if (PC->WasInputKeyJustPressed(EKeys::MiddleMouseButton))
         {
-            MutableChar->RotateHeldItem();
-        }
-        if (PC->WasInputKeyJustPressed(EKeys::Delete))
-        {
-            MutableChar->DiscardSelectedInventoryItem();
+            MutableChar->RotateInventoryItem();
         }
     }
 
@@ -757,11 +768,34 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
         Text(UseHint, PanelX + 20, PanelY + 228, ActiveEntry->Type == ELZInventoryItemType::Medical ? Emerald : White, 0.78f, PanelWidth - 40);
         Text(Description, PanelX + 20, PanelY + 252, Muted, 0.70f, PanelWidth - 40);
 
-        // Control Buttons Box
-        Frame(PanelX + 20, PanelY + 296, PanelWidth - 40, 56, GridBorder, FLinearColor(0.012f, 0.02f, 0.026f, 0.95f));
-        Text(TEXT("[ 鼠标左键点击 / 拖拽释放 / E ] 拿起 / 放置装备到目标网格"), PanelX + 32, PanelY + 306, Cyan, 0.75f);
-        Text(TEXT("[ R 键 ] 旋转装备方向 (宽×高切换)   [ 右键 ] 取消移动   [ Delete ] 战区丢弃整组"),
-            PanelX + 32, PanelY + 328, Gold, 0.72f);
+        // Interactive Action Buttons
+        const float BtnW = 180.0f;
+        const float BtnH = 34.0f;
+        const float RotBtnX = PanelX + 20;
+        const float RotBtnY = PanelY + 296;
+        const float DelBtnX = PanelX + 215;
+        const float DelBtnY = PanelY + 296;
+
+        float MouseScreenX = 0.0f, MouseScreenY = 0.0f;
+        float CanvasMX = -1.0f, CanvasMY = -1.0f;
+        if (PC && PC->GetMousePosition(MouseScreenX, MouseScreenY))
+        {
+            CanvasMX = (MouseScreenX - OriginX) / Scale;
+            CanvasMY = (MouseScreenY - OriginY) / Scale;
+        }
+
+        const bool bHoverRot = CanvasMX >= RotBtnX && CanvasMX <= RotBtnX + BtnW && CanvasMY >= RotBtnY && CanvasMY <= RotBtnY + BtnH;
+        const bool bHoverDel = CanvasMX >= DelBtnX && CanvasMX <= DelBtnX + BtnW && CanvasMY >= DelBtnY && CanvasMY <= DelBtnY + BtnH;
+
+        Frame(RotBtnX, RotBtnY, BtnW, BtnH, bHoverRot ? Cyan : Gold,
+            bHoverRot ? FLinearColor(0.04f, 0.14f, 0.18f, 0.95f) : FLinearColor(0.02f, 0.04f, 0.05f, 0.95f), 1.5f);
+        Text(TEXT("↻ [点击/R] 旋转方向"), RotBtnX + 16, RotBtnY + 8, bHoverRot ? Cyan : Gold, 0.80f);
+
+        Frame(DelBtnX, DelBtnY, BtnW, BtnH, bHoverDel ? Red : GridBorder,
+            bHoverDel ? FLinearColor(0.25f, 0.05f, 0.05f, 0.95f) : FLinearColor(0.02f, 0.03f, 0.04f, 0.95f), 1.5f);
+        Text(TEXT("✕ [点击/Del] 丢弃装备"), DelBtnX + 16, DelBtnY + 8, bHoverDel ? Red : Muted, 0.80f);
+
+        Text(TEXT("[左键拖拽 / E] 放置装备   [右键] 取消移动并放回原位   [中键/R] 旋转"), PanelX + 20, PanelY + 338, Muted, 0.70f);
     }
     else
     {

@@ -1344,19 +1344,54 @@ bool ALZCharacter::PlaceHeldItemAtCell(int32 X, int32 Y)
     return false;
 }
 
+void ALZCharacter::RotateInventoryItem()
+{
+    if (!bInventoryOpen || IsRunInactive()) return;
+
+    if (HeldItemId != 0)
+    {
+        Swap(HeldWidth, HeldHeight);
+        Swap(HeldGrabOffsetX, HeldGrabOffsetY);
+        HeldGrabOffsetX = FMath::Clamp(HeldGrabOffsetX, 0, HeldWidth - 1);
+        HeldGrabOffsetY = FMath::Clamp(HeldGrabOffsetY, 0, HeldHeight - 1);
+        InventoryStatusText = FString::Printf(TEXT("已旋转装备方向: %d×%d"), HeldWidth, HeldHeight);
+        return;
+    }
+
+    FLZInventoryEntry* Hovered = GetInventoryItemAtCellMutable(CursorX, CursorY);
+    if (!Hovered)
+    {
+        InventoryStatusText = TEXT("当前选格无物品可旋转");
+        return;
+    }
+
+    const int32 NewW = Hovered->Height;
+    const int32 NewH = Hovered->Width;
+
+    if (CanPlaceItem(Hovered->PosX, Hovered->PosY, NewW, NewH, Hovered->ItemId))
+    {
+        Hovered->Width = NewW;
+        Hovered->Height = NewH;
+        Hovered->SyncLegacyFields();
+        InventoryStatusText = FString::Printf(TEXT("已原地旋转%s: %d×%d"),
+            LZInventoryItemDisplayName(Hovered->Type), Hovered->Width, Hovered->Height);
+        SyncEquippedGear();
+    }
+    else
+    {
+        InventoryStatusText = FString::Printf(TEXT("原位空间受阻无法旋转：请点击拿起%s后再旋转"),
+            LZInventoryItemDisplayName(Hovered->Type));
+    }
+}
+
 void ALZCharacter::RotateHeldItem()
 {
-    if (!bInventoryOpen || IsRunInactive() || HeldItemId == 0) return;
-    Swap(HeldWidth, HeldHeight);
-    Swap(HeldGrabOffsetX, HeldGrabOffsetY);
-    HeldGrabOffsetX = FMath::Clamp(HeldGrabOffsetX, 0, HeldWidth - 1);
-    HeldGrabOffsetY = FMath::Clamp(HeldGrabOffsetY, 0, HeldHeight - 1);
-    InventoryStatusText = FString::Printf(TEXT("已旋转方向: %d×%d"), HeldWidth, HeldHeight);
+    RotateInventoryItem();
 }
 
 void ALZCharacter::CancelHeldItem()
 {
-    if (!bInventoryOpen || IsRunInactive() || HeldItemId == 0) return;
+    if (HeldItemId == 0) return;
     for (FLZInventoryEntry& Entry : InventoryEntries)
     {
         if (Entry.ItemId == HeldItemId)
@@ -1372,6 +1407,7 @@ void ALZCharacter::CancelHeldItem()
     HeldItemId = 0;
     HeldGrabOffsetX = 0;
     HeldGrabOffsetY = 0;
+    SyncEquippedGear();
     InventoryStatusText = TEXT("已取消移动，物品放回原位");
 }
 
@@ -1415,6 +1451,7 @@ bool ALZCharacter::DiscardItemAtCell(int32 X, int32 Y)
 
 bool ALZCharacter::DiscardSelectedInventoryItem()
 {
+    if (!bInventoryOpen || IsRunInactive()) return false;
     if (HeldItemId != 0) return DiscardItemById(HeldItemId);
     return DiscardItemAtCell(CursorX, CursorY);
 }
