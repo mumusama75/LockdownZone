@@ -238,10 +238,11 @@ void ALZGameMode::BuildOfficeLevel()
     // Isolated wake-up room with an observation window and a separate locked door.
     SpawnModularWall(TEXT("WakeRoomNorth"), FVector(-3150.0f, 750.0f, 175.0f), FVector(1300.0f, 80.0f, 350.0f), FRotator::ZeroRotator, Partition);
     SpawnModularWall(TEXT("WakeRoomSouth"), FVector(-3150.0f, -750.0f, 175.0f), FVector(1300.0f, 80.0f, 350.0f), FRotator::ZeroRotator, Partition);
-    SpawnBlock(TEXT("WindowFrameTop"), FVector(-2520.0f, 120.0f, 330.0f), FVector(35.0f, 900.0f, 40.0f), FRotator::ZeroRotator, OfficeBlue);
-    SpawnBlock(TEXT("WindowFrameBottom"), FVector(-2520.0f, 120.0f, 40.0f), FVector(35.0f, 900.0f, 80.0f), FRotator::ZeroRotator, OfficeBlue);
-    SpawnBlock(TEXT("WindowFrameSideA"), FVector(-2520.0f, 535.0f, 195.0f), FVector(35.0f, 20.0f, 230.0f), FRotator::ZeroRotator, OfficeBlue);
-    SpawnBlock(TEXT("WindowFrameSideB"), FVector(-2520.0f, -295.0f, 195.0f), FVector(35.0f, 20.0f, 230.0f), FRotator::ZeroRotator, OfficeBlue);
+    const FLinearColor AluminumMullion(0.035f, 0.042f, 0.050f);
+    SpawnBlock(TEXT("WindowFrameTop"), FVector(-2520.0f, 120.0f, 330.0f), FVector(35.0f, 900.0f, 40.0f), FRotator::ZeroRotator, AluminumMullion);
+    SpawnBlock(TEXT("WindowFrameBottom"), FVector(-2520.0f, 120.0f, 40.0f), FVector(35.0f, 900.0f, 80.0f), FRotator::ZeroRotator, AluminumMullion);
+    SpawnBlock(TEXT("WindowFrameSideA"), FVector(-2520.0f, 535.0f, 195.0f), FVector(35.0f, 20.0f, 230.0f), FRotator::ZeroRotator, AluminumMullion);
+    SpawnBlock(TEXT("WindowFrameSideB"), FVector(-2520.0f, -295.0f, 195.0f), FVector(35.0f, 20.0f, 230.0f), FRotator::ZeroRotator, AluminumMullion);
     SpawnModularWall(TEXT("WindowPierNorth"), FVector(-2520, 652, 175), FVector(40, 216, 350), FRotator::ZeroRotator, Wall);
     SpawnModularWall(TEXT("WindowPierSouth"), FVector(-2520, -400, 175), FVector(40, 190, 350), FRotator::ZeroRotator, Wall);
     SpawnBlock(TEXT("StartDoorLintel"), FVector(-2520,-610,325), FVector(40,230,50), FRotator::ZeroRotator, Wall);
@@ -410,10 +411,10 @@ void ALZGameMode::BuildOfficeLevel()
     {
         if (UPointLightComponent* Point = Cast<UPointLightComponent>(DeskLamp->GetLightComponent()))
         {
-            Point->SetIntensity(240.0f);
-            Point->SetAttenuationRadius(320.0f);
-            Point->SetLightColor(FLinearColor(1.0f, 0.88f, 0.72f));
-            Point->SetSourceRadius(15.0f);
+            Point->SetIntensity(14.0f);
+            Point->SetAttenuationRadius(200.0f);
+            Point->SetLightColor(FLinearColor(1.0f, 0.90f, 0.78f));
+            Point->SetSourceRadius(20.0f);
             Point->SetCastShadows(false);
         }
         FacilityLights.Add(DeskLamp);
@@ -516,10 +517,10 @@ void ALZGameMode::BuildOfficeLevel()
         {
             if (UPointLightComponent* Point = Cast<UPointLightComponent>(Light->GetLightComponent()))
             {
-                Point->SetIntensity(Index == 0 ? 650.0f : 900.0f);
+                Point->SetIntensity(Index == 0 ? 280.0f : 650.0f);
                 Point->SetAttenuationRadius(1150.0f);
-                Point->SetLightColor(Index < 4 ? FLinearColor(0.68f, 0.81f, 0.90f) : FLinearColor(1.0f, 0.68f, 0.35f));
-                Point->SetSourceRadius(25.0f);
+                Point->SetLightColor(Index < 4 ? FLinearColor(0.88f, 0.92f, 0.96f) : FLinearColor(0.96f, 0.88f, 0.72f));
+                Point->SetSourceRadius(35.0f);
             }
             FacilityLights.Add(Light);
         }
