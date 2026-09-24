@@ -12,6 +12,7 @@ UCLASS()
 class LOCKDOWNZONE_API ALZHUD : public AHUD
 {
     GENERATED_BODY()
+    FVector2D LastInventoryMouse = FVector2D(-1,-1);
 
 public:
     virtual void DrawHUD() override;

@@ -84,15 +84,16 @@ void ALZWeaponPickup::Configure(EPlayerWeapon NewWeapon)
 
 void ALZWeaponPickup::Interact(ALZCharacter* Character)
 {
-    if (Character)
+    if (!CanIdentifyPickup(Character)) return;
+    if (Character && Character->AcquireWeapon(Weapon))
     {
-        Character->AcquireWeapon(Weapon);
         Destroy();
     }
 }
 
 FString ALZWeaponPickup::GetInteractionPrompt(const ALZCharacter* Character) const
 {
+    if (!CanIdentifyPickup(Character)) return FString();
     return Weapon == EPlayerWeapon::Firearm
         ? TEXT("[E] 拾取格洛克17（弹匣内3发）并检视")
         : TEXT("[E] 拾取消防斧并检视");

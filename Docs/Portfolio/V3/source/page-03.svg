@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="675" viewBox="0 0 960 675"><rect x="0" y="0" width="960" height="675" fill="#F4F3EE" stroke="none" stroke-width="1"/>
+<rect x="38" y="32" width="28" height="4" fill="#157E7C" stroke="none" stroke-width="1"/>
+<text x="77" y="35.120000000000005" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#157E7C" font-weight="700">PLAYER VIEW / 03</text>
+<text x="38" y="82.68" font-family="Microsoft YaHei, sans-serif" font-size="29" fill="#223945" font-weight="700">门在眼前，解法需要先观察</text>
+<text x="38" y="111.96000000000001" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#526771" font-weight="400">把“看见目标”和“能够通过”分开：先留出观察距离，再让玩家选择何时接近门口。</text>
+<image href="assets/b_infected.jpg" x="38.0" y="145.0" width="628.0" height="353.25"/>
+<polyline points="405,297 369,314" fill="none" stroke="#B45342" stroke-width="1.2" />
+<circle cx="413" cy="291" r="10" fill="#FFFFFF"/>
+<text x="409" y="294.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#B45342" font-weight="700">1</text>
+<polyline points="145,390 183,378" fill="none" stroke="#AB712B" stroke-width="1.2" />
+<circle cx="135" cy="395" r="10" fill="#FFFFFF"/>
+<text x="131" y="398.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#AB712B" font-weight="700">2</text>
+<polyline points="219,292 255,317" fill="none" stroke="#157E7C" stroke-width="1.2" />
+<circle cx="210" cy="285" r="10" fill="#FFFFFF"/>
+<text x="206" y="288.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#157E7C" font-weight="700">3</text>
+<text x="692" y="162.64" font-family="Microsoft YaHei, sans-serif" font-size="17" fill="#157E7C" font-weight="700">观察点 ①</text>
+<text x="692" y="191.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">1  三只感染者聚在门前。</text>
+<text x="692" y="213.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">2  深蓝制服尸体在左侧；门卡需靠近取</text>
+<text x="692" y="235.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">得。</text>
+<text x="692" y="257.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">3  绿色读卡器贴在门旁。</text>
+<text x="692" y="300.72" font-family="Microsoft YaHei, sans-serif" font-size="16" fill="#157E7C" font-weight="700">先改变占位，再接近</text>
+<text x="692" y="330.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">投瓶区域不在这张画面的视野内。转向</text>
+<text x="692" y="351.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">西北工位投掷，使敌人离开入口，再从</text>
+<text x="692" y="372.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">尸体一侧靠近读卡器。</text>
+<text x="692" y="428.66" font-family="Microsoft YaHei, sans-serif" font-size="10.5" fill="#526771" font-weight="400">进入后沿行政走廊向东，经 D 到配电间；回程从</text>
+<text x="692" y="443.66" font-family="Microsoft YaHei, sans-serif" font-size="10.5" fill="#526771" font-weight="400">C 接回电梯一侧。详见 P2。</text>
+<text x="38" y="530.64" font-family="Microsoft YaHei, sans-serif" font-size="17" fill="#223945" font-weight="700">信息怎样转成行动</text>
+<text x="38" y="560.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">尸体提供取卡目标，读卡器说明卡的用途，感染者占位制造时机问题。取卡无需背包界面，减少近敌操作层级；仍需承担脚步、接近与投掷失误</text>
+<text x="38" y="582.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">的风险。</text>
+<polyline points="38,627 922,627" fill="none" stroke="#C8D1D0" stroke-width="0.7" />
+<text x="38" y="647.66" font-family="Microsoft YaHei, sans-serif" font-size="10.5" fill="#526771" font-weight="400">林顺  /  封锁区：零号大厦  /  关卡设计与玩法机制</text>
+<text x="886" y="645.2" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#526771" font-weight="400">03 / 10</text>
+<text x="38" y="612.66" font-family="Microsoft YaHei, sans-serif" font-size="10.5" fill="#526771" font-weight="400">标注对应实际可见物体；卡片细节在此距离不清晰。尸体与读卡器能否被首次玩家主动关联，仍是重点试玩问题。</text></svg>

@@ -1,4 +1,18 @@
 #include "LZGameMode.h"
+#include "LZGarageSlice.h"
+#include "LZStealthQA.h"
+#include "LZOpeningQA.h"
+#include "LZActionSampleQA.h"
+#include "LZZombieQA.h"
+#include "LZChapter.h"
+#include "LZVentNetwork.h"
+#include "LZChapterQA.h"
+#include "LZHearingQA.h"
+#include "LZVentQA.h"
+#include "NavigationSystem.h"
+#include "NavMesh/NavMeshBoundsVolume.h"
+#include "Components/BoxComponent.h"
+#include "AI/NavigationSystemBase.h"
 
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -63,7 +77,20 @@ void ALZGameMode::BeginPlay()
     Super::BeginPlay();
     RunStartTime = GetWorld()->GetTimeSeconds();
     StatusText = TEXT("WASD 移动 | 左键射击 | 右键瞄准 | R 换弹 | E 交互");
+    if(ALZGarageSlice::IsMap(this)){bCombatUnlocked=true;GarageSlice=GetWorld()->SpawnActor<ALZGarageSlice>();return;}
     BuildGrayboxLevel();
+    if(!FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld()))
+        FNavigationSystem::AddNavigationSystemToWorld(*GetWorld(),FNavigationSystemRunMode::GameMode);
+    auto* NavigationVolume=GetWorld()->SpawnActor<ANavMeshBoundsVolume>(FVector(0,0,100),FRotator::ZeroRotator);
+    auto* NavBox=NewObject<UBoxComponent>(NavigationVolume);
+    NavBox->SetupAttachment(NavigationVolume->GetRootComponent());
+    NavBox->SetBoxExtent(FVector(3900,2150,250));
+    NavBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    NavBox->SetCanEverAffectNavigation(false);
+    NavigationVolume->AddInstanceComponent(NavBox); NavBox->RegisterComponent();
+    if(auto* Nav=FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld()))
+        Nav->OnNavigationBoundsUpdated(NavigationVolume);
+
 
     for (TActorIterator<AActor> It(GetWorld()); It; ++It)
     {
@@ -87,7 +114,16 @@ void ALZGameMode::BeginPlay()
             PC->SetInputMode(FInputModeGameOnly());
         }
     }
+    if(!FParse::Param(FCommandLine::Get(),TEXT("LZSliceQA")) && !FParse::Param(FCommandLine::Get(),TEXT("LZLegacy")))
+        Chapter=GetWorld()->SpawnActor<ALZChapter>();
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+    if(FParse::Param(FCommandLine::Get(),TEXT("LZActionSamplesQA")))GetWorld()->SpawnActor<ALZActionSampleQA>();
+    if(FParse::Param(FCommandLine::Get(),TEXT("LZOpeningQA")))GetWorld()->SpawnActor<ALZOpeningQA>();
+    if(FParse::Param(FCommandLine::Get(),TEXT("LZZombieQA")))GetWorld()->SpawnActor<ALZZombieQA>();
+    if(FParse::Param(FCommandLine::Get(),TEXT("LZStealthQA")))GetWorld()->SpawnActor<ALZStealthQA>();
+    if(FParse::Param(FCommandLine::Get(),TEXT("LZVentQA")))GetWorld()->SpawnActor<ALZVentQA>();
+    if(FParse::Param(FCommandLine::Get(),TEXT("LZHearingQA")))GetWorld()->SpawnActor<ALZHearingQA>();
+    if(FParse::Param(FCommandLine::Get(),TEXT("LZChapterQA")))GetWorld()->SpawnActor<ALZChapterQA>();
     if (FParse::Param(FCommandLine::Get(), TEXT("LZSliceQA")))
     {
         GetWorld()->SpawnActor<ALZSliceQA>();
@@ -98,6 +134,12 @@ void ALZGameMode::BeginPlay()
 AStaticMeshActor* ALZGameMode::SpawnBlock(const FString& Name, const FVector& Location, const FVector& Size,
     const FRotator& Rotation, const FLinearColor& Color)
 {
+    if(ALZVentNetwork::IsNewLayout() && (Name==TEXT("CeilingWest") || Name==TEXT("CeilingEast") || Name==TEXT("CeilingSouthOfBreach") || Name==TEXT("CeilingNorthOfBreach")))
+    {
+        AStaticMeshActor* Last=nullptr;
+        for(FBox B:ALZVentNetwork::CeilingPanels(Location,Size))Last=SpawnBlock(Name+TEXT("CutPanel"),B.GetCenter(),B.GetSize(),Rotation,Color);
+        return Last;
+    }
     if (!CubeMesh)
     {
         return nullptr;
@@ -108,7 +150,9 @@ AStaticMeshActor* ALZGameMode::SpawnBlock(const FString& Name, const FVector& Lo
         return nullptr;
     }
 #if WITH_EDITOR
+#if WITH_EDITOR
     Block->SetActorLabel(Name);
+#endif
 #endif
     UStaticMeshComponent* MeshComponent = Block->GetStaticMeshComponent();
     MeshComponent->SetMobility(EComponentMobility::Movable);
@@ -140,7 +184,9 @@ AStaticMeshActor* ALZGameMode::SpawnArtMesh(const FString& Name, const FString& 
         return nullptr;
     }
 #if WITH_EDITOR
+#if WITH_EDITOR
     Actor->SetActorLabel(Name);
+#endif
 #endif
     UStaticMeshComponent* Component = Actor->GetStaticMeshComponent();
     Component->SetMobility(EComponentMobility::Movable);
@@ -169,7 +215,9 @@ void ALZGameMode::SpawnPipe(const FString& Name, const FVector& Location, float 
         return;
     }
 #if WITH_EDITOR
+#if WITH_EDITOR
     Pipe->SetActorLabel(Name);
+#endif
 #endif
     UStaticMeshComponent* Component = Pipe->GetStaticMeshComponent();
     Component->SetMobility(EComponentMobility::Movable);
@@ -228,7 +276,19 @@ void ALZGameMode::BuildOfficeLevel()
 
     // One dense office floor: wake room -> open office -> service rooms -> electrical room -> exit.
     SpawnBlock(TEXT("OfficeFloor"), FVector(0.0f, 0.0f, -55.0f), FVector(7600.0f, 4200.0f, 110.0f), FRotator::ZeroRotator, Floor);
-    SpawnBlock(TEXT("OfficeCeiling"), FVector(0.0f, 0.0f, 385.0f), FVector(7600.0f, 4200.0f, 70.0f), FRotator::ZeroRotator, FLinearColor(0.10f, 0.115f, 0.12f));
+    // Ceiling opening x[-1550,-280], y[1400,1700] exposes the upper service plenum.
+    SpawnBlock(TEXT("CeilingWest"),FVector(-2675,0,385),FVector(2250,4200,70));
+    SpawnBlock(TEXT("CeilingEast"),FVector(1760,0,385),FVector(4080,4200,70));
+    SpawnBlock(TEXT("CeilingSouthOfBreach"),FVector(-915,-350,385),FVector(1270,3500,70));
+    SpawnBlock(TEXT("CeilingNorthOfBreach"),FVector(-915,1900,385),FVector(1270,400,70));
+    if(ALZVentNetwork::IsNewLayout())
+        SpawnBlock(TEXT("CeilingFormerManagerBreach"),FVector(-915,1550,385),FVector(1270,300,70));
+    else
+    {
+    SpawnBlock(TEXT("ConcreteAboveServicePlenum"),FVector(-915,1550,ALZVentNetwork::IsNewLayout()?850:620),FVector(1270,300,30));
+    SpawnBlock(TEXT("PlenumNorthBoundary"),FVector(-915,1700,ALZVentNetwork::IsNewLayout()?820:500),FVector(1270,20,220));
+    SpawnBlock(TEXT("PlenumSouthBoundary"),FVector(-915,1400,500),FVector(1270,20,220));
+    }
     SpawnModularWall(TEXT("NorthExterior"), FVector(0.0f, 2100.0f, 175.0f), FVector(7600.0f, 100.0f, 350.0f), FRotator::ZeroRotator, Wall);
     SpawnModularWall(TEXT("SouthExterior"), FVector(0.0f, -2100.0f, 175.0f), FVector(7600.0f, 100.0f, 350.0f), FRotator::ZeroRotator, Wall);
     SpawnModularWall(TEXT("WestExterior"), FVector(-3800.0f, 0.0f, 175.0f), FVector(100.0f, 4200.0f, 350.0f), FRotator::ZeroRotator, Wall);
@@ -236,7 +296,7 @@ void ALZGameMode::BuildOfficeLevel()
     SpawnModularWall(TEXT("EastExteriorB"), FVector(3800.0f, -1250.0f, 175.0f), FVector(100.0f, 1700.0f, 350.0f), FRotator::ZeroRotator, Wall);
 
     // Isolated wake-up room with an observation window and a separate locked door.
-    SpawnModularWall(TEXT("WakeRoomNorth"), FVector(-3150.0f, 750.0f, 175.0f), FVector(1300.0f, 80.0f, 350.0f), FRotator::ZeroRotator, Partition);
+    SpawnModularWall(TEXT("WakeRoomNorth"),FVector(-3150,750,175),FVector(1300,80,350),FRotator::ZeroRotator,Partition);
     SpawnModularWall(TEXT("WakeRoomSouth"), FVector(-3150.0f, -750.0f, 175.0f), FVector(1300.0f, 80.0f, 350.0f), FRotator::ZeroRotator, Partition);
     const FLinearColor AluminumMullion(0.035f, 0.042f, 0.050f);
     SpawnBlock(TEXT("WindowFrameTop"), FVector(-2520.0f, 120.0f, 330.0f), FVector(35.0f, 900.0f, 40.0f), FRotator::ZeroRotator, AluminumMullion);
@@ -250,24 +310,21 @@ void ALZGameMode::BuildOfficeLevel()
         FVector(-2520.0f, 120.0f, 195.0f), FRotator::ZeroRotator))
     {
         Glass->SetActorScale3D(FVector(0.04f, 8.1f, 2.3f));
+#if WITH_EDITOR
         Glass->SetActorLabel(TEXT("可破坏观察窗"));
+#endif
     }
     StartRoomDoor = SpawnArtMesh(TEXT("WakeRoomDoor"), TEXT("/Game/Art/ZeroTower/SM_IndustrialDoor.SM_IndustrialDoor"),
         FVector(-2520,-610,0), FRotator::ZeroRotator, FVector(1));
 
-    // Office departments and corridors.
-    SpawnModularWall(TEXT("NorthOfficeWallA"), FVector(-900.0f, 900.0f, 175.0f), FVector(2300.0f, 80.0f, 350.0f), FRotator::ZeroRotator, Partition);
-    SpawnModularWall(TEXT("NorthOfficeWallB"), FVector(1950.0f, 900.0f, 175.0f), FVector(1700.0f, 80.0f, 350.0f), FRotator::ZeroRotator, Partition);
-    SpawnModularWall(TEXT("SouthOfficeWallA"), FVector(-300.0f, -900.0f, 175.0f), FVector(3200.0f, 80.0f, 350.0f), FRotator::ZeroRotator, Partition);
-    SpawnModularWall(TEXT("SouthOfficeWallB"), FVector(2700.0f, -900.0f, 175.0f), FVector(900.0f, 80.0f, 350.0f), FRotator::ZeroRotator, Partition);
-    SpawnModularWall(TEXT("ServerRoomWall"), FVector(1150.0f, -1500.0f, 175.0f), FVector(80.0f, 1200.0f, 350.0f), FRotator::ZeroRotator, OfficeBlue);
-    SpawnModularWall(TEXT("ElectricalRoomWall"), FVector(2200.0f, 1500.0f, 175.0f), FVector(80.0f, 1200.0f, 350.0f), FRotator::ZeroRotator, Emergency);
+    BuildOfficeCirculation();
 
     // Real art assets for office workstation pods, reception, server room, and executive suite.
     for (int32 Desk = 0; Desk < 10; ++Desk)
     {
+        if(ALZVentNetwork::IsNewLayout() && Desk==9)continue;
         const float X = -1750.0f + (Desk % 5) * 480.0f;
-        const float Y = -420.0f + (Desk / 5) * 620.0f;
+        const float Y = -500.0f + (Desk / 5) * 1000.0f;
         const float Yaw = Desk % 2 == 0 ? 0.0f : 180.0f;
         SpawnArtMesh(FString::Printf(TEXT("Desk_%d"), Desk), TEXT("/Game/Art/KenneyFurniture/SM_desk.SM_desk"),
             FVector(X, Y, 0.0f), FRotator(0.0f, Yaw, 0.0f), FVector(0.20f));
@@ -306,24 +363,26 @@ void ALZGameMode::BuildOfficeLevel()
             FVector(1500.0f + Rack * 330.0f, -1350.0f, 0), FRotator(0, 90, 0), FVector(1));
     }
 
+    if(!ALZVentNetwork::IsNewLayout())
+    {
     // Executive Boardroom / Strategy Suite
     SpawnArtMesh(TEXT("ConferenceDeskA"), TEXT("/Game/Art/KenneyFurniture/SM_deskCorner.SM_deskCorner"),
-        FVector(2420.0f, 150.0f, 0.0f), FRotator::ZeroRotator, FVector(0.28f));
+        FVector(-1750.0f, -1670.0f, 0.0f), FRotator::ZeroRotator, FVector(0.28f));
     SpawnArtMesh(TEXT("ConferenceDeskB"), TEXT("/Game/Art/KenneyFurniture/SM_deskCorner.SM_deskCorner"),
-        FVector(2820.0f, 510.0f, 0.0f), FRotator(0.0f, 180.0f, 0.0f), FVector(0.28f));
+        FVector(-1150.0f, -1670.0f, 0.0f), FRotator(0.0f, 180.0f, 0.0f), FVector(0.28f));
     for (int32 ChairIndex = 0; ChairIndex < 6; ++ChairIndex)
     {
-        const float ChairY = 30.0f + (ChairIndex % 3) * 260.0f;
+        const float ChairY = -1840.0f + (ChairIndex % 3) * 180.0f;
         const bool bLeft = ChairIndex < 3;
         SpawnArtMesh(FString::Printf(TEXT("ConferenceChair_%d"), ChairIndex),
             TEXT("/Game/Art/KenneyFurniture/SM_chairModernFrameCushion.SM_chairModernFrameCushion"),
-            FVector(bLeft ? 2320.0f : 3080.0f, ChairY, 0.0f),
+            FVector(bLeft ? -1990.0f : -890.0f, ChairY, 0.0f),
             FRotator(0.0f, bLeft ? 0.0f : 180.0f, 0.0f), FVector(0.14f));
     }
     SpawnArtMesh(TEXT("ConferenceLaptop"), TEXT("/Game/Art/KenneyFurniture/SM_laptop.SM_laptop"),
-        FVector(2550.0f, 250.0f, 78.0f), FRotator(0.0f, 45.0f, 0.0f), FVector(0.14f), false);
+        FVector(-1750.0f, -1670.0f, 78.0f), FRotator(0.0f, 45.0f, 0.0f), FVector(0.14f), false);
     SpawnArtMesh(TEXT("ConferenceBooks"), TEXT("/Game/Art/KenneyFurniture/SM_books.SM_books"),
-        FVector(2750.0f, 400.0f, 78.0f), FRotator(0.0f, -30.0f, 0.0f), FVector(0.16f), false);
+        FVector(-1150.0f, -1670.0f, 78.0f), FRotator(0.0f, -30.0f, 0.0f), FVector(0.16f), false);
 
     // Reception & Visitor Lobby Hub
     SpawnArtMesh(TEXT("ReceptionDeskCounter"), TEXT("/Game/Art/KenneyFurniture/SM_deskCorner.SM_deskCorner"),
@@ -343,31 +402,26 @@ void ALZGameMode::BuildOfficeLevel()
     SpawnArtMesh(TEXT("ReceptionCoffeeTable"), TEXT("/Game/Art/KenneyFurniture/SM_tableCoffee.SM_tableCoffee"),
         FVector(-2720.0f, 1320.0f, 0.0f), FRotator::ZeroRotator, FVector(0.16f));
 
+    }
     // Department Manager's Office & Executive Vault
-    SpawnModularWall(TEXT("ManagerOfficeWallSouth"), FVector(-850.0f, 1100.0f, 175.0f), FVector(700.0f, 60.0f, 350.0f), FRotator::ZeroRotator, Partition);
-    SpawnModularWall(TEXT("ManagerOfficeWallEast"), FVector(-500.0f, 1300.0f, 175.0f), FVector(60.0f, 400.0f, 350.0f), FRotator::ZeroRotator, Partition);
     SpawnArtMesh(TEXT("ManagerDesk"), TEXT("/Game/Art/KenneyFurniture/SM_deskCorner.SM_deskCorner"),
-        FVector(-850.0f, 1400.0f, 0.0f), FRotator(0.0f, 180.0f, 0.0f), FVector(0.24f));
+        FVector(-1100.0f, 1760.0f, 0.0f), FRotator(0.0f, 180.0f, 0.0f), FVector(0.24f));
     SpawnArtMesh(TEXT("ManagerChair"), TEXT("/Game/Art/KenneyFurniture/SM_chairModernFrameCushion.SM_chairModernFrameCushion"),
-        FVector(-770.0f, 1400.0f, 0.0f), FRotator(0.0f, 180.0f, 0.0f), FVector(0.14f));
+        FVector(-1020.0f, 1760.0f, 0.0f), FRotator(0.0f, 180.0f, 0.0f), FVector(0.14f));
     SpawnArtMesh(TEXT("ManagerLaptop"), TEXT("/Game/Art/KenneyFurniture/SM_laptop.SM_laptop"),
-        FVector(-880.0f, 1400.0f, 78.0f), FRotator(0.0f, -15.0f, 0.0f), FVector(0.14f), false);
+        FVector(-1130.0f, 1760.0f, 78.0f), FRotator(0.0f, -15.0f, 0.0f), FVector(0.14f), false);
 
     // Executive Data Vault (unlocked by solving the 3-node auxiliary power puzzle)
-    SpawnModularWall(TEXT("VaultWallNorth"), FVector(-450.0f, 1750.0f, 175.0f), FVector(300.0f, 60.0f, 350.0f), FRotator::ZeroRotator, Partition);
-    SpawnModularWall(TEXT("VaultWallSouth"), FVector(-450.0f, 1350.0f, 175.0f), FVector(300.0f, 60.0f, 350.0f), FRotator::ZeroRotator, Partition);
-    SpawnModularWall(TEXT("VaultWallEast"), FVector(-300.0f, 1550.0f, 175.0f), FVector(60.0f, 400.0f, 350.0f), FRotator::ZeroRotator, Partition);
-    VaultBarrier = SpawnArtMesh(TEXT("ExecutiveVaultGate"), TEXT("/Game/Art/ZeroTower/SM_IndustrialDoor.SM_IndustrialDoor"),
-        FVector(-600.0f, 1550.0f, 0.0f), FRotator(0.0f, 90.0f, 0.0f), FVector(1.0f));
+    VaultBarrier = SpawnBlock(TEXT("RecordsSecurityShutter"), FVector(-450,1350,150), FVector(200,24,300), FRotator::ZeroRotator, Partition);
 
     // Environmental Puzzle Terminals: Clue, Generator (Power), Cooling, Purifier
     if (ALZPuzzleTerminal* ClueTerm = GetWorld()->SpawnActor<ALZPuzzleTerminal>(
-        FVector(-920.0f, 1330.0f, 82.0f), FRotator(0.0f, 180.0f, 0.0f)))
+        FVector(-1170.0f, 1700.0f, 82.0f), FRotator(0.0f, 180.0f, 0.0f)))
     {
         ClueTerm->Configure(EPuzzleNode::Clue);
     }
     if (ALZPuzzleTerminal* GenTerm = GetWorld()->SpawnActor<ALZPuzzleTerminal>(
-        FVector(2050.0f, 1380.0f, 82.0f), FRotator(0.0f, 180.0f, 0.0f)))
+        FVector(2500.0f, 1380.0f, 82.0f), FRotator(0.0f, 180.0f, 0.0f)))
     {
         GenTerm->Configure(EPuzzleNode::Generator);
     }
@@ -384,9 +438,9 @@ void ALZGameMode::BuildOfficeLevel()
 
     // Pantry / Break Room
     SpawnArtMesh(TEXT("PantryTable"), TEXT("/Game/Art/KenneyFurniture/SM_tableCoffee.SM_tableCoffee"),
-        FVector(300.0f, -750.0f, 0.0f), FRotator::ZeroRotator, FVector(0.18f));
+        FVector(300.0f, -1680.0f, 0.0f), FRotator::ZeroRotator, FVector(0.18f));
     SpawnArtMesh(TEXT("PantryPlant"), TEXT("/Game/Art/KenneyFurniture/SM_plantSmall1.SM_plantSmall1"),
-        FVector(300.0f, -750.0f, 45.0f), FRotator::ZeroRotator, FVector(0.15f), false);
+        FVector(300.0f, -1680.0f, 45.0f), FRotator::ZeroRotator, FVector(0.15f), false);
 
     SpawnArtMesh(TEXT("OfficeBookcaseA"), TEXT("/Game/Art/KenneyFurniture/SM_bookcaseOpen.SM_bookcaseOpen"),
         FVector(700.0f, 1880.0f, 0.0f), FRotator(0.0f, 180.0f, 0.0f), FVector(0.20f));
@@ -461,7 +515,7 @@ void ALZGameMode::BuildOfficeLevel()
     SpawnEnemy(FVector(1650.0f, 300.0f, 100.0f), false);
     SpawnEnemy(FVector(2700.0f, -350.0f, 100.0f), false);
 
-    if (ALZPowerInteractable* Fuse = GetWorld()->SpawnActor<ALZPowerInteractable>(FVector(1850.0f, -1300.0f, 83.0f), FRotator::ZeroRotator))
+    if (ALZPowerInteractable* Fuse = GetWorld()->SpawnActor<ALZPowerInteractable>(FVector(2050.0f, -1250.0f, 83.0f), FRotator::ZeroRotator))
     {
         Fuse->Configure(EPowerInteractableType::Fuse);
         Fuse->SetActorHiddenInGame(true);
@@ -526,6 +580,11 @@ void ALZGameMode::BuildOfficeLevel()
         }
     }
 
+    for (APointLight* Light : FacilityLights)
+    {
+        OriginalLightIntensities.Add(Light->GetLightComponent()->Intensity);
+        OriginalLightColors.Add(Light->GetLightComponent()->GetLightColor());
+    }
     DressOffice();
     StatusText = TEXT("你在封闭办公室醒来。透过观察窗确认情况，并寻找可以防身的武器。");
 }
@@ -778,13 +837,15 @@ void ALZGameMode::HandlePlayerDeath()
 
 void ALZGameMode::RestartRun()
 {
+    if(GarageSlice){ALZGarageSlice::RetryPending=true;UGameplayStatics::OpenLevel(this,TEXT("/Game/Chapter2Greybox/Maps/L_GarageEscape"));return;}
     UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 }
 
 FString ALZGameMode::GetObjectiveText() const
 {
+    if(GarageSlice || Chapter) return FString();
     const ALZCharacter* Character = Cast<ALZCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
-    if (Character && (!Character->HasMeleeWeapon() || !Character->HasFirearm()))
+    if (!bCombatUnlocked)
     {
         return TEXT("当前目标 / 在房间内寻找近战武器和手枪");
     }
@@ -800,11 +861,12 @@ FString ALZGameMode::GetObjectiveText() const
     {
         return TEXT("当前目标 / 将保险丝安装到北侧主配电箱");
     }
-    return TEXT("电力已恢复 / 从东侧安全门逃离大厦");
+    return TEXT("电力已恢复 / 经东侧前室乘救援平台撤离");
 }
 
 void ALZGameMode::NotifyWeaponCollected(EPlayerWeapon Weapon)
 {
+    if(Chapter) return;
     ALZCharacter* Character = Cast<ALZCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
     if (!Character)
     {
@@ -812,6 +874,7 @@ void ALZGameMode::NotifyWeaponCollected(EPlayerWeapon Weapon)
     }
     if (Character->HasMeleeWeapon() && Character->HasFirearm())
     {
+        bCombatUnlocked = true;
         StatusText = TEXT("武器已备齐：按1切换消防斧，按2切换手枪。房门已解锁，击碎观察窗迎敌。");
         if (StartRoomDoor)
         {
@@ -829,6 +892,7 @@ void ALZGameMode::NotifyWeaponCollected(EPlayerWeapon Weapon)
 
 void ALZGameMode::NotifyEnemyKilled()
 {
+    if(Chapter || GarageSlice) { ++EnemiesKilled; return; }
     ++EnemiesKilled;
     if (!bOfficeBlackout && EnemiesKilled >= 4)
     {
@@ -843,7 +907,7 @@ void ALZGameMode::TriggerOfficeBlackout()
     {
         if (Fixture) Fixture->SetScalarParameterValue(TEXT("EmissiveStrength"), 0.0f);
     }
-    StatusText = TEXT("大楼突然断电：出口门失去供电。服务器机房可能有备用保险丝。");
+    StatusText = TEXT("大楼断电，东侧救援升降平台停机。前往南侧机房找15A保险丝；西楼梯已坍塌。");
     for (APointLight* Light : FacilityLights)
     {
         if (IsValid(Light))
@@ -878,7 +942,8 @@ void ALZGameMode::CollectFuse()
         return;
     }
     bHasFuse = true;
-    StatusText = TEXT("已获得15A保险丝：前往北侧配电室恢复供电。");
+    if (ServiceShortcutDoor) { ServiceShortcutDoor->Destroy(); ServiceShortcutDoor = nullptr; }
+    StatusText = TEXT("已获得15A保险丝与检修钥匙：机房西门已解锁：可走西侧后勤短路，或东侧机电通道前往配电室。");
 }
 
 void ALZGameMode::TryRestoreOfficePower()
@@ -904,15 +969,16 @@ void ALZGameMode::TryRestoreOfficePower()
         if (Fixture) Fixture->SetScalarParameterValue(TEXT("EmissiveStrength"), 2.0f);
     }
     bObjectiveComplete = true;
-    StatusText = TEXT("供电恢复：东侧安全门已开启，立即撤离大厦。");
+    StatusText = TEXT("供电恢复：东侧救援升降平台就绪，经过前室撤离。");
     for (APointLight* Light : FacilityLights)
     {
         if (IsValid(Light))
         {
             if (UPointLightComponent* Point = Cast<UPointLightComponent>(Light->GetLightComponent()))
             {
-                Point->SetIntensity(900.0f);
-                Point->SetLightColor(FLinearColor(0.72f, 0.88f, 1.0f));
+                const int32 Index = FacilityLights.IndexOfByKey(Light);
+                Point->SetIntensity(OriginalLightIntensities[Index]);
+                Point->SetLightColor(OriginalLightColors[Index]);
             }
         }
     }
@@ -942,7 +1008,7 @@ bool ALZGameMode::IsPuzzleNodeActivated(EPuzzleNode Node) const
 
 void ALZGameMode::ShowPuzzleClue()
 {
-    StatusText = TEXT("【SOP-17 运维备忘】大厦断电时备用15A保险丝在03机房；金库解锁顺序：动力 -> 冷却 -> 净化。错误将触发警报！");
+    StatusText = TEXT("【SOP-17 运维备忘】大厦断电时备用15A保险丝在03机房；资料室可选解锁顺序：动力 -> 冷却 -> 净化。错误将触发警报！");
 }
 
 void ALZGameMode::TryActivatePuzzleNode(EPuzzleNode Node)
@@ -959,14 +1025,14 @@ void ALZGameMode::TryActivatePuzzleNode(EPuzzleNode Node)
         if (PuzzleStep >= 3)
         {
             bPuzzleComplete = true;
-            StatusText = TEXT("辅助供电并网成功：02号行政保密金库已解锁！可在主管办公室拾取高阶战利品");
+            StatusText = TEXT("辅助供电并网成功：行政资料室已解锁，可取电子零件（120）与医疗包；也可直接撤离");
             if (VaultBarrier)
             {
                 VaultBarrier->Destroy();
                 VaultBarrier = nullptr;
             }
-            SpawnLoot(FVector(-450.0f, 1550.0f, 40.0f), static_cast<uint8>(ELootType::Scrap));
-            SpawnLoot(FVector(-450.0f, 1450.0f, 40.0f), static_cast<uint8>(ELootType::Medical));
+            SpawnLoot(FVector(-450.0f, 1870.0f, 40.0f), static_cast<uint8>(ELootType::Scrap));
+            SpawnLoot(FVector(-450.0f, 1700.0f, 40.0f), static_cast<uint8>(ELootType::Medical));
         }
         else
         {
@@ -977,8 +1043,12 @@ void ALZGameMode::TryActivatePuzzleNode(EPuzzleNode Node)
     else
     {
         PuzzleStep = 0;
-        StatusText = TEXT("顺序错误：电路过载保护跳闸，节点已重置！蜂鸣警报引来了一只游荡感染者");
-        SpawnEnemy(FVector(0.0f, 0.0f, 100.0f), false);
+        StatusText = TEXT("顺序错误：电路过载保护跳闸，节点已重置！警报已触发（本局最多增援一次）");
+        if (!bPuzzleAlarmRaised)
+        {
+            SpawnEnemy(FVector(1000.0f, 0.0f, 100.0f), false);
+            bPuzzleAlarmRaised = true;
+        }
     }
     RefreshPuzzleTerminals();
 }
@@ -1000,3 +1070,6 @@ FString ALZGameMode::GetElapsedTimeText() const
     const int32 TotalSeconds = FMath::Max(0, FMath::FloorToInt(Elapsed));
     return FString::Printf(TEXT("%02d:%02d"), TotalSeconds / 60, TotalSeconds % 60);
 }
+
+bool ALZGameMode::IsCombatUnlocked() const {return Chapter?Chapter->IsUnlocked():bCombatUnlocked;}
+FString ALZGameMode::GetStatusText() const {return GarageSlice?GarageSlice->Hint():Chapter?Chapter->GetFeedback():StatusText;}

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="675" viewBox="0 0 960 675"><rect x="0" y="0" width="960" height="675" fill="#F4F3EE" stroke="none" stroke-width="1"/>
+<rect x="38" y="32" width="28" height="4" fill="#157E7C" stroke="none" stroke-width="1"/>
+<text x="77" y="35.120000000000005" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#157E7C" font-weight="700">ITERATION / 05</text>
+<text x="38" y="82.68" font-family="Microsoft YaHei, sans-serif" font-size="29" fill="#223945" font-weight="700">风道从“覆盖全层”收束为一条绕行</text>
+<text x="38" y="111.96000000000001" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#526771" font-weight="400">取舍：让风道解决 B 门的局部阻挡，同时保留进入行政区后的地面探索。</text>
+<rect x="38" y="144" width="430" height="208" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<rect x="53" y="159" width="126" height="42" fill="#E0E9E6" stroke="none" stroke-width="1"/>
+<text x="65" y="183.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">08-09</text>
+<rect x="190" y="159" width="126" height="42" fill="#E0E9E6" stroke="none" stroke-width="1"/>
+<text x="202" y="183.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">10 会议室</text>
+<rect x="327" y="159" width="126" height="42" fill="#E0E9E6" stroke="none" stroke-width="1"/>
+<text x="339" y="183.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">11-12</text>
+<rect x="53" y="290" width="126" height="42" fill="#E4DFE9" stroke="none" stroke-width="1"/>
+<text x="64" y="313.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">02 / 04</text>
+<rect x="190" y="290" width="126" height="42" fill="#E4DFE9" stroke="none" stroke-width="1"/>
+<text x="201" y="313.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">06 档案室</text>
+<rect x="327" y="290" width="126" height="42" fill="#E4DFE9" stroke="none" stroke-width="1"/>
+<text x="338" y="313.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">07 配电间</text>
+<text x="164" y="244.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#526771" font-weight="400">03 中央办公区</text>
+<polyline points="78,209 422,209 422,274 78,274" fill="none" stroke="#7958A0" stroke-width="3" stroke-dasharray="5 4"/>
+<polyline points="104,194 104,209" fill="none" stroke="#7958A0" stroke-width="2" stroke-dasharray="5 4"/>
+<circle cx="104" cy="194" r="4" fill="#7958A0"/>
+<polyline points="104,274 104,290" fill="none" stroke="#7958A0" stroke-width="2" stroke-dasharray="5 4"/>
+<circle cx="104" cy="290" r="4" fill="#7958A0"/>
+<polyline points="243,194 243,209" fill="none" stroke="#7958A0" stroke-width="2" stroke-dasharray="5 4"/>
+<circle cx="243" cy="194" r="4" fill="#7958A0"/>
+<polyline points="243,274 243,290" fill="none" stroke="#7958A0" stroke-width="2" stroke-dasharray="5 4"/>
+<circle cx="243" cy="290" r="4" fill="#7958A0"/>
+<polyline points="379,194 379,209" fill="none" stroke="#7958A0" stroke-width="2" stroke-dasharray="5 4"/>
+<circle cx="379" cy="194" r="4" fill="#7958A0"/>
+<polyline points="379,274 379,290" fill="none" stroke="#7958A0" stroke-width="2" stroke-dasharray="5 4"/>
+<circle cx="379" cy="290" r="4" fill="#7958A0"/>
+<rect x="492" y="144" width="430" height="208" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<rect x="507" y="159" width="126" height="42" fill="#E0E9E6" stroke="none" stroke-width="1"/>
+<text x="519" y="183.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">08-09</text>
+<rect x="644" y="159" width="126" height="42" fill="#E0E9E6" stroke="none" stroke-width="1"/>
+<text x="656" y="183.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">10 会议室</text>
+<rect x="781" y="159" width="126" height="42" fill="#E0E9E6" stroke="none" stroke-width="1"/>
+<text x="793" y="183.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">11-12</text>
+<rect x="507" y="290" width="126" height="42" fill="#E4DFE9" stroke="none" stroke-width="1"/>
+<text x="518" y="313.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">02 / 04</text>
+<rect x="644" y="290" width="126" height="42" fill="#E4DFE9" stroke="none" stroke-width="1"/>
+<text x="655" y="313.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">06 档案室</text>
+<rect x="781" y="290" width="126" height="42" fill="#E4DFE9" stroke="none" stroke-width="1"/>
+<text x="792" y="313.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">07 配电间</text>
+<text x="618" y="244.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#526771" font-weight="400">03 中央办公区</text>
+<polyline points="702,194 767,194 767,264 702,264 702,286" fill="none" stroke="#7958A0" stroke-width="3" stroke-dasharray="5 4"/>
+<polyline points="698.9552412612214,279.69687028353127 702,286 705.0447587387786,279.69687028353127" fill="none" stroke="#7958A0" stroke-width="3" />
+<circle cx="702" cy="194" r="5" fill="#7958A0"/>
+<circle cx="702" cy="290" r="5" fill="#7958A0"/>
+<text x="38" y="381.64" font-family="Microsoft YaHei, sans-serif" font-size="17" fill="#526771" font-weight="700">原方案：各区均有风道出入口</text>
+<text x="38" y="412.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">沿全层分布的高位网络，几乎处处可下。它支持广泛绕行，也让安全</text>
+<text x="38" y="434.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">通路覆盖了多个地面问题。</text>
+<text x="492" y="381.64" font-family="Microsoft YaHei, sans-serif" font-size="17" fill="#7958A0" font-weight="700">当前：10 进入，06 离开</text>
+<text x="492" y="412.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">保留推柜、攀爬和风道体验，删除其余出入口。玩家绕开 B 门后落到</text>
+<text x="492" y="434.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">行政区，仍需从 D 去配电间、经 C 返回。</text>
+<polyline points="38,480 922,480" fill="none" stroke="#C8D1D0" stroke-width="1" />
+<text x="38" y="511.72" font-family="Microsoft YaHei, sans-serif" font-size="16" fill="#223945" font-weight="700">为什么不保留全网？</text>
+<text x="38" y="540.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">全网提供更多落点，却削弱了两条路线的差异；收束后可选择的落点更少，</text>
+<text x="38" y="561.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">换来更明确的风险交换与汇合位置。</text>
+<text x="492" y="511.72" font-family="Microsoft YaHei, sans-serif" font-size="16" fill="#223945" font-weight="700">付出的代价与下一步</text>
+<text x="492" y="540.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">牺牲自由穿行与立体探索范围。现有通行检查支持 10→06；是否因绕行过</text>
+<text x="492" y="561.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">长而被玩家放弃，尚需与 B 门一起试玩。</text>
+<polyline points="38,627 922,627" fill="none" stroke="#C8D1D0" stroke-width="0.7" />
+<text x="38" y="647.66" font-family="Microsoft YaHei, sans-serif" font-size="10.5" fill="#526771" font-weight="400">林顺  /  封锁区：零号大厦  /  关卡设计与玩法机制</text>
+<text x="886" y="645.2" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#526771" font-weight="400">05 / 10</text>
+<text x="38" y="612.66" font-family="Microsoft YaHei, sans-serif" font-size="10.5" fill="#526771" font-weight="400">两图均为关系示意，非旧实机或等比地图。前后入口方案有迭代记录；路线偏好未做玩家对比测试。</text></svg>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="675" viewBox="0 0 960 675"><rect x="0" y="0" width="960" height="675" fill="#F4F3EE" stroke="none" stroke-width="1"/>
+<rect x="38" y="32" width="28" height="4" fill="#157E7C" stroke="none" stroke-width="1"/>
+<text x="77" y="35.120000000000005" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#157E7C" font-weight="700">INTERACTION / 08</text>
+<text x="38" y="82.68" font-family="Microsoft YaHei, sans-serif" font-size="29" fill="#223945" font-weight="700">用状态边界管理输入、保护与交接</text>
+<text x="38" y="111.96000000000001" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#526771" font-weight="400">一处启动，一条连续流程；松开只暂停发力，不退出演出。</text>
+<rect x="38" y="144" width="166" height="90" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<rect x="38" y="144" width="166" height="3" fill="#157E7C" stroke="none" stroke-width="1"/>
+<text x="49" y="170.8" font-family="Microsoft YaHei, sans-serif" font-size="15" fill="#157E7C" font-weight="700">呼梯 / 运行</text>
+<text x="49" y="197.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">按钮仅负责呼梯</text>
+<polyline points="205,185 214,185" fill="none" stroke="#AB712B" stroke-width="2" />
+<polyline points="207.69687028353127,188.04475873877863 214,185 207.69687028353127,181.95524126122137" fill="none" stroke="#AB712B" stroke-width="2" />
+<rect x="217" y="144" width="166" height="90" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<rect x="217" y="144" width="166" height="3" fill="#157E7C" stroke="none" stroke-width="1"/>
+<text x="228" y="170.8" font-family="Microsoft YaHei, sans-serif" font-size="15" fill="#157E7C" font-weight="700">停稳卡门</text>
+<text x="228" y="197.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">中央门缝可交互</text>
+<polyline points="384,185 393,185" fill="none" stroke="#AB712B" stroke-width="2" />
+<polyline points="386.69687028353127,188.04475873877863 393,185 386.69687028353127,181.95524126122137" fill="none" stroke="#AB712B" stroke-width="2" />
+<rect x="396" y="144" width="166" height="90" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<rect x="396" y="144" width="166" height="3" fill="#AB712B" stroke="none" stroke-width="1"/>
+<text x="407" y="170.8" font-family="Microsoft YaHei, sans-serif" font-size="15" fill="#AB712B" font-weight="700">发力</text>
+<text x="407" y="197.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">按住推进，松开暂停</text>
+<polyline points="563,185 572,185" fill="none" stroke="#AB712B" stroke-width="2" />
+<polyline points="565.6968702835312,188.04475873877863 572,185 565.6968702835312,181.95524126122137" fill="none" stroke="#AB712B" stroke-width="2" />
+<rect x="575" y="144" width="166" height="90" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<rect x="575" y="144" width="166" height="3" fill="#AB712B" stroke="none" stroke-width="1"/>
+<text x="586" y="170.8" font-family="Microsoft YaHei, sans-serif" font-size="15" fill="#AB712B" font-weight="700">自动入厢</text>
+<text x="586" y="197.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">角色与镜头一起移动</text>
+<polyline points="742,185 751,185" fill="none" stroke="#AB712B" stroke-width="2" />
+<polyline points="744.6968702835312,188.04475873877863 751,185 744.6968702835312,181.95524126122137" fill="none" stroke="#AB712B" stroke-width="2" />
+<rect x="754" y="144" width="166" height="90" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<rect x="754" y="144" width="166" height="3" fill="#AB712B" stroke="none" stroke-width="1"/>
+<text x="765" y="170.8" font-family="Microsoft YaHei, sans-serif" font-size="15" fill="#AB712B" font-weight="700">关门 / 下行</text>
+<text x="765" y="197.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#223945" font-weight="400">全闭后下行交接</text>
+<text x="38" y="279.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#526771" font-weight="700">阶段</text>
+<text x="238" y="279.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#526771" font-weight="700">玩家能做什么</text>
+<text x="598" y="279.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#526771" font-weight="700">必须守住的边界</text>
+<rect x="38" y="297" width="884" height="62" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<text x="51" y="319.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="700">门缝启动前</text>
+<text x="238" y="316.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">自由移动、观察和应对威胁。</text>
+<text x="598" y="316.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">检查距离、朝向、遮挡与工具；按钮不触发 QTE。</text>
+<rect x="38" y="366" width="884" height="62" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<text x="51" y="388.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="700">对齐与有效发力</text>
+<text x="238" y="385.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">约 3.6 秒有效按住；松开保留进度。</text>
+<text x="238" y="405.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">暂停仍可用，其余世界操作锁定。</text>
+<text x="598" y="385.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">不接受重复启动；普通敌人不伤害或推挤玩家。</text>
+<rect x="38" y="435" width="884" height="62" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<text x="51" y="457.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="700">入厢、关门与下行</text>
+<text x="238" y="454.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">自动跨过门槛并回身，继续受保护。</text>
+<text x="598" y="454.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">角色完整进入才关门；门全闭才下降；车库未准备好</text>
+<text x="598" y="474.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">则闭门等待。</text>
+<rect x="38" y="504" width="884" height="62" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<text x="51" y="526.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="700">第二关开门 / 异常恢复</text>
+<text x="238" y="523.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">开门完成恢复自由操作；可显式重试。</text>
+<text x="598" y="523.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">统一清理控制锁、保护与临时对象，避免重试遗留状</text>
+<text x="598" y="543.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">态。</text>
+<polyline points="38,627 922,627" fill="none" stroke="#C8D1D0" stroke-width="0.7" />
+<text x="38" y="647.66" font-family="Microsoft YaHei, sans-serif" font-size="10.5" fill="#526771" font-weight="400">林顺  /  封锁区：零号大厦  /  关卡设计与玩法机制</text>
+<text x="886" y="645.2" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#526771" font-weight="400">08 / 10</text>
+<text x="38" y="612.66" font-family="Microsoft YaHei, sans-serif" font-size="10.5" fill="#526771" font-weight="400">电梯专项 14 项检查通过，含暂停、重复交互、伤害保护与中途重试；首次玩家能否理解发力提示仍待验证。</text></svg>

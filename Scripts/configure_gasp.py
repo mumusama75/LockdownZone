@@ -1,0 +1,26 @@
+import unreal
+base='/Game/Characters/UEFN_Mannequin'
+# All edits affect only the migrated copies in LockdownZone.
+for suffix in ['Idle/M_Neutral_Stand_Idle_Loop','Walk/M_Neutral_Walk_Loop_F','Run/M_Neutral_Run_Loop_F','Ragdoll/M_ragdoll_getup_stand_B','Traversal/Vault/M_Neutral_Traversal_Vault_1_0_stand_F_Lfoot','Interactions/Shoves/M_relaxed_ragdoll_shove_stand_F_V']:
+ a=unreal.load_asset(base+'/Animations/'+suffix)
+ unreal.AnimationLibrary.remove_all_animation_notify_tracks(a)
+ a.set_editor_property('enable_root_motion',False)
+ a.set_editor_property('force_root_lock',True)
+ unreal.EditorAssetLibrary.save_loaded_asset(a)
+tools=unreal.AssetToolsHelpers.get_asset_tools()
+mesh=unreal.load_asset(base+'/Meshes/SKM_UEFN_Mannequin')
+f=unreal.BlendSpaceFactory1D();f.set_editor_property('target_skeleton',mesh.get_editor_property('skeleton'))
+bs=unreal.load_asset('/Game/Gameplay/BS_LZGASPLocomotion') or tools.create_asset('BS_LZGASPLocomotion','/Game/Gameplay',unreal.BlendSpace1D,f)
+params=bs.get_editor_property('blend_parameters');params[0].set_editor_property('display_name','Speed');params[0].set_editor_property('min',0);params[0].set_editor_property('max',450);params[0].set_editor_property('grid_num',3);bs.set_editor_property('blend_parameters',params)
+f=unreal.DataAssetFactory();f.set_editor_property('data_asset_class',unreal.LZMotionProfile)
+p=unreal.load_asset('/Game/Gameplay/DA_LZMotion') or tools.create_asset('DA_LZMotion','/Game/Gameplay',unreal.LZMotionProfile,f)
+p.set_editor_property('source_label','Epic Game Animation Sample 5.8 - selected official clips, custom locomotion/state machine')
+p.set_editor_property('mesh',mesh);p.set_editor_property('locomotion',bs);p.set_editor_property('speed_on_x_axis',True)
+p.set_editor_property('stagger',unreal.load_asset(base+'/Animations/Interactions/Shoves/M_relaxed_ragdoll_shove_stand_F_V'))
+p.set_editor_property('get_up',unreal.load_asset(base+'/Animations/Ragdoll/M_ragdoll_getup_stand_B'))
+p.set_editor_property('vault',unreal.load_asset(base+'/Animations/Traversal/Vault/M_Neutral_Traversal_Vault_1_0_stand_F_Lfoot'))
+p.set_editor_property('get_up_seconds',5.0)
+p.set_editor_property('knockdown_seconds',1.8)
+if len(bs.get_editor_property('sample_data'))==0:p.build_locomotion_samples()
+unreal.EditorAssetLibrary.save_loaded_asset(bs);unreal.EditorAssetLibrary.save_loaded_asset(p)
+unreal.log('LZ_GASP_PROFILE_CREATED '+str(len(bs.get_editor_property('sample_data'))))

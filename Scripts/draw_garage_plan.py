@@ -1,0 +1,58 @@
+from PIL import Image, ImageDraw, ImageFont
+from pathlib import Path
+import math
+out=Path('Docs/Portfolio/Chapter2Greybox');out.mkdir(parents=True,exist_ok=True)
+im=Image.new('RGB',(1940,1140),'#f5f4ef');d=ImageDraw.Draw(im)
+font='C:/Windows/Fonts/msyh.ttc'
+f=lambda n:ImageFont.truetype(font,n)
+def text(p,s,n=23,c='#263e49'):d.text(p,s,font=f(n),fill=c)
+text((45,24),'地下车库：被打断的驾车撤离',38)
+text((45,80),'当前灰盒 / 主体 48 × 32 m / 北 = UE −Y，东 = +X / 2026.09.25',22)
+ox,oy,k=55,140,.205
+def pt(x,y):return ox+x*k,oy+(y+1600)*k
+def rect(x,y,w,h,c,outline='#465a62',line=3):
+ a=pt(x-w/2,y-h/2);b=pt(x+w/2,y+h/2);d.rectangle((*a,*b),fill=c,outline=outline,width=line)
+rect(2400,0,4800,3200,'#dce5e8',line=8)
+for x in (320,860,1400):rect(x,-1290,185,430,'#9aabb0')
+for x in (1300,2010,2720,3430):rect(x,1430,430,185,'#9aabb0')
+rect(2500,-1280,1000,640,'#dec9c1');text(pt(2130,-1510),'04 维修隔间',21)
+rect(2500,-960,360,25,'#c24b41');text(pt(2320,-1270),'BOSS',24,'#a73832')
+rect(5050,120,500,560,'#e9dbb4');text(pt(4830,-400),'03 玻璃岗亭',19)
+rect(4800,90,30,180,'#c3943e');rect(5050,400,500,12,'#6cb8c4')
+rect(4800,290,12,220,'#6cb8c4');rect(5070,340,160,75,'#8b9fa6')
+text(pt(5330,160),'升门按钮',15)
+rect(4875,90,85,65,'#a77c5a')
+rect(320,1320,600,540,'#cce0d6');text(pt(80,1260),'01 到达前室',19)
+rect(180,1470,220,120,'#7b9695')
+for i,x in enumerate((1850,3050)):
+ rect(x,100,500,600,'#cad4cd',outline='#c49b41',line=3)
+ rect(x-110,110,185,430,'#8b9fa6');rect(x+155,80,90,90,'#4f636b')
+ text(pt(x+70,-70),'P'+str(i+1),18)
+for x in (790,1110):d.line((pt(x,210),pt(x,785)),fill='#c49b41',width=2)
+a=math.radians(-55)
+poly=[]
+for x,y in [(-235,-102),(235,-102),(235,102),(-235,102)]:poly.append(pt(960+x*math.cos(a)-y*math.sin(a),510+x*math.sin(a)+y*math.cos(a)))
+d.polygon(poly,fill='#168d80',outline='#155b58')
+def local(x,y):return pt(960+x*math.cos(a)-y*math.sin(a),510+x*math.sin(a)+y*math.cos(a))
+d.line((local(86,-105),local(-27,-218)),fill='#11685e',width=7)
+text(pt(460,800),'02 维修皮卡',21,'#007d73')
+text(pt(2050,600),'双岛外侧环路',19)
+text(pt(2160,-150),'7 m',21,'#2278a3')
+text(pt(1700,-720),'北侧净空约 7.6 m',18,'#2278a3')
+text(pt(3580,-150),'东侧回转区',20,'#2278a3');text(pt(3650,30),'约 14 × 14 m',18,'#2278a3')
+rect(4790,850,30,800,'#c3943e');text(pt(4140,1100),'28 cm 门缝',17)
+d.rectangle((*pt(4810,450),*pt(6100,1250)),fill='#e5dab4',outline='#c3943e',width=3)
+text(pt(4900,550),'06 坡道',21);text(pt(4880,770),'宽 8 m',18);text(pt(4880,950),'实长 24 m',18)
+text((1380,150),'实施参数',25)
+for j,s in enumerate(['唯一可驾驶皮卡，车头北偏 55°','驾驶门半开 45°，车内灯亮','车长约 4.9 m，宽约 2.1 m','轴距 3 m，前轮最大转向 28°','无轨道、无自动驾驶、无强制击杀','岗亭撬门 → 单次按钮恢复开闸','开闸 4.5 秒后 Boss 登场；F5 重试']):text((1380,198+j*44),s,19)
+text((1380,535),'尺寸说明',25)
+for j,s in enumerate(['主体 48 × 32 m；岗亭向东外扩。','岗亭约 5 × 5.6 m，位于坡道北侧。','坡道爬升 5 m，坡度约 11.8°。','地面撤离段约 420 m、宽 24 m。','出口净宽及原回转区保持不变。']):text((1380,580+j*38),s,18)
+text((55,825),'地面撤离段：自由驾驶 → 稀疏尸群 → 宽缓绕行 → 净水厂 POI',25)
+d.rectangle((55,880,1510,1030),fill='#dce5e8',outline='#465a62',width=4)
+for x in range(80,1490,90):d.line((x,953,x+42,953),fill='white',width=4)
+d.rectangle((700,888,810,957),fill='#8b9fa6',outline='#465a62')
+for i in range(13):
+ x=120+i*103;y=908 if i%2==0 else 1000;d.ellipse((x-6,y-6,x+6,y+6),fill='#b75049')
+text((77,889),'坡道出口',19);text((1240,910),'下一站：净水厂',23)
+text((55,1065),'基于运行时布置绘制的沟通图，非引擎截图；两方向驾驶验证使用独立起点，正常玩法不会重置车辆。',20)
+im.save(out/'GaragePlan.png')

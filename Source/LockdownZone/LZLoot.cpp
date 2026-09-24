@@ -120,6 +120,7 @@ void ALZLoot::Configure(ELootType NewType)
 
 void ALZLoot::Interact(ALZCharacter* Character)
 {
+    if (!CanIdentifyPickup(Character)) return;
     if (Character && !Character->IsInventoryOpen() &&
         Character->TryStoreItem(GetInventoryType(), GetPickupQuantity()))
     {
@@ -129,19 +130,20 @@ void ALZLoot::Interact(ALZCharacter* Character)
 
 FString ALZLoot::GetInteractionPrompt(const ALZCharacter* Character) const
 {
+    if (!CanIdentifyPickup(Character)) return FString();
     if (Character && !Character->CanStoreItem(GetInventoryType(), GetPickupQuantity()))
     {
         if (LootType == ELootType::Rare)
         {
-            return TEXT("背包空间不足：服务器备件需同行连续2格！[B] 整理或按 [Delete] 丢弃");
+            return TEXT("背包空间不足：服务器备件需连续2×2格！[B] 整理或按 [Delete] 丢弃");
         }
         return TEXT("背包空间不足：[B] 整理背包或按 [Delete] 丢弃物品");
     }
     switch (LootType)
     {
     case ELootType::Ammo: return TEXT("[E] 拾取9毫米弹药（12发 / 每格最多30发）");
-    case ELootType::Medical: return TEXT("[E] 拾取医疗包（占1格 / 背包内使用恢复35生命）");
-    case ELootType::Rare: return TEXT("[E] 搜集服务器备件（价值500 / 占2格）");
+    case ELootType::Medical: return TEXT("[E] 拾取医疗包（占1×2格 / 背包内使用恢复35生命）");
+    case ELootType::Rare: return TEXT("[E] 搜集服务器备件（价值500 / 占2×2格）");
     default: return TEXT("[E] 搜集电子零件（价值120 / 占1格）");
     }
 }

@@ -12,7 +12,8 @@ enum class ELZInventoryItemType : uint8
     Rare,
     Axe,
     Pistol,
-    Flashlight
+    Flashlight,
+    Crowbar
 };
 
 /** One placed inventory entry in the 6x6 spatial grid. */

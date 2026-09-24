@@ -16,6 +16,8 @@ class LOCKDOWNZONE_API ALZInteractable : public AActor
 
 public:
     ALZInteractable();
+    UPROPERTY(EditAnywhere, Category="Interaction") bool bRequiresFlashlight = false;
+    bool CanIdentifyPickup(const ALZCharacter* Character) const;
 
     virtual void Interact(ALZCharacter* Character);
     virtual FString GetInteractionPrompt(const ALZCharacter* Character) const;

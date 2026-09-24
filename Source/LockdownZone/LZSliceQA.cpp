@@ -1,4 +1,11 @@
 #include "LZSliceQA.h"
+#include "LZMotionProfile.h"
+#include "Animation/AnimSingleNodeInstance.h"
+#include "Engine/StaticMeshActor.h"
+#include "LZMotionAnimInstance.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
 
 #include "LZBreakableGlass.h"
 #include "LZCharacter.h"
@@ -13,6 +20,9 @@
 #include "LZPuzzleTerminal.h"
 #include "LZWeaponPickup.h"
 #include "Camera/CameraComponent.h"
+#include "Camera/CameraActor.h"
+#include "Engine/PointLight.h"
+#include "Components/LightComponent.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Engine/GameViewportClient.h"
 #include "CollisionQueryParams.h"
@@ -71,6 +81,14 @@ void ALZSliceQA::BeginPlay()
     GameMode = GetWorld()->GetAuthGameMode<ALZGameMode>();
     StartedAt = GetWorld()->GetTimeSeconds();
     bRunning = true;
+    if(FParse::Param(FCommandLine::Get(),TEXT("LZMotionOnly")))
+    {
+        IsolateEnemies();
+        Player->AcquireWeapon(EPlayerWeapon::Melee);
+        Player->AcquireWeapon(EPlayerWeapon::Firearm);
+        Advance(EStep::MotionPrepare,2.0f);
+        return;
+    }
     if (GSliceQARestart.bCompleted)
     {
         bRunning = false;
@@ -246,6 +264,7 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         Advance(EStep::InventoryEmptyRight, 0.2f);
         break;
     case EStep::InventoryEmptyRight:
+        Player->SetSelectedInventorySlot(0);
         PressInputKey(EKeys::Right, TEXT("right arrow selects the next backpack slot"));
         Advance(EStep::InventoryEmptyClose, 0.2f);
         break;
@@ -404,6 +423,7 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         if (CombatTargets.IsValidIndex(KillIndex) && CombatTargets[KillIndex].IsValid())
         {
             ALZEnemy* Enemy = CombatTargets[KillIndex].Get();
+            PlaceAndAim(Player->GetActorLocation(), Enemy->GetActorLocation() + FVector(0,0,35));
             const float Before = Enemy->GetEnemyHealth();
             Player->QAFire();
             if (KillIndex == 0)
@@ -431,7 +451,9 @@ void ALZSliceQA::Tick(float DeltaSeconds)
     case EStep::KillEnemy:
         if (CombatTargets.IsValidIndex(KillIndex) && CombatTargets[KillIndex].IsValid())
         {
-            Player->QAFire();
+            if (CombatTargets[KillIndex].IsValid())
+            PlaceAndAim(Player->GetActorLocation(), CombatTargets[KillIndex]->GetActorLocation()+FVector(0,0,35));
+        Player->QAFire();
         }
         Check(Player->GetAmmoInMagazine() == 14 - KillIndex * 2,
             FString::Printf(TEXT("second shot at infected %d consumes one round"), KillIndex + 1));
@@ -721,7 +743,10 @@ void ALZSliceQA::Tick(float DeltaSeconds)
     case EStep::InventoryReloadFirst:
         Check(Player->GetAmmoInMagazine() == 17 && Player->GetReserveAmmo() == 1 && Player->GetUsedBagSlots() == 23,
             TEXT("reload from 8/10 leaves a real one-round partial stack at 17/1 (23 slots)"));
-        PressInputKey(EKeys::LeftMouseButton, TEXT("normal floor-directed shot leaves room for the last inventory round"));
+        // This checks inventory-stack consumption, independent of OS mouse focus
+        // in a hidden unattended game window. Exercise the ordinary weapon action.
+        PlaceAndAim(Player->GetActorLocation(), Player->GetActorLocation()-FVector(0,0,300));
+        Player->QAFire();
         Advance(EStep::InventoryReloadShot, 0.7f);
         break;
     case EStep::InventoryReloadShot:
@@ -838,8 +863,134 @@ void ALZSliceQA::Tick(float DeltaSeconds)
         }
         CheckOpeningPresentation();
         Capture(TEXT("12_RestartedOpening"));
-        Advance(EStep::Finish, 1.0f);
+        Advance(EStep::DesignRegression, 1.0f);
         break;
+    case EStep::DesignRegression:
+        CheckOfficeDesign();
+        PlaceAndAim(FVector(-1800,1100,90),FVector(800,1200,180));
+        Advance(EStep::DesignGallery,1.0f);
+        break;
+    case EStep::DesignGallery:
+        Capture(TEXT("13_AdminGallery"));
+        Advance(EStep::DesignServiceSetup,.3f);
+        break;
+    case EStep::DesignServiceSetup:
+        PlaceAndAim(FVector(-2100,-1080,90),FVector(700,-1250,160));
+        Advance(EStep::DesignService,1.0f);
+        break;
+    case EStep::DesignService:
+        Capture(TEXT("14_SupportGallery"));
+        Advance(EStep::DesignOverviewSetup,.3f);
+        break;
+    case EStep::DesignOverviewSetup:
+        PlaceAndAim(FVector(3330,-1540,90),FVector(2350,-1540,150));
+        Advance(EStep::DesignOverview,1.0f);
+        break;
+    case EStep::DesignOverview:
+        Capture(TEXT("15_ServerLoop"));
+        Advance(EStep::MotionPrepare,1.0f);
+        break;
+    case EStep::MotionPrepare:
+        IsolateEnemies();
+        PlaceAndAim(FVector(1450,0,90),FVector(1000,0,100));
+        MotionEnemy=GetWorld()->SpawnActor<ALZEnemy>(FVector(1000,0,90),FRotator(0,120,0));
+        MotionOrigin=MotionEnemy->GetActorLocation();
+        Check(MotionEnemy->GetMotionProfile() && MotionEnemy->GetMotionProfile()->SourceLabel.Contains(TEXT("Game Animation Sample")),TEXT("enemy uses imported official GASP profile"));
+        Check(Cast<ULZMotionAnimInstance>(MotionEnemy->GetMesh()->GetAnimInstance())!=nullptr,TEXT("native locomotion animation instance active"));
+        Advance(EStep::MotionChase,.65f); break;
+    case EStep::MotionChase:
+        Check(FVector::Dist2D(MotionOrigin,MotionEnemy->GetActorLocation())>30,TEXT("enemy accelerates and chases using CharacterMovement"));
+        Check(MotionEnemy->GetVelocity().Size2D()>50,TEXT("locomotion receives real velocity"));
+        Check(FVector::DotProduct(MotionEnemy->GetActorForwardVector(),(Player->GetActorLocation()-MotionEnemy->GetActorLocation()).GetSafeNormal2D())>.8f,TEXT("enemy turns toward pursuit direction"));
+        {
+            auto* Path=UNavigationSystemV1::FindPathToLocationSynchronously(this,MotionEnemy->GetActorLocation(),Player->GetActorLocation());
+            Check(Path && Path->IsValid() && Path->PathPoints.Num()>1,TEXT("office has a generated navigable path"));
+        }
+        Capture(TEXT("16_GASP_Chase"));
+        UGameplayStatics::ApplyDamage(MotionEnemy.Get(),5,Player->GetController(),Player.Get(),nullptr);
+        Check(MotionEnemy->GetMotionState()==ELZEnemyMotionState::Staggered,TEXT("light hit interrupts locomotion"));
+        MotionOrigin=MotionEnemy->GetActorLocation();
+        Advance(EStep::MotionStagger,.2f); break;
+    case EStep::MotionStagger:
+        Check(FVector::Dist2D(MotionOrigin,MotionEnemy->GetActorLocation())<1,TEXT("stagger stops displacement"));
+        Capture(TEXT("17_GASP_Stagger"));
+        Advance(EStep::MotionRecover,.3f); break;
+    case EStep::MotionRecover:
+        Check(MotionEnemy->GetMotionState()==ELZEnemyMotionState::Locomotion,TEXT("stagger returns to locomotion"));
+        UGameplayStatics::ApplyDamage(MotionEnemy.Get(),45,Player->GetController(),Player.Get(),nullptr);
+        Check(MotionEnemy->GetMotionState()==ELZEnemyMotionState::KnockedDown,TEXT("heavy nonlethal hit knocks down"));
+        SnapshotHealth=Player->GetHealth();
+        Advance(EStep::MotionDown,.7f); break;
+    case EStep::MotionDown:
+        Check(MotionEnemy->IsIncapacitated() && Player->GetHealth()==SnapshotHealth,TEXT("downed enemy cannot attack"));
+        Check(MotionEnemy->GetMesh()->IsSimulatingPhysics(),TEXT("knockdown uses physical ragdoll"));
+        Capture(TEXT("18_GASP_Knockdown"));
+        Advance(EStep::MotionGetUp,1.6f); break;
+    case EStep::MotionGetUp:
+        Check(MotionEnemy->GetMotionState()==ELZEnemyMotionState::GettingUp,TEXT("knockdown transitions to official get-up animation"));
+        Check(!MotionEnemy->GetMesh()->IsSimulatingPhysics(),TEXT("get-up restores animation control"));
+        Capture(TEXT("19_GASP_GetUp"));
+        Advance(EStep::MotionRecovered,4.9f); break;
+    case EStep::MotionRecovered:
+        Check(MotionEnemy->GetMotionState()==ELZEnemyMotionState::Locomotion,TEXT("get-up finishes and re-enables chase"));
+        MotionEnemy->Destroy();
+        {
+            auto* Victim=GetWorld()->SpawnActor<ALZEnemy>(FVector(1000,0,90),FRotator::ZeroRotator);
+            UGameplayStatics::ApplyDamage(Victim,55,Player->GetController(),Player.Get(),nullptr);
+            const int32 BeforeKills=GameMode->GetEnemiesKilled();
+            UGameplayStatics::ApplyDamage(Victim,34,Player->GetController(),Player.Get(),nullptr);
+            Check(Victim->IsActorBeingDestroyed() && GameMode->GetEnemiesKilled()==BeforeKills+1,TEXT("downed enemy remains damageable and counts exactly one kill"));
+        }
+        Advance(EStep::VaultPrepare,.3f); break;
+    case EStep::VaultPrepare:
+        PlaceAndAim(FVector(-1850,-1040,90),FVector(-1850,-1450,150));
+        Advance(EStep::VaultStart,.5f); break;
+    case EStep::VaultStart:
+        Check(Player->CanVault(),TEXT("meeting shortcut has free headroom and landing"));
+        {
+            auto* NavPath=UNavigationSystemV1::FindPathToLocationSynchronously(this,Player->GetActorLocation(),FVector(-1850,-1350,90));
+            Check(NavPath && NavPath->IsValid() && NavPath->PathPoints.Num()>2,TEXT("walking route goes around barrier through the meeting door"));
+            auto* Block=GetWorld()->SpawnActor<AStaticMeshActor>(FVector(-1850,-1300,100),FRotator::ZeroRotator);
+            auto* SM=Block->GetStaticMeshComponent(); SM->SetMobility(EComponentMobility::Movable);
+            SM->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube")));
+            SM->SetWorldScale3D(FVector(1,1,2)); SM->SetCollisionProfileName(TEXT("BlockAll"));
+            Check(!Player->TryVault(),TEXT("occupied landing rejects vault"));
+            Block->SetActorLocation(FVector(-1850,-1150,245)); SM->SetWorldScale3D(FVector(2,2,.2f));
+            Check(!Player->TryVault(),TEXT("low ceiling rejects vault"));
+            Block->Destroy();
+        }
+        Player->ToggleInventory();
+        Check(!Player->TryVault(),TEXT("inventory blocks vault"));
+        Player->ToggleInventory();
+        Check(Player->TryVault(),TEXT("space action starts authored barrier traversal"));
+        MotionAmmo=Player->GetAmmoInMagazine();
+        Player->QAFire(); Player->QAReload(); Player->ToggleInventory();
+        Check(Player->GetAmmoInMagazine()==MotionAmmo && !Player->IsInventoryOpen(),TEXT("vault blocks fire reload and backpack"));
+        Advance(EStep::VaultView,.55f); break;
+    case EStep::VaultView:
+        Check(Player->IsTraversing() && Player->GetActorLocation().Z>140,TEXT("vault follows raised collision-safe path over barrier"));
+        Capture(TEXT("20_GASP_Vault"));
+        Advance(EStep::VaultEnd,.9f); break;
+    case EStep::VaultEnd:
+        Check(!Player->IsTraversing() && Player->GetActorLocation().Y<-1280,TEXT("vault lands inside meeting room and releases movement"));
+        Check(!Player->CanVault(),TEXT("out-of-range barrier cannot trigger another vault"));
+        Capture(TEXT("21_MeetingShortcutLanding"));
+        Advance(EStep::VaultBodyStart,.5f); break;
+    case EStep::VaultBodyStart:
+        PlaceAndAim(FVector(-1850,-1040,90),FVector(-1850,-1450,150));
+        Check(Player->TryVault(),TEXT("vault can be used again after landing"));
+        MotionCamera=GetWorld()->SpawnActor<ACameraActor>(FVector(-1500,-1100,230),FRotator::ZeroRotator);
+        MotionCamera->SetActorRotation((FVector(-1850,-1200,150)-MotionCamera->GetActorLocation()).Rotation());
+        Cast<APlayerController>(Player->GetController())->SetViewTarget(MotionCamera.Get());
+        Advance(EStep::VaultBodyView,.55f); break;
+    case EStep::VaultBodyView:
+        Check(Player->GetMesh()->GetSingleNodeInstance() && Player->GetMesh()->GetSingleNodeInstance()->GetCurrentTime()>.5f,TEXT("official vault body animation advances during traversal"));
+        Capture(TEXT("22_GASP_VaultBody_DebugCamera"));
+        Advance(EStep::VaultBodyEnd,.8f); break;
+    case EStep::VaultBodyEnd:
+        Cast<APlayerController>(Player->GetController())->SetViewTarget(Player.Get());
+        MotionCamera->Destroy();
+        Advance(EStep::Finish,.3f); break;
     case EStep::Finish:
         CompleteRun();
         break;
@@ -1078,10 +1229,12 @@ void ALZSliceQA::IsolateEnemies()
     bIsolatingEnemies = true;
     for (TActorIterator<ALZEnemy> It(GetWorld()); It; ++It)
     {
+        if (*It==MotionEnemy.Get()) continue;
         TWeakObjectPtr<ALZEnemy> Key(*It);
         if (!SavedEnemyTickStates.Contains(Key)) SavedEnemyTickStates.Add(Key, It->IsActorTickEnabled());
         It->SetActorTickEnabled(false);
         It->GetCharacterMovement()->StopMovementImmediately();
+        It->ConsumeMovementInputVector();
     }
 }
 
@@ -1091,6 +1244,109 @@ void ALZSliceQA::RestoreEnemies()
     for (const TPair<TWeakObjectPtr<ALZEnemy>, bool>& Pair : SavedEnemyTickStates)
         if (Pair.Key.IsValid()) Pair.Key->SetActorTickEnabled(Pair.Value);
     SavedEnemyTickStates.Reset();
+}
+
+void ALZSliceQA::CheckOfficeDesign()
+{
+    IsolateEnemies();
+    Check(!GameMode->IsCombatUnlocked(), TEXT("restart clears the latched tutorial combat gate"));
+    // Full inventory equipment pickups must be atomic and remain in the world.
+    for(int32 I=0; I<36; ++I) Player->TryStoreItem(ELZInventoryItemType::Scrap);
+    Check(Player->GetUsedBagSlots()==36,TEXT("equipment capacity test fills all 36 cells"));
+    for(TActorIterator<ALZWeaponPickup> It(GetWorld()); It; ++It)
+    {
+        It->Interact(Player.Get());
+        Check(!It->IsActorBeingDestroyed(),TEXT("full bag preserves world weapon pickup"));
+    }
+    for(TActorIterator<ALZFlashlightPickup> It(GetWorld()); It; ++It)
+    {
+        It->Interact(Player.Get());
+        Check(!It->IsActorBeingDestroyed(),TEXT("full bag preserves world flashlight pickup"));
+    }
+    Check(!Player->HasMeleeWeapon() && !Player->HasFirearm() && !Player->HasFlashlight(),TEXT("rejected equipment grants no ownership or ammunition"));
+    Player->ToggleInventory();
+    auto Entries=Player->GetInventoryEntries();
+    for(const auto& E:Entries) Player->DiscardItemById(E.ItemId);
+    Player->ToggleInventory();
+    Player->AcquireWeapon(EPlayerWeapon::Melee);
+    Player->AcquireWeapon(EPlayerWeapon::Firearm);
+    Check(GameMode->IsCombatUnlocked(),TEXT("both weapons latch combat open"));
+    Player->ToggleInventory();
+    const FLZInventoryEntry Axe=Player->GetInventoryEntries()[0];
+    Player->PickUpItemAtCell(Axe.PosX,Axe.PosY);
+    Player->RotateHeldItem();
+    Check(Player->GetHeldWidth()==6 && Player->GetHeldHeight()==2,TEXT("held axe rotates from 2x6 to 6x2"));
+    Player->PlaceHeldItemAtCell(5,5);
+    const FLZInventoryEntry* Rotated=Player->GetInventoryItemById(Axe.ItemId);
+    Check(Rotated && Rotated->PosX>=0 && Rotated->PosY>=0 && Rotated->PosX+Rotated->Width<=6 && Rotated->PosY+Rotated->Height<=6,
+        TEXT("edge drop clamps rotated equipment fully inside the backpack"));
+    Player->CancelHeldItem();
+    Check(Player->GetUsedBagSlots()==16 && Player->HasMeleeWeapon(),TEXT("cancel invalid placement preserves equipment and occupied cells"));
+    Player->DiscardItemById(Axe.ItemId);
+    Player->ToggleInventory();
+    Check(GameMode->IsCombatUnlocked() && !Player->HasMeleeWeapon(),TEXT("discarding axe cannot reset the tutorial or freeze combat"));
+    PlaceAndAim(FVector(1450,0,90),FVector(1000,0,90));
+    ALZEnemy* Probe=GetWorld()->SpawnActor<ALZEnemy>(FVector(1000,0,90),FRotator::ZeroRotator);
+    const FVector Before=Probe->GetActorLocation();
+    Probe->Tick(.1f);
+    Probe->GetCharacterMovement()->TickComponent(.1f,LEVELTICK_All,nullptr);
+    Check(FVector::Dist2D(Before,Probe->GetActorLocation())>1,TEXT("enemy actually moves after the axe is discarded"));
+    Probe->Destroy();
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(OfficeRouteSweep),false,Player.Get());
+    for(TActorIterator<APawn> It(GetWorld());It;++It) Params.AddIgnoredActor(*It);
+    for(TActorIterator<ALZInteractable> It(GetWorld());It;++It) Params.AddIgnoredActor(*It);
+    auto Clear = [&](FVector A,FVector B)
+    {
+        A.Z=B.Z=90;
+        FHitResult Hit;
+        const bool Blocked=GetWorld()->SweepSingleByChannel(Hit,A,B,FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(42,88),Params);
+        if(Blocked) UE_LOG(LogTemp,Warning,TEXT("LZ_ROUTE obstruction %s component=%s at=%s"),*GetNameSafe(Hit.GetActor()),*GetNameSafe(Hit.GetComponent()),*Hit.Location.ToString());
+        return !Blocked;
+    };
+    auto Route = [&](const TCHAR* Name,TArray<FVector> Points)
+    {
+        bool Good=true;
+        for(int32 I=1;I<Points.Num();++I) Good=Clear(Points[I-1],Points[I]) && Good;
+        Check(Good,FString(Name)+TEXT(" is continuously clear for a standing 84x176cm capsule"));
+    };
+    Route(TEXT("central office spine"),{FVector(-2300,-610,90),FVector(-2300,-200,90),FVector(3300,-200,90)});
+    Route(TEXT("admin public gallery"),{FVector(-2200,600,90),FVector(-2200,1100,90),FVector(1900,1100,90),FVector(1900,0,90)});
+    Route(TEXT("southern support gallery"),{FVector(-2250,-600,90),FVector(-2250,-1080,90),FVector(1000,-1080,90)});
+    Route(TEXT("server east loop to electrical room"),{FVector(1850,0,90),FVector(1850,-1050,90),FVector(2800,-1050,90),FVector(2800,-1540,90),FVector(3350,-1540,90),FVector(3350,600,90),FVector(3000,600,90),FVector(3000,1150,90)});
+    Route(TEXT("manager doorway"),{FVector(-1100,1100,90),FVector(-1100,1540,90)});
+    Route(TEXT("meeting doorway"),{FVector(-1450,-1080,90),FVector(-1450,-1450,90)});
+    Route(TEXT("pantry doorway"),{FVector(300,-1080,90),FVector(300,-1450,90)});
+    Route(TEXT("archive doorway"),{FVector(500,1100,90),FVector(500,1560,90)});
+    Check(!Clear(FVector(1000,-1100,90),FVector(1300,-1100,90)),TEXT("server inside-release shortcut starts physically locked"));
+    Check(!Clear(FVector(-1400,760,90),FVector(-1300,760,90)),TEXT("structural column blocks the player capsule"));
+    float DeskBefore=0; APointLight* Desk=nullptr;
+    for(TActorIterator<APointLight> It(GetWorld());It;++It)
+        if(It->GetActorLocation().Equals(FVector(-3100,490,155),1)) { Desk=*It; DeskBefore=Desk->GetLightComponent()->Intensity; }
+    for(int32 I=0;I<4;++I) GameMode->NotifyEnemyKilled();
+    GameMode->CollectFuse();
+    Check(Clear(FVector(1000,-1100,90),FVector(1300,-1100,90)),TEXT("collecting fuse opens a physically traversable return shortcut"));
+    GameMode->TryRestoreOfficePower();
+    Check(Desk && FMath::IsNearlyEqual(DeskBefore,Desk->GetLightComponent()->Intensity),TEXT("power restoration preserves original desk-light intensity"));
+    auto EnemyCount=[&](){int32 N=0;for(TActorIterator<ALZEnemy> It(GetWorld());It;++It)++N;return N;};
+    const int32 InitialEnemies=EnemyCount();
+    GameMode->TryActivatePuzzleNode(EPuzzleNode::Cooling);
+    GameMode->TryActivatePuzzleNode(EPuzzleNode::Cooling);
+    Check(GameMode->GetPuzzleStep()==0 && EnemyCount()==InitialEnemies+1,TEXT("repeated wrong SOP inputs reset progress with at most one alarm reinforcement"));
+    Check(!Clear(FVector(-450,1150,90),FVector(-450,1550,90)),TEXT("optional records room is physically locked before SOP"));
+    const int32 LootBefore=CountWorldLoot();
+    const EPuzzleNode Order[]={EPuzzleNode::Clue,EPuzzleNode::Generator,EPuzzleNode::Cooling,EPuzzleNode::Purifier};
+    for(EPuzzleNode Node:Order)
+    {
+        ALZPuzzleTerminal* Terminal=nullptr;
+        for(TActorIterator<ALZPuzzleTerminal> It(GetWorld());It;++It) if(It->GetNode()==Node) Terminal=*It;
+        const FString Name=FString::Printf(TEXT("SOP terminal %d"),static_cast<int32>(Node));
+        if(Approach(Terminal,Name)) InteractWithAimed(Terminal,Name);
+    }
+    Check(GameMode->IsPuzzleComplete() && CountWorldLoot()==LootBefore+2,TEXT("complete SOP unlocks records and creates exactly two rewards"));
+    Check(Clear(FVector(-450,1150,90),FVector(-450,1550,90)),TEXT("unlocked records reward is physically reachable"));
+    GameMode->TryActivatePuzzleNode(EPuzzleNode::Purifier);
+    Check(CountWorldLoot()==LootBefore+2,TEXT("completed SOP cannot duplicate rewards"));
+    IsolateEnemies();
 }
 
 void ALZSliceQA::CompleteRun()

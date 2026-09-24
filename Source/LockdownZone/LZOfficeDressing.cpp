@@ -1,4 +1,5 @@
 #include "LZGameMode.h"
+#include "LZVentNetwork.h"
 
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
@@ -111,7 +112,8 @@ void ALZGameMode::DressOffice()
             }
             Component->SetMobility(EComponentMobility::Movable);
             Component->SetStaticMesh(CubeMesh);
-            Component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            if (Batch.StartsWith(TEXT("StructuralColumn"))) Component->SetCollisionProfileName(TEXT("BlockAll"));
+            else Component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
             Component->SetGenerateOverlapEvents(false);
             Component->SetCanEverAffectNavigation(false);
             Component->SetCastShadow(false);
@@ -188,22 +190,28 @@ void ALZGameMode::DressOffice()
     auto Ceiling = [&Box, &Chalk, &AcousticTile](const FVector2D& Center, const FVector2D& Extent)
     {
         // Solid acoustic tile panel surface (eliminates void)
-        Box(TEXT("CeilingTileSurface"), FVector(Center.X, Center.Y, 347.0f),
-            FVector(Extent.X * 2.0f, Extent.Y * 2.0f, 2.0f), AcousticTile, TEXT("M_ZT_WallPlaster"));
+        for(FBox Panel:ALZVentNetwork::CeilingPanels(FVector(Center.X,Center.Y,347),FVector(Extent.X*2,Extent.Y*2,2)))
+            Box(TEXT("CeilingTileSurface"),Panel.GetCenter(),Panel.GetSize(),AcousticTile,TEXT("M_ZT_WallPlaster"));
         for (float X = Center.X - Extent.X + 60; X < Center.X + Extent.X; X += 240)
         {
+            if(!ALZVentNetwork::CeilingHole(FVector(X,Center.Y,345),FVector(2.5f,Extent.Y*2,4)))
             Box(TEXT("CeilingGrid"), FVector(X, Center.Y, 345), FVector(2.5f, Extent.Y * 2, 4),
                 Chalk * 0.55f, TEXT("M_ZT_Trim"));
         }
         for (float Y = Center.Y - Extent.Y + 60; Y < Center.Y + Extent.Y; Y += 120)
         {
+            if(!ALZVentNetwork::CeilingHole(FVector(Center.X,Y,345),FVector(Extent.X*2,2.5f,4)))
             Box(TEXT("CeilingGrid"), FVector(Center.X, Y, 345), FVector(Extent.X * 2, 2.5f, 4),
                 Chalk * 0.55f, TEXT("M_ZT_Trim"));
         }
     };
     Ceiling(FVector2D(450, 0), FVector2D(2810, 840));
     Ceiling(FVector2D(-3160, 0), FVector2D(590, 700));
-    Ceiling(FVector2D(450, 1500), FVector2D(2810, 560));
+    Ceiling(FVector2D(-1955,1500),FVector2D(405,560));
+    Ceiling(FVector2D(1490,1500),FVector2D(1770,560));
+    Ceiling(FVector2D(-915,1170),FVector2D(635,230));
+    Ceiling(FVector2D(-915,1880),FVector2D(635,180));
+    if(ALZVentNetwork::IsNewLayout()) Ceiling(FVector2D(-915,1550),FVector2D(635,150));
     Ceiling(FVector2D(2180, -1510), FVector2D(960, 530));
     Ceiling(FVector2D(300, -1510), FVector2D(800, 530));
     Ceiling(FVector2D(3850, 0), FVector2D(340, 260));
@@ -342,23 +350,6 @@ void ALZGameMode::DressOffice()
     BaseboardX(-3740, -2530, -708);
     BaseboardY(-2538, 544, 708);
     BaseboardY(-2538, -495, -305);
-    BaseboardX(-2040, 240, 858);
-    BaseboardX(-2040, 240, 942);
-    BaseboardX(1110, 2790, 858);
-    BaseboardX(1110, 2790, 942);
-    BaseboardX(-1890, 1290, -858);
-    BaseboardX(-1890, 1290, -942);
-    BaseboardX(2260, 3140, -858);
-    BaseboardX(2260, 3140, -942);
-    BaseboardY(1108, -2040, -910);
-    BaseboardY(1192, -2040, -910);
-    BaseboardY(2158, 910, 2040);
-    BaseboardY(2242, 910, 2040);
-    BaseboardX(-1190, -510, 1068);
-    BaseboardX(-1190, -510, 1132);
-    BaseboardY(-532, 1110, 1490);
-    BaseboardY(-468, 1110, 1490);
-
     // Concrete architectural structural columns with baseboard collars and safety boxes
     auto Column = [&Box, &Charcoal, &Chalk](const FVector& Position)
     {
@@ -384,18 +375,13 @@ void ALZGameMode::DressOffice()
         AluminumMullion, TEXT("M_ZT_DarkMetal"));
     Box(TEXT("WindowTopCasing"), FVector(-2520, 120, 310), FVector(44, 820, 4),
         AluminumMullion, TEXT("M_ZT_DarkMetal"));
-    Box(TEXT("WindowManifestation"), FVector(-2520, 120, 137), FVector(2.0f, 790, 14),
-        FLinearColor(0.82f, 0.88f, 0.90f), TEXT("M_ZT_WallPlaster"));
-    Box(TEXT("WindowManifestationPinA"), FVector(-2520, 120, 148), FVector(2.2f, 790, 1.5f),
-        FLinearColor(0.82f, 0.88f, 0.90f), TEXT("M_ZT_WallPlaster"));
-    Box(TEXT("WindowManifestationPinB"), FVector(-2520, 120, 126), FVector(2.2f, 790, 1.5f),
-        FLinearColor(0.82f, 0.88f, 0.90f), TEXT("M_ZT_WallPlaster"));
 
     // Workstation acoustic privacy divider screens and 3-drawer under-desk mobile pedestals
     for (int32 Desk = 0; Desk < 10; ++Desk)
     {
+        if(ALZVentNetwork::IsNewLayout() && Desk==9)continue;
         const float X = -1750.0f + (Desk % 5) * 480.0f;
-        const float Y = -420.0f + (Desk / 5) * 620.0f;
+        const float Y = -500.0f + (Desk / 5) * 1000.0f;
         const bool bNorth = (Desk / 5 == 1);
         const float ScreenY = bNorth ? (Y - 38.0f) : (Y + 38.0f);
         Box(TEXT("DeskScreenFabric"), FVector(X, ScreenY, 94.0f), FVector(135.0f, 3.2f, 38.0f),
@@ -442,6 +428,11 @@ void ALZGameMode::DressOffice()
             }
         }
     };
+    if(ALZVentNetwork::IsNewLayout())
+    {
+        Furniture(TEXT("MeetingTable"),TEXT("SM_desk"),FVector(-1500,-1870,0),FVector(560,120,78),FRotator::ZeroRotator,true);
+        for(int I=0;I<4;++I)Furniture(TEXT("MeetingChair"),TEXT("SM_chairModernFrameCushion"),FVector(-1770+I*170,-1980,0),FVector(55,55,85),FRotator(0,90,0),true);
+    }
     Furniture(TEXT("FuseServiceBench"), TEXT("SM_desk"), FVector(1850, -1300, 0),
         FVector(170, 85, 78), FRotator::ZeroRotator, true);
     Furniture(TEXT("ServicePartsBox"), TEXT("SM_cardboardBoxOpen"), FVector(2015, -1290, 0),
@@ -488,31 +479,31 @@ void ALZGameMode::DressOffice()
         }
     };
 
-    // Wake room emergency equipment backer board behind the axe
-    Box(TEXT("EmergencyAxeMount"), FVector(-3300, -746, 140), FVector(180, 2, 85),
-        Amber, TEXT("M_ZT_SafetyYellow"));
-    Sign(TEXT("EmergencyAxeSign"), TEXT("EMERGENCY AXE / 应急消防斧"), FVector(-3300, -743, 165),
-        90, 240, FColor(255, 220, 80), 16);
+    // Legacy axe equipment is not part of the chapter's crowbar opening.
+    if(!ALZVentNetwork::IsNewLayout())
+    {
+        Box(TEXT("EmergencyAxeMount"), FVector(-3300,-746,140), FVector(180,2,85),Amber,TEXT("M_ZT_SafetyYellow"));
+        Sign(TEXT("EmergencyAxeSign"),TEXT("EMERGENCY AXE"),FVector(-3300,-743,165),90,240,FColor(255,220,80),16);
+    }
 
-    Sign(TEXT("QuarantineWallSign"), TEXT("01 / QUARANTINE"), FVector(-3220, 705, 252), -90, 365, FColor(221, 210, 153), 27);
-    Sign(TEXT("OperationsWallSign"), TEXT("02 / OPERATIONS"), FVector(-1190, 855, 272), -90, 360, FColor(143, 200, 224), 27);
+    Sign(TEXT("QuarantineWallSign"), TEXT("01 / QUARANTINE"), FVector(ALZVentNetwork::IsNewLayout()?-2800:-3220,705,252), -90, 365, FColor(221, 210, 153), 27);
+    Sign(TEXT("OperationsWallSign"), TEXT("02 / OPERATIONS"), FVector(ALZVentNetwork::IsNewLayout()?-650:-1190,855,272), -90, 360, FColor(143, 200, 224), 27);
     Sign(TEXT("ServerWallSign"), TEXT("03 / SERVER"), FVector(1195, -1510, 265), 0, 310, FColor(238, 181, 91), 29);
     Sign(TEXT("PowerWallSign"), TEXT("04 / POWER"), FVector(2245, 1510, 265), 0, 300, FColor(238, 181, 91), 29);
-    Sign(TEXT("ExitWallSign"), TEXT("EXIT  >"), FVector(3745, 560, 270), 180, 270, FColor(121, 241, 169), 32);
+    Sign(TEXT("ExitWallSign"), TEXT("RESCUE LIFT >"), FVector(3745, 560, 270), 180, 270, FColor(121, 241, 169), 32);
 
     // Cross-corridor directional signs giving confirmation at key decision points
-    Sign(TEXT("CrosswayServerSign"), TEXT("03 SERVER [->]"), FVector(650, -895, 230), -90, 220, FColor(238, 181, 91), 18);
-    Sign(TEXT("CrosswayPowerSign"), TEXT("04 POWER [->]"), FVector(650, 895, 230), 90, 220, FColor(245, 130, 80), 18);
-    Sign(TEXT("ExitOverheadSign"), TEXT("< EXIT AIRLOCK / 气闸撤离口 >"), FVector(3490, 0, 325), 180, 380, FColor(121, 241, 169), 22);
+    if(!ALZVentNetwork::IsNewLayout()) Sign(TEXT("CrosswayServerSign"), TEXT("03 SERVER [->]"), FVector(650, -855, 230), 90, 220, FColor(238, 181, 91), 18);
+    if(!ALZVentNetwork::IsNewLayout()) Sign(TEXT("CrosswayPowerSign"), TEXT("04 POWER [->]"), FVector(650, 855, 230), -90, 220, FColor(245, 130, 80), 18);
+    Sign(TEXT("ExitOverheadSign"), TEXT("RESCUE LIFT / POWER REQUIRED"), FVector(3490, 0, 325), 180, 380, FColor(121, 241, 169), 22);
 
     // Reception feature wall branding & Manager whiteboard SOP clue
-    Sign(TEXT("CorporateLogoSign"), TEXT("ZERO TOWER / BIOMEDICAL RESEARCH HUB"), FVector(-2500, 1750, 240), 180, 420, FColor(220, 240, 255), 24);
+    if(!ALZVentNetwork::IsNewLayout()) Sign(TEXT("CorporateLogoSign"), TEXT("ZERO TOWER / BIOMEDICAL RESEARCH HUB"), FVector(-2500, 1750, 240), 180, 420, FColor(220, 240, 255), 24);
     Sign(TEXT("ManagerWhiteboardSign"), TEXT("SOP-17 / FACILITY REBOOT MEMO"), FVector(-850, 1880, 210), 0, 320, FColor(100, 220, 255), 18);
-    Sign(TEXT("VaultLockSign"), TEXT("[02 EXECUTIVE DATA VAULT - LOCKED]"), FVector(-600, 1550, 250), -90, 340, FColor(255, 120, 80), 16);
     Sign(TEXT("ServerAisleSign"), TEXT("COLD AISLE / RESTRICTED 03-A"), FVector(2000, -1530, 290), 0, 310, FColor(120, 210, 255), 16);
     Sign(TEXT("HighVoltageSign"), TEXT("HIGH VOLTAGE 480V / 04 POWER"), FVector(2200, 1400, 240), -90, 310, FColor(255, 220, 60), 18);
-    Sign(TEXT("BreakroomSign"), TEXT("BREAK ROOM & PANTRY"), FVector(200, -850, 220), 90, 260, FColor(200, 230, 200), 18);
-    Sign(TEXT("WakeNoticeSign"), TEXT("QUARANTINE PROTOCOL 01-B / 隔离守则"), FVector(-3100, 743, 210), -90, 260, FColor(220, 235, 250), 16);
+    if(!ALZVentNetwork::IsNewLayout()) Sign(TEXT("BreakroomSign"), TEXT("< SUPPORT ENTRY / PANTRY"), FVector(200, -850, 220), 90, 260, FColor(200, 230, 200), 18);
+    Sign(TEXT("WakeNoticeSign"), TEXT("QUARANTINE PROTOCOL 01-B / 隔离守则"), FVector(ALZVentNetwork::IsNewLayout()?-2800:-3100,743,180), -90, 260, FColor(220, 235, 250), 16);
 
     // Server Room overhead landmark silhouette and hazard trim
     Box(TEXT("ServerEntryHeader"), FVector(1780, -960, 320), FVector(480, 25, 20),

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="675" viewBox="0 0 960 675"><rect x="0" y="0" width="960" height="675" fill="#F4F3EE" stroke="none" stroke-width="1"/>
+<rect x="38" y="32" width="28" height="4" fill="#157E7C" stroke="none" stroke-width="1"/>
+<text x="77" y="35.120000000000005" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#157E7C" font-weight="700">CLIMAX / 07</text>
+<text x="38" y="82.68" font-family="Microsoft YaHei, sans-serif" font-size="29" fill="#223945" font-weight="700">把撬门留作收尾，而非背身战斗考验</text>
+<text x="38" y="111.96000000000001" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#526771" font-weight="400">交互前允许自由应对，主动开始后转入受保护的交互式逃生演出。</text>
+<image href="assets/bench.jpg" x="38.0" y="144.03125" width="279.0" height="156.9375"/>
+<image href="assets/pry.jpg" x="338.0" y="144.03125" width="279.0" height="156.9375"/>
+<image href="assets/garage.jpg" x="638.0" y="144.125" width="284.0" height="159.75"/>
+<text x="38" y="334.64" font-family="Microsoft YaHei, sans-serif" font-size="17" fill="#157E7C" font-weight="700">开场：先认出工具的用途</text>
+<text x="38" y="365.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">出口卡住，附近维修台提供撬棍。允许先拿</text>
+<text x="38" y="387.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">工具再检查门；成功撬开后，金属声引来教</text>
+<text x="38" y="409.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">学感染者。</text>
+<text x="338" y="334.64" font-family="Microsoft YaHei, sans-serif" font-size="17" fill="#157E7C" font-weight="700">结尾：工具成为逃生手段</text>
+<text x="338" y="365.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">电梯卡门声带来威胁。玩家决定开始时机；</text>
+<text x="338" y="387.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">按住推进门开度，完成后自动入厢回身、夹</text>
+<text x="338" y="409.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">手关门。</text>
+<text x="638" y="334.64" font-family="Microsoft YaHei, sans-serif" font-size="17" fill="#157E7C" font-weight="700">闭门：短暂安全后重建目标</text>
+<text x="638" y="365.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">保留玩家、摄像机与轿厢，闭门下行阶段准备</text>
+<text x="638" y="387.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">并生成车库。再开门时看到新的车辆与出口关</text>
+<text x="638" y="409.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">系。</text>
+<rect x="38" y="470" width="884" height="115" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<text x="53" y="497.72" font-family="Microsoft YaHei, sans-serif" font-size="16" fill="#AB712B" font-weight="700">从可中断交互到受控收尾</text>
+<text x="53" y="527.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">面朝门持续操作时，很难同时判断背后威胁。保留自由战斗能增加临场变化，却会与发力操作争夺注意力；当前选择在开始后隔离普通敌人伤害，牺</text>
+<text x="53" y="548.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">牲这段战术自由，换取明确的关卡结束。</text>
+<polyline points="38,627 922,627" fill="none" stroke="#C8D1D0" stroke-width="0.7" />
+<text x="38" y="647.66" font-family="Microsoft YaHei, sans-serif" font-size="10.5" fill="#526771" font-weight="400">林顺  /  封锁区：零号大厦  /  关卡设计与玩法机制</text>
+<text x="886" y="645.2" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#526771" font-weight="400">07 / 10</text>
+<text x="38" y="612.66" font-family="Microsoft YaHei, sans-serif" font-size="10.5" fill="#526771" font-weight="400">回收的是撬棍用途与动作认知，前后输入方式不同。约 20 秒电梯连续附件为无声实录；夹手仍是几何占位。</text></svg>

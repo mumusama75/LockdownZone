@@ -2,7 +2,8 @@
 param(
     [string]$EngineRoot = 'C:\Program Files\Epic Games\UE_5.8',
     [string]$JunctionPath = 'C:\UEProjects\LockdownZoneRepo',
-    [switch]$QA
+    [switch]$QA,
+    [switch]$MotionQA
 )
 
 Set-StrictMode -Version Latest
@@ -74,6 +75,7 @@ $gameArguments = @(
     $projectFile, '-game', '-windowed', '-ResX=1280', '-ResY=720',
     '-ForceRes', '-NoSplash', "-abslog=$playLog"
 )
+if ($MotionQA) { $QA = $true; $gameArguments += '-LZMotionOnly' }
 $windowStyle = 'Normal'
 if ($QA) {
     $gameArguments += @('-LZSliceQA', '-LZQAExit', '-unattended')
@@ -88,5 +90,15 @@ if ($QA) {
     Write-Host ("QA report: " + (Join-Path $projectDirectory 'Saved\LZSliceQA_Report.txt'))
     Write-Host ("Screenshots: " + (Join-Path $projectDirectory 'Saved\Screenshots\WindowsEditor\SliceQA_*.png'))
 }
+$qaStartedAt = [DateTime]::UtcNow
 $gameProcess = Start-Process -FilePath $editor -ArgumentList $nativeArguments -WorkingDirectory $projectDirectory -WindowStyle $windowStyle -Wait -PassThru
+if ($QA) {
+    $reportPath = Join-Path $projectDirectory 'Saved\LZSliceQA_Report.txt'
+    $report = Get-Item -LiteralPath $reportPath -ErrorAction SilentlyContinue
+    if ($null -eq $report -or $report.LastWriteTimeUtc -lt $qaStartedAt -or
+        (Get-Content -LiteralPath $reportPath -Raw) -notmatch 'LZ_QA SUMMARY PASS assertions=\d+ failures=0') {
+        Write-Warning 'QA failed or did not produce a fresh passing report. See the run log.'
+        exit 1
+    }
+}
 exit $gameProcess.ExitCode

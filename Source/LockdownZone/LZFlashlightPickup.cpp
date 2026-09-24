@@ -1,4 +1,5 @@
 #include "LZFlashlightPickup.h"
+#include "Components/SpotLightComponent.h"
 
 #include "Components/BoxComponent.h"
 #include "Components/PointLightComponent.h"
@@ -132,9 +133,8 @@ void ALZFlashlightPickup::BeginPlay()
 
 void ALZFlashlightPickup::Interact(ALZCharacter* Character)
 {
-    if (Character)
+    if (Character && Character->AcquireFlashlight())
     {
-        Character->AcquireFlashlight();
         Destroy();
     }
 }
@@ -145,3 +145,16 @@ FString ALZFlashlightPickup::GetInteractionPrompt(const ALZCharacter* Character)
 }
 
 
+
+void ALZFlashlightPickup::EnableGuideBeam()
+{
+    GuideBeam=NewObject<USpotLightComponent>(this,TEXT("PickupGuideBeam"));
+    AddInstanceComponent(GuideBeam);GuideBeam->SetupAttachment(PickupRoot);
+    GuideBeam->SetRelativeLocation(FVector(13,0,3.2f));
+    GuideBeam->SetIntensityUnits(ELightUnits::Candelas);GuideBeam->SetIntensity(1.4f);
+    GuideBeam->SetAttenuationRadius(1100);GuideBeam->SetInnerConeAngle(16);GuideBeam->SetOuterConeAngle(30);
+    GuideBeam->SetLightColor(FLinearColor(.8f,.9f,1));GuideBeam->SetCastShadows(true);GuideBeam->RegisterComponent();
+    Glow->SetIntensity(.20f);Glow->SetAttenuationRadius(280);
+    if(auto* M=Cast<UMaterialInstanceDynamic>(Lens->GetMaterial(0)))
+    {M->SetScalarParameterValue(TEXT("EmissiveStrength"),.35f);M->SetVectorParameterValue(TEXT("Tint"),FLinearColor(.8f,.9f,1));}
+}

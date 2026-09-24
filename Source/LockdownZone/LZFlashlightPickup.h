@@ -15,6 +15,8 @@ class LOCKDOWNZONE_API ALZFlashlightPickup : public ALZInteractable
 
 public:
     ALZFlashlightPickup();
+    void EnableGuideBeam();
+    UPROPERTY() class USpotLightComponent* GuideBeam;
     virtual void Interact(ALZCharacter* Character) override;
     virtual FString GetInteractionPrompt(const ALZCharacter* Character) const override;
 

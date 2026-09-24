@@ -19,6 +19,13 @@ class LOCKDOWNZONE_API ALZGameMode : public AGameModeBase
 
 public:
     ALZGameMode();
+    UPROPERTY() class ALZGarageSlice* GarageSlice=nullptr;
+    bool UsesHearingAI() const {return Chapter || GarageSlice;}
+    class ALZChapter* GetChapter() const { return Chapter; }
+    friend class ALZChapter;
+    friend class ALZElevatorFinale;
+    friend class ALZVentNetwork;
+    friend class ALZGarage;
     virtual void BeginPlay() override;
 
     UFUNCTION(BlueprintCallable) void CompleteObjective();
@@ -32,9 +39,11 @@ public:
     UFUNCTION(BlueprintPure) bool IsRunOver() const { return bRunOver; }
     UFUNCTION(BlueprintPure) bool WasExtractionSuccessful() const { return bExtractionSuccessful; }
     UFUNCTION(BlueprintPure) FString GetObjectiveText() const;
-    UFUNCTION(BlueprintPure) FString GetStatusText() const { return StatusText; }
+    UFUNCTION(BlueprintPure) FString GetStatusText() const;
     UFUNCTION(BlueprintPure) FString GetElapsedTimeText() const;
 
+    bool IsCombatUnlocked() const;
+    bool IsServiceShortcutOpen() const { return bHasFuse; }
     void NotifyWeaponCollected(EPlayerWeapon Weapon);
     void NotifyEnemyKilled();
     void CollectFuse();
@@ -62,7 +71,13 @@ protected:
     UPROPERTY(BlueprintReadOnly, Category="Run") FString StatusText;
 
 private:
+    UPROPERTY() class ALZChapter* Chapter=nullptr;
     float RunStartTime = 0.0f;
+    bool bCombatUnlocked = false;
+    bool bPuzzleAlarmRaised = false;
+    TArray<float> OriginalLightIntensities;
+    TArray<FLinearColor> OriginalLightColors;
+    UPROPERTY() AActor* ServiceShortcutDoor = nullptr;
     UStaticMesh* CubeMesh = nullptr;
     UStaticMesh* CylinderMesh = nullptr;
     UMaterialInterface* BasicMaterial = nullptr;
@@ -76,16 +91,19 @@ private:
 
     void BuildGrayboxLevel();
     void BuildOfficeLevel();
+    void BuildOfficeCirculation();
     void DressOffice();
     void SpawnModularWall(const FString& Name, const FVector& Location, const FVector& Size,
         const FRotator& Rotation, const FLinearColor& Color);
     void BuildLegacyGrayboxLevel();
+public: // Runtime layout factories shared by reusable scenery builders.
     class AStaticMeshActor* SpawnBlock(const FString& Name, const FVector& Location, const FVector& Size,
         const FRotator& Rotation = FRotator::ZeroRotator,
         const FLinearColor& Color = FLinearColor(0.18f, 0.22f, 0.25f));
     class AStaticMeshActor* SpawnArtMesh(const FString& Name, const FString& AssetPath,
         const FVector& Location, const FRotator& Rotation, const FVector& Scale,
         bool bCollision = true);
+private:
     void SpawnPipe(const FString& Name, const FVector& Location, float Radius, float Length,
         const FRotator& Rotation, const FLinearColor& Color);
     void SpawnZoneLabel(const FString& Text, const FVector& Location, const FColor& Color);

@@ -1,4 +1,11 @@
 #include "LZCharacter.h"
+#include "LZCrowbarVisual.h"
+#include "LZActionSamples.h"
+#include "LZAcoustics.h"
+#include "LZChapter.h"
+#include "LZNoiseProjectile.h"
+#include "LZEnemy.h"
+#include "EngineUtils.h"
 
 #include "Camera/CameraComponent.h"
 #include "Camera/PlayerCameraManager.h"
@@ -27,6 +34,7 @@ namespace
         case ELZInventoryItemType::Rare: return TEXT("服务器备件");
         case ELZInventoryItemType::Axe: return TEXT("消防斧");
         case ELZInventoryItemType::Pistol: return TEXT("格洛克17手枪");
+        case ELZInventoryItemType::Crowbar: return TEXT("撬棍");
         case ELZInventoryItemType::Flashlight: return TEXT("战术手电筒");
         default: return TEXT("物品");
         }
@@ -43,6 +51,7 @@ ALZCharacter::ALZCharacter()
     GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
     GetCharacterMovement()->SetCrouchedHalfHeight(48.0f);
     GetCharacterMovement()->MaxWalkSpeedCrouched = 180.0f;
+    GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
 
     FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
     FirstPersonCamera->SetupAttachment(GetCapsuleComponent());
@@ -238,7 +247,10 @@ void ALZCharacter::BeginPlay()
 
 void ALZCharacter::Tick(float DeltaSeconds)
 {
+    TickCrowbarPickup(DeltaSeconds);
     Super::Tick(DeltaSeconds);
+    Stamina=FMath::Min(100.f,Stamina+DeltaSeconds*(bBlocking?3:18));
+    if (bTraversing) { TickVault(DeltaSeconds); return; }
     if (IsRunInactive())
     {
         SetInventoryOpen(false);
@@ -306,6 +318,9 @@ void ALZCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
     check(PlayerInputComponent);
+    PlayerInputComponent->BindAction(TEXT("Throw"),IE_Pressed,this,&ALZCharacter::ThrowNoiseItem);
+    PlayerInputComponent->BindAction(TEXT("Sprint"),IE_Pressed,this,&ALZCharacter::StartSprint);
+    PlayerInputComponent->BindAction(TEXT("Sprint"),IE_Released,this,&ALZCharacter::StopSprint);
     PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &ALZCharacter::MoveForward);
     PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &ALZCharacter::MoveRight);
     PlayerInputComponent->BindAxis(TEXT("Turn"), this, &APawn::AddControllerYawInput);
@@ -339,6 +354,7 @@ void ALZCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void ALZCharacter::StartCrouch()
 {
+    if (IsTraversing()) return;
     if (bInventoryOpen || IsRunInactive()) return;
     bCrouchToggled = false;
     Crouch();
@@ -354,6 +370,7 @@ void ALZCharacter::StopCrouch()
 
 void ALZCharacter::ToggleCrouchState()
 {
+    if (IsTraversing()) return;
     if (bInventoryOpen || IsRunInactive()) return;
     if (bIsCrouched)
     {
@@ -371,6 +388,7 @@ void ALZCharacter::ToggleCrouchState()
 
 void ALZCharacter::MoveForward(float Value)
 {
+    if (IsTraversing()) return;
     if (!bInventoryOpen && !IsRunInactive() && Controller && !FMath::IsNearlyZero(Value))
     {
         AddMovementInput(FRotationMatrix(FRotator(0.0f, Controller->GetControlRotation().Yaw, 0.0f)).GetUnitAxis(EAxis::X), Value);
@@ -379,6 +397,7 @@ void ALZCharacter::MoveForward(float Value)
 
 void ALZCharacter::MoveRight(float Value)
 {
+    if (IsTraversing()) return;
     if (!bInventoryOpen && !IsRunInactive() && Controller && !FMath::IsNearlyZero(Value))
     {
         AddMovementInput(FRotationMatrix(FRotator(0.0f, Controller->GetControlRotation().Yaw, 0.0f)).GetUnitAxis(EAxis::Y), Value);
@@ -387,6 +406,8 @@ void ALZCharacter::MoveRight(float Value)
 
 void ALZCharacter::StartJump()
 {
+    if (IsTraversing() || bInventoryOpen || IsRunInactive()) return;
+    if (TryVault()) return;
     if (bIsCrouched)
     {
         bCrouchToggled = false;
@@ -398,6 +419,8 @@ void ALZCharacter::StartJump()
 
 void ALZCharacter::StartFire()
 {
+    StopCrowbarPickup();
+    if (IsTraversing()) return;
     if (bInventoryOpen || IsRunInactive()) return;
     if (SelectedWeapon == EPlayerWeapon::None || bInspectingWeapon || bReloading)
     {
@@ -408,12 +431,15 @@ void ALZCharacter::StartFire()
     const FVector ShotDirection = FirstPersonCamera->GetForwardVector();
     FHitResult Hit;
     FCollisionQueryParams Params(SCENE_QUERY_STAT(WeaponTrace), true, this);
-    if (SelectedWeapon == EPlayerWeapon::Melee)
+    if (SelectedWeapon == EPlayerWeapon::Melee || SelectedWeapon == EPlayerWeapon::Crowbar)
     {
+        const bool Chapter=GetWorld()->GetAuthGameMode<ALZGameMode>()->UsesHearingAI();
+        if(Chapter && (GetWorld()->GetTimeSeconds()<NextMeleeTime || Stamina<18))return;
+        if(Chapter){NextMeleeTime=GetWorld()->GetTimeSeconds()+.7f;Stamina-=18;bBlocking=false;if(auto* C=GetWorld()->GetAuthGameMode<ALZGameMode>()->GetChapter())C->Noise(GetActorLocation(),650);else LZAcoustics::Emit(this,GetActorLocation(),650,TEXT("Clang"),TEXT("MetalImpact"));}
         const FVector End = Start + ShotDirection * 240.0f;
         if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params) && Hit.GetActor())
         {
-            UGameplayStatics::ApplyPointDamage(Hit.GetActor(), 55.0f, ShotDirection,
+            UGameplayStatics::ApplyPointDamage(Hit.GetActor(), SelectedWeapon==EPlayerWeapon::Crowbar?18.f:55.f, ShotDirection,
                 Hit, GetController(), this, nullptr);
         }
         MeleeHandle->SetRelativeRotation(FRotator(-35.0f, -25.0f, 45.0f));
@@ -428,6 +454,7 @@ void ALZCharacter::StartFire()
         return;
     }
 
+    if(auto* GM=GetWorld()->GetAuthGameMode<ALZGameMode>();GM && GM->GetChapter())GM->GetChapter()->Noise(GetActorLocation(),4500,TEXT("Clang"),TEXT("Gunshot"));
     --AmmoInMagazine;
     MuzzleLight->SetVisibility(true);
     GetWorldTimerManager().SetTimerForNextTick(this, &ALZCharacter::HideMuzzleFlash);
@@ -453,6 +480,27 @@ void ALZCharacter::ResetMeleePose()
 
 void ALZCharacter::StartAim()
 {
+    StopCrowbarPickup();
+    if(bPrying)return;
+    if((SelectedWeapon==EPlayerWeapon::Melee || SelectedWeapon==EPlayerWeapon::Crowbar) && !bInventoryOpen && !bTraversing && !IsRunInactive())
+    {
+        bBlocking=true;MeleeHandle->SetRelativeRotation(FRotator(-35,90,45));
+        if(Stamina>=25 && GetWorld()->GetTimeSeconds()>=NextPushTime)
+        {
+            bool Pushed=false;
+            for(TActorIterator<ALZEnemy> It(GetWorld());It;++It)
+            {
+                const FVector To=It->GetActorLocation()-GetActorLocation();
+                FHitResult Hit;FCollisionQueryParams Query(SCENE_QUERY_STAT(PushLOS),false,this);
+                const bool Blocked=GetWorld()->LineTraceSingleByChannel(Hit,GetActorLocation(),It->GetActorLocation(),ECC_Visibility,Query);
+                if(To.Size2D()<200 && FVector::DotProduct(GetControlRotation().Vector(),To.GetSafeNormal())>.4f && (!Blocked || Hit.GetActor()==*It))
+                {It->PushFrom(GetActorLocation());Pushed=true;}
+            }
+            if(Pushed){Stamina-=25;NextPushTime=GetWorld()->GetTimeSeconds()+.8f;}
+        }
+        return;
+    }
+    if (IsTraversing()) return;
     if (bInventoryOpen || IsRunInactive() || SelectedWeapon != EPlayerWeapon::Firearm || bInspectingWeapon || bReloading)
     {
         return;
@@ -465,6 +513,7 @@ void ALZCharacter::StartAim()
 
 void ALZCharacter::StopAim()
 {
+    bBlocking=false;ResetMeleePose();
     bAiming = false;
     FirstPersonCamera->SetFieldOfView(90.0f);
     ApplyWeaponRecoilPose();
@@ -473,6 +522,9 @@ void ALZCharacter::StopAim()
 
 void ALZCharacter::Reload()
 {
+    if(bPrying)return;
+
+    if (IsTraversing()) return;
     if (bInventoryOpen || IsRunInactive()) return;
     if (!bHasFirearm || SelectedWeapon != EPlayerWeapon::Firearm || bInspectingWeapon || bReloading ||
         AmmoInMagazine >= MagazineSize || GetReserveAmmo() <= 0)
@@ -501,9 +553,9 @@ void ALZCharacter::FinishReload()
     WeaponBarrel->SetRelativeRotation(FRotator::ZeroRotator);
 }
 
-void ALZCharacter::AcquireWeapon(EPlayerWeapon Weapon)
+bool ALZCharacter::AcquireWeapon(EPlayerWeapon Weapon)
 {
-    if (bInventoryOpen || IsRunInactive()) return;
+    if (bInventoryOpen || IsRunInactive()) return false;
     CancelWeaponActions();
     if (Weapon == EPlayerWeapon::Melee)
     {
@@ -514,7 +566,7 @@ void ALZCharacter::AcquireWeapon(EPlayerWeapon Weapon)
         }
         if (!bAlreadyInBag)
         {
-            TryStoreItem(ELZInventoryItemType::Axe, 1);
+            if (!TryStoreItem(ELZInventoryItemType::Axe, 1)) return false;
         }
         bHasMeleeWeapon = true;
     }
@@ -527,7 +579,7 @@ void ALZCharacter::AcquireWeapon(EPlayerWeapon Weapon)
         }
         if (!bAlreadyInBag)
         {
-            TryStoreItem(ELZInventoryItemType::Pistol, 1);
+            if (!TryStoreItem(ELZInventoryItemType::Pistol, 1)) return false;
         }
         bHasFirearm = true;
         AmmoInMagazine = 3;
@@ -540,20 +592,23 @@ void ALZCharacter::AcquireWeapon(EPlayerWeapon Weapon)
     {
         GameMode->NotifyWeaponCollected(Weapon);
     }
+    return true;
 }
 
 void ALZCharacter::SelectMeleeWeapon()
 {
-    if (!bInventoryOpen && !IsRunInactive() && bHasMeleeWeapon && SelectedWeapon != EPlayerWeapon::Melee)
+    if (IsTraversing()) return;
+    if (!bInventoryOpen && !IsRunInactive() && (bOwnsCrowbar || bHasMeleeWeapon))
     {
         CancelWeaponActions();
-        SelectedWeapon = EPlayerWeapon::Melee;
+        SelectedWeapon = bOwnsCrowbar?EPlayerWeapon::Crowbar:EPlayerWeapon::Melee;
         UpdateWeaponVisibility();
     }
 }
 
 void ALZCharacter::SelectFirearm()
 {
+    if (IsTraversing()) return;
     if (!bInventoryOpen && !IsRunInactive() && bHasFirearm && SelectedWeapon != EPlayerWeapon::Firearm)
     {
         CancelWeaponActions();
@@ -564,15 +619,18 @@ void ALZCharacter::SelectFirearm()
 
 void ALZCharacter::UpdateWeaponVisibility()
 {
-    const bool bShowFirearm = SelectedWeapon == EPlayerWeapon::Firearm;
+    const bool bShowFirearm = !bTraversing && SelectedWeapon == EPlayerWeapon::Firearm;
     WeaponBody->SetVisibility(bShowFirearm);
     WeaponBarrel->SetVisibility(false);
     WeaponGrip->SetVisibility(false);
     WeaponMagazine->SetVisibility(false);
     FrontSight->SetVisibility(false);
-    const bool bShowMelee = SelectedWeapon == EPlayerWeapon::Melee;
-    MeleeHandle->SetVisibility(bShowMelee, true);
-    MeleeHead->SetVisibility(bShowMelee);
+    const bool bShowMelee = !bTraversing && !bPrying && (SelectedWeapon == EPlayerWeapon::Melee || SelectedWeapon==EPlayerWeapon::Crowbar);
+    if(!CrowbarVisual)CrowbarVisual=LZCrowbarVisual::Build(this,MeleeHandle);
+    MeleeHandle->SetVisibility(bShowMelee && SelectedWeapon!=EPlayerWeapon::Crowbar, false);
+    MeleeHead->SetVisibility(bShowMelee && SelectedWeapon!=EPlayerWeapon::Crowbar);
+    CrowbarVisual->SetVisibility(bShowMelee && SelectedWeapon==EPlayerWeapon::Crowbar,true);
+    MeleeHead->SetRelativeScale3D(SelectedWeapon==EPlayerWeapon::Crowbar?FVector(.12f,.045f,.045f):FVector(.22f,.045f,.14f));
     WeaponFillLight->SetVisibility(bShowFirearm || bShowMelee);
 }
 
@@ -580,6 +638,7 @@ FString ALZCharacter::GetSelectedWeaponName() const
 {
     switch (SelectedWeapon)
     {
+    case EPlayerWeapon::Crowbar: return TEXT("撬棍");
     case EPlayerWeapon::Melee: return TEXT("消防斧");
     case EPlayerWeapon::Firearm: return TEXT("格洛克17 · 9毫米");
     default: return TEXT("无武器");
@@ -601,6 +660,7 @@ ALZInteractable* ALZCharacter::FindInteractable(float Range) const
 
 void ALZCharacter::Interact()
 {
+    if (IsTraversing()) return;
     if (IsRunInactive()) return;
     if (bInventoryOpen)
     {
@@ -652,7 +712,10 @@ bool ALZCharacter::AddLoot(int32 Value, int32 Slots, int32 AmmoAmount, int32 Hea
 float ALZCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
     AController* EventInstigator, AActor* DamageCauser)
 {
+    if(bFinaleLocked)return 0;
     if (const ALZGameMode* GM = GetWorld()->GetAuthGameMode<ALZGameMode>(); GM && GM->IsRunOver()) return 0.0f;
+    if(bBlocking && Stamina>=20 && Cast<ALZEnemy>(DamageCauser) && FVector::DotProduct(GetControlRotation().Vector(),(DamageCauser->GetActorLocation()-GetActorLocation()).GetSafeNormal())>.35f)
+    {DamageAmount*=.2f;Stamina-=20;}
     const float Applied = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
     Health = FMath::Max(0.0f, Health - Applied);
     if (Health <= 0.0f)
@@ -688,9 +751,9 @@ bool ALZCharacter::IsRunInactive() const
     return GameMode && GameMode->IsRunOver();
 }
 
-void ALZCharacter::AcquireFlashlight()
+bool ALZCharacter::AcquireFlashlight()
 {
-    if (IsRunInactive()) return;
+    if (bInventoryOpen || IsRunInactive()) return false;
     bool bAlreadyInBag = false;
     for (const FLZInventoryEntry& Entry : InventoryEntries)
     {
@@ -698,14 +761,16 @@ void ALZCharacter::AcquireFlashlight()
     }
     if (!bAlreadyInBag)
     {
-        TryStoreItem(ELZInventoryItemType::Flashlight, 1);
+        if (!TryStoreItem(ELZInventoryItemType::Flashlight, 1)) return false;
     }
     bHasFlashlight = true;
     SetFlashlightEnabled(true);
+    return true;
 }
 
 void ALZCharacter::ToggleFlashlight()
 {
+    if(bFinaleLocked)return;
     if (!bHasFlashlight || IsRunInactive())
     {
         SetFlashlightEnabled(false);
@@ -800,6 +865,7 @@ void ALZCharacter::ResetRecoil()
 
 void ALZCharacter::CancelWeaponActions()
 {
+    StopCrowbarPickup();
     bReloading = false;
     ReloadElapsed = 0.0f;
     bInspectingWeapon = false;
@@ -855,6 +921,7 @@ void ALZCharacter::GetDefaultItemSize(ELZInventoryItemType Type, int32& OutW, in
 {
     switch (Type)
     {
+    case ELZInventoryItemType::Crowbar: OutW=1;OutH=4;break;
     case ELZInventoryItemType::Axe:
         OutW = 2; OutH = 6;
         break;
@@ -1413,6 +1480,16 @@ void ALZCharacter::CancelHeldItem()
 
 bool ALZCharacter::DiscardItemById(int32 ItemId)
 {
+    if(auto* Entry=GetInventoryItemById(ItemId);Entry && Entry->Type==ELZInventoryItemType::Crowbar){SetInventoryStatusText(TEXT("保留撬棍用于紧急破拆"));return false;}
+    if (const auto* Entry = GetInventoryItemById(ItemId); Entry && Entry->Type == ELZInventoryItemType::Axe)
+    {
+        const auto* GM = GetWorld()->GetAuthGameMode<ALZGameMode>();
+        if (GM && GM->GetChapter() && !GM->GetChapter()->bDoorBreached)
+        {
+            SetInventoryStatusText(TEXT("需要消防斧破开办公室门锁"));
+            return false;
+        }
+    }
     if (!bInventoryOpen || IsRunInactive() || ItemId == 0) return false;
     int32 FoundIndex = INDEX_NONE;
     for (int32 Idx = 0; Idx < InventoryEntries.Num(); ++Idx)
@@ -1499,11 +1576,12 @@ void ALZCharacter::SyncEquippedGear()
     if (!bHasMeleeWeapon && SelectedWeapon == EPlayerWeapon::Melee)
     {
         SelectedWeapon = bHasFirearm ? EPlayerWeapon::Firearm : EPlayerWeapon::None;
+        if(bOwnsCrowbar)SelectedWeapon=EPlayerWeapon::Crowbar;
         UpdateWeaponVisibility();
     }
     if (!bHasFirearm && SelectedWeapon == EPlayerWeapon::Firearm)
     {
-        SelectedWeapon = bHasMeleeWeapon ? EPlayerWeapon::Melee : EPlayerWeapon::None;
+        SelectedWeapon = bOwnsCrowbar?EPlayerWeapon::Crowbar:bHasMeleeWeapon ? EPlayerWeapon::Melee : EPlayerWeapon::None;
         UpdateWeaponVisibility();
     }
     if (!bHasFlashlight && bFlashlightOn)
@@ -1514,7 +1592,7 @@ void ALZCharacter::SyncEquippedGear()
 
 void ALZCharacter::SetInventoryOpen(bool bOpen)
 {
-    if (bOpen == bInventoryOpen || (bOpen && IsRunInactive())) return;
+    if (bOpen == bInventoryOpen || (bOpen && (IsRunInactive() || bPrying))) return;
     bInventoryOpen = bOpen;
     if (bOpen)
     {
@@ -1554,6 +1632,7 @@ void ALZCharacter::SetInventoryOpen(bool bOpen)
 
 void ALZCharacter::ToggleInventory()
 {
+    if (IsTraversing()) return;
     if (IsRunInactive())
     {
         SetInventoryOpen(false);
@@ -1590,3 +1669,82 @@ void ALZCharacter::InventoryDiscard()
     DiscardSelectedInventoryItem();
 }
 
+
+bool ALZCharacter::AcquireCrowbar()
+{
+ if(IsRunInactive() || bInventoryOpen || bPrying)return false;
+ bOwnsCrowbar=true;
+ if(auto* GM=GetWorld()->GetAuthGameMode<ALZGameMode>())if(auto* C=GM->GetChapter())C->bCrowbar=true;
+ SelectedWeapon=EPlayerWeapon::Crowbar;CancelWeaponActions();UpdateWeaponVisibility();return true;
+}
+void ALZCharacter::PresentCrowbarPickup(const FTransform& WorldPose)
+{
+ if(!LZActionSamples::Enabled(this) || !bOwnsCrowbar || bCrowbarPresented || IsRunInactive())return;
+ bCrowbarPresented=true;bCrowbarPresenting=true;CrowbarPresentationTime=0;CrowbarPickupPose=WorldPose;
+ CrowbarVisual->SetWorldTransform(WorldPose);
+ LZAcoustics::Emit(this,WorldPose.GetLocation(),80,TEXT("Rattle"),TEXT("ToolPickup"),.18f);
+}
+void ALZCharacter::StopCrowbarPickup()
+{
+ if(!bCrowbarPresenting)return;bCrowbarPresenting=false;
+ if(CrowbarVisual)CrowbarVisual->SetRelativeTransform(FTransform::Identity);
+}
+void ALZCharacter::TickCrowbarPickup(float Delta)
+{
+ if(!bCrowbarPresenting)return;
+ if(IsRunInactive() || bPrying || bTraversing || SelectedWeapon!=EPlayerWeapon::Crowbar){StopCrowbarPickup();return;}
+ CrowbarPresentationTime+=Delta;
+ const float T=FMath::Clamp(CrowbarPresentationTime/FMath::Max(.5f,GetDefault<ULZActionSampleSettings>()->PickupSeconds),0.f,1.f);
+ const auto Camera=FirstPersonCamera->GetComponentTransform();
+ const FTransform Display(Camera.GetRotation()*FRotator(4,15+30*FMath::Sin(T*PI),-55).Quaternion(),Camera.TransformPosition(FVector(60,3,-9)));
+ FTransform Goal;const FTransform Rest(MeleeHandle->GetComponentQuat(),MeleeHandle->GetComponentLocation());
+ if(T<.15f){Goal=CrowbarPickupPose;Goal.AddToTranslation(FVector(0,0,22*T/.15f));}
+ else if(T<.45f){FTransform Lifted=CrowbarPickupPose;Lifted.AddToTranslation(FVector(0,0,22));Goal.Blend(Lifted,Display,FMath::SmoothStep(0.f,1.f,(T-.15f)/.3f));}
+ else if(T<.7f)Goal=Display;
+ else Goal.Blend(Display,Rest,FMath::SmoothStep(0.f,1.f,(T-.7f)/.3f));
+ CrowbarVisual->SetWorldTransform(Goal);
+ if(T>=1)StopCrowbarPickup();
+}
+void ALZCharacter::SetPrying(bool Active)
+{
+ bPrying=Active;CancelWeaponActions();bBlocking=false;
+ if(Active){SelectedWeapon=EPlayerWeapon::Crowbar;ConsumeMovementInputVector();GetCharacterMovement()->StopMovementImmediately();GetCharacterMovement()->DisableMovement();}
+ else {MeleeHandle->SetRelativeLocation(FVector(58,23,-28));ResetMeleePose();GetCharacterMovement()->SetMovementMode(MOVE_Walking);}
+ UpdateWeaponVisibility();
+}
+void ALZCharacter::UpdatePryPose(float T)
+{
+ const float Effort=FMath::Sin(FMath::Clamp((T-.2f)/.55f,0.f,1.f)*PI);
+ MeleeHandle->SetRelativeLocation(FVector(63+Effort*7,13,-25+Effort*4));
+ MeleeHandle->SetRelativeRotation(FRotator(-15-Effort*25,38-Effort*35,-18));
+}
+int32 ALZCharacter::GetThrowableCount() const
+{int32 N=0;for(const auto& E:InventoryEntries)if(E.Type==ELZInventoryItemType::Scrap)N+=E.Quantity;return N;}
+
+void ALZCharacter::ThrowNoiseItem()
+{
+ if(IsRunInactive() || bInventoryOpen || IsTraversing() || bBlocking)return;
+ for(int32 I=0;I<InventoryEntries.Num();++I)
+ {
+    if(InventoryEntries[I].Type!=ELZInventoryItemType::Scrap)continue;
+    const FVector Eye=FirstPersonCamera->GetComponentLocation(),Forward=FirstPersonCamera->GetForwardVector();
+    FHitResult Wall;FCollisionQueryParams Query(SCENE_QUERY_STAT(ThrowClearance),false,this);
+    if(GetWorld()->SweepSingleByChannel(Wall,Eye,Eye+Forward*55,FQuat::Identity,ECC_Visibility,FCollisionShape::MakeSphere(6),Query))return;
+    FActorSpawnParameters Spawn;Spawn.Owner=this;Spawn.Instigator=this;
+    auto* Projectile=GetWorld()->SpawnActor<ALZNoiseProjectile>(Eye+Forward*55,FRotator::ZeroRotator,Spawn);
+    if(!Projectile)return;Projectile->Launch(Forward*1050+FVector(0,0,100));
+    if(--InventoryEntries[I].Quantity<=0)InventoryEntries.RemoveAt(I);
+    return;
+ }
+}
+
+void ALZCharacter::StartSprint(){if(!IsRunInactive() && !bInventoryOpen && !bTraversing){bSprintHeld=true;GetCharacterMovement()->MaxWalkSpeed=650;}}
+void ALZCharacter::StopSprint(){bSprintHeld=false;GetCharacterMovement()->MaxWalkSpeed=480;}
+
+void ALZCharacter::SetFinaleLocked(bool Active)
+{
+ if(bFinaleLocked==Active)return;
+ if(Active){SetInventoryOpen(false);SuspendOnFootActions();StopCrowbarPickup();UnCrouch();}
+ bFinaleLocked=Active;SetPrying(Active);
+ if(auto* PC=Cast<APlayerController>(GetController())){PC->SetIgnoreMoveInput(Active);PC->SetIgnoreLookInput(Active);}
+}

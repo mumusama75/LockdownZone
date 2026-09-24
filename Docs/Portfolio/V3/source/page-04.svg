@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="675" viewBox="0 0 960 675"><rect x="0" y="0" width="960" height="675" fill="#F4F3EE" stroke="none" stroke-width="1"/>
+<rect x="38" y="32" width="28" height="4" fill="#157E7C" stroke="none" stroke-width="1"/>
+<text x="77" y="35.120000000000005" font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#157E7C" font-weight="700">TEACHING / 04</text>
+<text x="38" y="82.68" font-family="Microsoft YaHei, sans-serif" font-size="29" fill="#223945" font-weight="700">先留下物资线索，再让回访兑现</text>
+<text x="38" y="111.96000000000001" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#526771" font-weight="400">撬棍承担主线开路，手电服务可选探索；避免把所有奖励都串成离开楼层的必经任务。</text>
+<image href="assets/pantry_entry.jpg" x="38.0" y="143.00125" width="431.0" height="242.4375"/>
+<image href="assets/pantry_lit_crop.jpg" x="491.0" y="143.00124999999997" width="431.00000000000006" height="242.43750000000003"/>
+<polyline points="375,170 405,190" fill="none" stroke="#AB712B" stroke-width="1.2" />
+<circle cx="367" cy="165" r="10" fill="#FFFFFF"/>
+<text x="363" y="168.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#AB712B" font-weight="700">1</text>
+<polyline points="188,286 239,286" fill="none" stroke="#157E7C" stroke-width="1.2" />
+<circle cx="178" cy="286" r="10" fill="#FFFFFF"/>
+<text x="174" y="289.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#157E7C" font-weight="700">2</text>
+<polyline points="855,230 798,257" fill="none" stroke="#AB712B" stroke-width="1.2" />
+<circle cx="865" cy="226" r="10" fill="#FFFFFF"/>
+<text x="861" y="229.04" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#AB712B" font-weight="700">3</text>
+<text x="38" y="414.64" font-family="Microsoft YaHei, sans-serif" font-size="17" fill="#157E7C" font-weight="700">初见 11：知道里面有东西</text>
+<text x="38" y="445.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">急救标识①、门口血迹与深处制服②建立物资预期。奖励放在更深</text>
+<text x="38" y="467.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">处，入口不直接展示枪和急救包。</text>
+<text x="491" y="414.64" font-family="Microsoft YaHei, sans-serif" font-size="17" fill="#157E7C" font-weight="700">06 得到手电后：返回确认</text>
+<text x="491" y="445.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">同一茶水间深处，手电照见枪与急救包③。回访把先前的信息转为资</text>
+<text x="491" y="467.88" font-family="Microsoft YaHei, sans-serif" font-size="14" fill="#223945" font-weight="400">源收益；不取这些奖励也可完成保险丝主线。</text>
+<rect x="38" y="516" width="884" height="76" fill="#FFFFFF" stroke="none" stroke-width="1"/>
+<text x="52" y="541.8" font-family="Microsoft YaHei, sans-serif" font-size="15" fill="#AB712B" font-weight="700">当前取舍与问题</text>
+<text x="223" y="539.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">两件奖励必须“持有且开启手电”才能拾取，是明确的权限条件，不能仅用黑暗解释。若玩家先辨认出物品却无法拿</text>
+<text x="223" y="559.96" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#223945" font-weight="400">取，反馈可能不合直觉；这一点保留为待优化问题。</text>
+<polyline points="38,627 922,627" fill="none" stroke="#C8D1D0" stroke-width="0.7" />
+<text x="38" y="647.66" font-family="Microsoft YaHei, sans-serif" font-size="10.5" fill="#526771" font-weight="400">林顺  /  封锁区：零号大厦  /  关卡设计与玩法机制</text>
+<text x="886" y="645.2" font-family="Microsoft YaHei, sans-serif" font-size="10" fill="#526771" font-weight="400">04 / 10</text>
+<text x="38" y="612.66" font-family="Microsoft YaHei, sans-serif" font-size="10.5" fill="#526771" font-weight="400">左图为入口，右图裁切放大深处奖励，拍摄位置不同；未修改亮度，不是同机位提亮对比。</text></svg>

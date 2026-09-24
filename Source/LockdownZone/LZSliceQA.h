@@ -49,7 +49,7 @@ private:
         InventoryMedicalUsed, InventoryMedicalDiscarded, InventoryWorldBlocked, InventoryScrapDiscarded,
         InventoryReloadPrepare, InventoryReloadFirst, InventoryReloadShot, InventoryReloadReleased,
         AimBreaker, RestorePower, PowerView, OfficeWideSetup, OfficeWideCapture, AimExit, Extract, SettlementIdle,
-        RequestRestart, AwaitRestart, VerifyRestart, Finish
+        RequestRestart, AwaitRestart, VerifyRestart, DesignRegression, DesignGallery, DesignServiceSetup, DesignService, DesignOverviewSetup, DesignOverview, MotionPrepare, MotionChase, MotionStagger, MotionRecover, MotionDown, MotionGetUp, MotionRecovered, VaultPrepare, VaultStart, VaultView, VaultEnd, VaultBodyStart, VaultBodyView, VaultBodyEnd, Finish
     };
 
     TWeakObjectPtr<ALZCharacter> Player;
@@ -92,6 +92,10 @@ private:
     int32 KillIndex = 0;
     int32 Assertions = 0;
     int32 Failures = 0;
+    TWeakObjectPtr<ALZEnemy> MotionEnemy;
+    TWeakObjectPtr<class ACameraActor> MotionCamera;
+    FVector MotionOrigin;
+    int32 MotionAmmo = 0;
     bool bRunning = false;
     bool bIsolatingEnemies = false;
 
@@ -113,4 +117,5 @@ private:
     void IsolateEnemies();
     void RestoreEnemies();
     void CompleteRun();
+    void CheckOfficeDesign();
 };

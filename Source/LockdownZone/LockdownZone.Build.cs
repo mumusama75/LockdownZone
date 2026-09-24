@@ -7,7 +7,7 @@ public class LockdownZone : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         PublicDependencyModuleNames.AddRange(new string[]
         {
-            "Core", "CoreUObject", "Engine", "InputCore"
+            "Core", "CoreUObject", "Engine", "InputCore", "AnimGraphRuntime", "AIModule", "NavigationSystem", "GameplayTasks", "AssetRegistry", "AudioMixer"
         });
     }
 }

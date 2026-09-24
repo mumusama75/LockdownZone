@@ -17,16 +17,42 @@ enum class EPlayerWeapon : uint8
 {
     None,
     Melee,
-    Firearm
+    Firearm,
+    Crowbar
 };
 
 UCLASS()
 class LOCKDOWNZONE_API ALZCharacter : public ACharacter
 {
     GENERATED_BODY()
+    friend class ULZRunState;
 
 public:
     ALZCharacter();
+    bool AcquireCrowbar();
+    void SuspendOnFootActions() { StopSprint(); StopCrouch(); StopAim(); CancelWeaponActions(); ConsumeMovementInputVector(); }
+    void PresentCrowbarPickup(const FTransform& WorldPose);
+    bool IsPresentingCrowbar() const {return bCrowbarPresenting;}
+    bool HasCrowbarTool() const { return bOwnsCrowbar; }
+    bool IsFinaleLocked() const {return bFinaleLocked;}
+    void SetFinaleLocked(bool Active);
+    bool bFinaleLocked=false;
+    bool IsPrying() const { return bPrying; }
+    void SetPrying(bool Active);
+    void UpdatePryPose(float Progress);
+    void ThrowNoiseItem();
+    void StartSprint();
+    void StopSprint();
+    bool IsSprinting() const {return bSprintHeld && !bIsCrouched;}
+    bool bSprintHeld=false;
+    int32 GetThrowableCount() const;
+    float GetStamina() const {return Stamina;}
+    bool IsBlocking() const {return bBlocking;}
+    bool CanVault() const;
+    bool TryVault();
+    bool TryClimbRoute(FVector Lift, FVector Across, FVector End);
+    bool IsTraversing() const { return bTraversing || bPrying; }
+
 
     virtual void Tick(float DeltaSeconds) override;
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -120,8 +146,8 @@ public:
     UFUNCTION(BlueprintPure) bool HasFirearm() const { return bHasFirearm; }
     UFUNCTION(BlueprintPure) EPlayerWeapon GetSelectedWeapon() const { return SelectedWeapon; }
     UFUNCTION(BlueprintPure) FString GetSelectedWeaponName() const;
-    void AcquireWeapon(EPlayerWeapon Weapon);
-    UFUNCTION(BlueprintCallable, Category="Equipment") void AcquireFlashlight();
+    bool AcquireWeapon(EPlayerWeapon Weapon);
+    UFUNCTION(BlueprintCallable, Category="Equipment") bool AcquireFlashlight();
     UFUNCTION(BlueprintCallable, Category="Equipment") void ToggleFlashlight();
     UFUNCTION(BlueprintPure, Category="Equipment") bool HasFlashlight() const { return bHasFlashlight; }
     UFUNCTION(BlueprintPure, Category="Equipment") bool IsFlashlightOn() const { return bFlashlightOn; }
@@ -183,6 +209,22 @@ protected:
     UPROPERTY(BlueprintReadOnly, Category="Equipment") bool bFlashlightOn = false;
 
 private:
+    bool bOwnsCrowbar=false,bPrying=false;
+    bool bCrowbarPresenting=false,bCrowbarPresented=false;
+    float CrowbarPresentationTime=0;
+    FTransform CrowbarPickupPose;
+    void TickCrowbarPickup(float Delta);
+    void StopCrowbarPickup();
+    UPROPERTY() USceneComponent* CrowbarVisual;
+    bool bBlocking=false;
+    float Stamina=100,NextMeleeTime=0,NextPushTime=0;
+    bool bTraversing = false;
+    float VaultElapsed = 0;
+    FVector VaultStart, VaultLift, VaultAcross, VaultEnd;
+    bool FindVaultPath(FVector& Lift, FVector& Across, FVector& End) const;
+    void TickVault(float DeltaSeconds);
+    void EndVault();
+    UPROPERTY() class ULZMotionProfile* TraversalProfile;
     static constexpr int32 InventoryGridWidth = 6;
     static constexpr int32 InventoryGridHeight = 6;
     static constexpr int32 AmmoStackLimit = 30;

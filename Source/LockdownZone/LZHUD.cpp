@@ -1,4 +1,8 @@
 #include "LZHUD.h"
+#include "LZGarageSlice.h"
+#include "LZPickupTruck.h"
+#include "LZChapter.h"
+#include "LZGarage.h"
 
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
@@ -51,10 +55,34 @@ void ALZHUD::DrawHUD()
         return;
     }
 
+    if(auto* G=GameMode->GarageSlice; G && G->Truck && G->Truck->Driving)
+    {
+        DrawRect(FLinearColor(0,0,0,.7f),20,Canvas->ClipY-100,Canvas->ClipX-40,80);
+        DrawShadowedText(G->Hint(),40,Canvas->ClipY-65,FLinearColor::White,.85f);
+        return;
+    }
+    if (auto* C = GameMode->GetChapter(); C && C->Garage && C->Garage->State >= ELZGarageState::Driving)
+    {
+        const auto* G = C->Garage;
+        if (G->State == ELZGarageState::CityReveal)
+        {
+            DrawRect(FLinearColor::Black,0,0,Canvas->ClipX,44);
+            DrawRect(FLinearColor::Black,0,Canvas->ClipY-60,Canvas->ClipX,60);
+            DrawShadowedText(TEXT("破碎城区 · 零号大厦之外"),Canvas->ClipX*.5f,Canvas->ClipY-43,FLinearColor(.8f,.85f,.9f),1.0f,true);
+        }
+        else
+        {
+            DrawShadowedText(*G->Hint(),Canvas->ClipX*.5f,Canvas->ClipY-52,FLinearColor::White,.85f,true);
+            DrawShadowedText(FString::Printf(TEXT("%02.0f km/h"),FMath::Abs(G->Speed)*.036f),40,Canvas->ClipY-62,FLinearColor(.8f,.9f,.8f),1.3f);
+        }
+        return;
+    }
+    LastInventoryMouse = FVector2D(-1,-1);
     const float CenterX = Canvas->ClipX * 0.5f;
     const float CenterY = Canvas->ClipY * 0.5f;
     DrawRect(FLinearColor(0.008f, 0.016f, 0.02f, 0.65f), 22, 20, 250, 60);
     DrawRect(FLinearColor(0.24f, 0.70f, 0.73f, 0.9f), 22, 20, 3, 60);
+    if((!GameMode->GetChapter() && !GameMode->GarageSlice) || !GameMode->GetStatusText().IsEmpty())
     DrawRect(FLinearColor(0.008f, 0.016f, 0.02f, 0.64f), Canvas->ClipX - 570, 20, 548, 82);
     DrawRect(FLinearColor(0.008f, 0.016f, 0.02f, 0.64f), 22, Canvas->ClipY - 130, 540, 114);
     DrawLine(CenterX - 8.0f, CenterY, CenterX + 8.0f, CenterY, FLinearColor::White, 1.5f);
@@ -86,7 +114,7 @@ void ALZHUD::DrawHUD()
 
     DrawShadowedText(TEXT("封锁区 / 零号大厦"), 34.0f, 28.0f,
         FLinearColor(0.35f, 0.85f, 1.0f), 1.15f);
-    DrawShadowedText(TEXT("12F  /  隔离办公层"), 34, 58, FLinearColor(.62f,.70f,.70f), .70f);
+    DrawShadowedText((GameMode->GarageSlice || (GameMode->GetChapter() && GameMode->GetChapter()->Garage))?TEXT("B1  /  地下车库与城市出口"):TEXT("12F  /  隔离办公层"), 34, 58, FLinearColor(.62f,.70f,.70f), .70f);
     DrawShadowedText(FString::Printf(TEXT("生命    %03.0f"), Character->GetHealth()),
         34.0f, Canvas->ClipY - 115.0f, Character->GetHealth() < 30.0f ? FLinearColor::Red : FLinearColor::White, 1.15f);
     const FString WeaponLine = Character->GetSelectedWeapon() == EPlayerWeapon::Firearm
@@ -95,9 +123,9 @@ void ALZHUD::DrawHUD()
         : FString::Printf(TEXT("武器    %s"), *Character->GetSelectedWeaponName());
     DrawShadowedText(WeaponLine, 34.0f, Canvas->ClipY - 82.0f,
         FLinearColor(1.0f, 0.8f, 0.25f), 1.1f);
-    DrawShadowedText(FString::Printf(TEXT("已清除感染者  %d"), GameMode->GetEnemiesKilled()),
+    DrawShadowedText(GameMode->GetChapter()?(GameMode->GetChapter()->Garage?TEXT("寻找驶离车库的机会"):TEXT("保持安静")):FString::Printf(TEXT("已清除感染者  %d"), GameMode->GetEnemiesKilled()),
         34.0f, Canvas->ClipY - 49.0f, FLinearColor(0.75f, 0.9f, 0.75f), 1.0f);
-    DrawShadowedText(TEXT("Ctrl蹲下潜行  E交互  1/2切枪  R换弹  F手电  B背包"), Canvas->ClipX - 440, Canvas->ClipY - 37,
+    DrawShadowedText(GameMode->GetChapter()?TEXT("Ctrl 静步  右键格挡/推开  G投掷  F手电  B背包"):TEXT("Ctrl蹲下潜行  E交互  1/2切枪  R换弹  F手电  B背包"), Canvas->ClipX - 440, Canvas->ClipY - 37,
         FLinearColor(.64f,.72f,.74f), .68f);
     const FString FlashlightLine = !Character->HasFlashlight() ? TEXT("手电筒：未拾取")
         : Character->IsFlashlightOn() ? TEXT("手电筒：开启  [F] 关闭") : TEXT("手电筒：关闭  [F] 开启");
@@ -115,15 +143,24 @@ void ALZHUD::DrawHUD()
         const float StealthBoxY = Canvas->ClipY - 170.0f;
         DrawRect(FLinearColor(0.005f, 0.02f, 0.015f, 0.85f), StealthBoxX, StealthBoxY, StealthBoxW, StealthBoxH);
         DrawRect(FLinearColor(0.22f, 0.94f, 0.58f, 0.95f), StealthBoxX, StealthBoxY, 3.0f, StealthBoxH);
-        DrawShadowedText(TEXT("▼ 潜行静默中 · 敌方侦测-55% · 掩体遮蔽"), CenterX, StealthBoxY + 6.0f,
+        DrawShadowedText(GameMode->GetChapter()?TEXT("静步"):TEXT("▼ 潜行静默中 · 敌方侦测-55% · 掩体遮蔽"), CenterX, StealthBoxY + 6.0f,
             FLinearColor(0.22f, 0.94f, 0.58f), 0.82f, true);
     }
 
+    if(GameMode->GetChapter())
+    {
+        DrawShadowedText(FString::Printf(TEXT("体力 %.0f  |  投掷物 %d%s"),Character->GetStamina(),Character->GetThrowableCount(),Character->IsBlocking()?TEXT("  格挡中"):TEXT("")),34,Canvas->ClipY-150,FLinearColor(.55f,.85f,.72f),.85f);
+    }
     DrawShadowedText(GameMode->GetObjectiveText(), Canvas->ClipX - 550.0f, 32.0f,
         GameMode->IsObjectiveComplete() ? FLinearColor(0.3f, 1.0f, 0.45f) : FLinearColor(0.95f, 0.85f, 0.35f), 1.0f);
     DrawShadowedText(GameMode->GetStatusText(), Canvas->ClipX - 550.0f, 64.0f,
         FLinearColor(0.85f, 0.85f, 0.85f), 0.85f);
 
+    if (Character->IsTraversing() || Character->CanVault())
+    {
+        DrawShadowedText(Character->IsFinaleLocked()?TEXT(""):Character->IsPrying()? TEXT("撬动门框中") : Character->IsTraversing()? TEXT("翻越中 · 无法射击") : TEXT("[空格] 翻越低隔断 · 会议室捷径"), CenterX, CenterY+82, FLinearColor(.35f,1,.8f), .9f, true);
+    }
+    if (!Character->IsTraversing())
     if (ALZInteractable* Target = Character->FindInteractable())
     {
         FString Prompt = Target->GetInteractionPrompt(Character);
@@ -326,9 +363,11 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
             {
                 HoverCol = FMath::Clamp(FMath::FloorToInt32((CanvasMouseX - GridStartX) / (CellSize + CellGap)), 0, 5);
                 HoverRow = FMath::Clamp(FMath::FloorToInt32((CanvasMouseY - GridStartY) / (CellSize + CellGap)), 0, 5);
-                MutableChar->SetCursorPos(HoverCol, HoverRow);
+                if ((LastInventoryMouse.X >= 0 && !FVector2D(MouseX, MouseY).Equals(LastInventoryMouse, 0.5f)) || PC->WasInputKeyJustPressed(EKeys::LeftMouseButton))
+                    MutableChar->SetCursorPos(HoverCol, HoverRow);
             }
 
+            LastInventoryMouse = FVector2D(MouseX, MouseY);
             const bool bLMBJustPressed = PC->WasInputKeyJustPressed(EKeys::LeftMouseButton);
             const bool bLMBJustReleased = PC->WasInputKeyJustReleased(EKeys::LeftMouseButton);
             const bool bRMBJustPressed = PC->WasInputKeyJustPressed(EKeys::RightMouseButton);
@@ -496,6 +535,7 @@ void ALZHUD::DrawInventory(const ALZCharacter* Character, const ALZGameMode* Gam
         switch (Type)
         {
         case ELZInventoryItemType::Axe: return TEXT("应急重型消防斧");
+        case ELZInventoryItemType::Crowbar: return TEXT("应急撬棍");
         case ELZInventoryItemType::Pistol: return TEXT("格洛克17 战术手枪");
         case ELZInventoryItemType::Flashlight: return TEXT("战术强光手电筒");
         case ELZInventoryItemType::Ammo: return TEXT("9x19mm 手枪备弹");

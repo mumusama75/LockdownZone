@@ -1,4 +1,5 @@
 #include "LZInteractable.h"
+#include "LZCharacter.h"
 
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -59,4 +60,10 @@ void ALZInteractable::SetLabel(const FString& Text, const FColor& Color)
         Material->SetVectorParameterValue(TEXT("Color"), FLinearColor(Color) * 0.55f);
         Mesh->SetMaterial(0, Material);
     }
+}
+
+// Dark-room loot cannot be located by sweeping the interaction prompt in darkness.
+bool ALZInteractable::CanIdentifyPickup(const ALZCharacter* Character) const
+{
+    return !bRequiresFlashlight || (Character && Character->HasFlashlight() && Character->IsFlashlightOn());
 }

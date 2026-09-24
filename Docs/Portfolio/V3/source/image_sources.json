@@ -1,0 +1,32 @@
+{
+  "opening.jpg": "VerificationCrowbarOpening/Opening_01_Spawn.png",
+  "bench.jpg": "VerificationCrowbarOpening/Opening_02_DoorToCrowbar.png",
+  "after_pry.jpg": "VerificationCrowbarOpening/Opening_03_AfterPryEnemy.png",
+  "b_infected.jpg": "VerificationZombieAll/AllInfected_B.png",
+  "pantry_entry.jpg": "VerificationHiddenPantry20260924/Entrance.png",
+  "pantry_lit.jpg": "VerificationHiddenPantry20260924/LootLit.png",
+  "light_before.jpg": "Chapter2Greybox/ReadabilityPass/Before_Driving.png",
+  "light_after.jpg": "Chapter2Greybox/ReadabilityPass/Garage_After_04_DriverIslands.png",
+  "truck.jpg": "Chapter2Greybox/ReadabilityPass/Garage_After_01_Arrival.png",
+  "booth.jpg": "Chapter2Greybox/ReadabilityPass/Garage_After_02_Booth.png",
+  "button.jpg": "Chapter2Greybox/ReadabilityPass/Garage_After_03_ButtonOpening.png",
+  "pry.jpg": {
+    "source": "C:/UEProjects/LockdownZoneRepo/Saved/Screenshots/ElevatorFinale/frame_00029.png",
+    "time_seconds": 3.531929,
+    "capture": "本次 -QA -RetryCheck 实际视口帧"
+  },
+  "hand.jpg": "ElevatorFinale/Hand.png",
+  "closed.jpg": "ElevatorFinale/Video_Closed.png",
+  "garage.jpg": "ElevatorFinale/Video_Garage.png",
+  "pantry_lit_crop.jpg": {
+    "source": "VerificationHiddenPantry20260924/LootLit.png",
+    "derived_from": "pantry_lit.jpg",
+    "crop_pixels": [
+      304,
+      162,
+      976,
+      540
+    ],
+    "changes": "仅裁切放大，无亮度调整、补画或生成式修饰"
+  }
+}

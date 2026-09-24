@@ -1,0 +1,28 @@
+import unreal
+path='/Game/Gameplay/M_ObservationGlass'
+m=unreal.load_asset(path)
+if not m:m=unreal.AssetToolsHelpers.get_asset_tools().create_asset('M_ObservationGlass','/Game/Gameplay',unreal.Material,unreal.MaterialFactoryNew())
+m.set_editor_property('blend_mode',unreal.BlendMode.BLEND_TRANSLUCENT)
+m.set_editor_property('shading_model',unreal.MaterialShadingModel.MSM_UNLIT)
+m.set_editor_property('two_sided',True)
+unreal.MaterialEditingLibrary.delete_all_material_expressions(m)
+c=unreal.MaterialEditingLibrary.create_material_expression(m,unreal.MaterialExpressionConstant3Vector)
+c.set_editor_property('constant',unreal.LinearColor(0.00003,0.00005,0.00005,1))
+o=unreal.MaterialEditingLibrary.create_material_expression(m,unreal.MaterialExpressionConstant)
+o.set_editor_property('r',0.035)
+unreal.MaterialEditingLibrary.connect_material_property(c,'',unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+unreal.MaterialEditingLibrary.connect_material_property(o,'',unreal.MaterialProperty.MP_OPACITY)
+unreal.MaterialEditingLibrary.recompile_material(m)
+unreal.EditorAssetLibrary.save_loaded_asset(m)
+unreal.log('OBSERVATION_GLASS_READY')
+
+path='/Game/Gameplay/M_CityHorizon'
+m=unreal.load_asset(path)
+if not m:m=unreal.AssetToolsHelpers.get_asset_tools().create_asset('M_CityHorizon','/Game/Gameplay',unreal.Material,unreal.MaterialFactoryNew())
+m.set_editor_property('shading_model',unreal.MaterialShadingModel.MSM_UNLIT)
+unreal.MaterialEditingLibrary.delete_all_material_expressions(m)
+c=unreal.MaterialEditingLibrary.create_material_expression(m,unreal.MaterialExpressionConstant3Vector)
+c.set_editor_property('constant',unreal.LinearColor(0.002,0.004,0.007,1))
+unreal.MaterialEditingLibrary.connect_material_property(c,'',unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+unreal.MaterialEditingLibrary.recompile_material(m)
+unreal.EditorAssetLibrary.save_loaded_asset(m)
